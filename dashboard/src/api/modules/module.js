@@ -25,23 +25,14 @@ const buildModuleUrl = (module) => {
  * @returns {Promise} API响应
  */
 const directApiCall = async (apiUrl, params = {}) => {
+  // 处理扩展参数为JSON字符串
+  const requestParams = { ...params};
+  if (params.extend) {
+     requestParams.extend = (typeof params.extend === 'string')?params.extend : JSON.stringify(params.extend);
+  }
   try {
-    // 为了确保像 `extend` 这样的对象被作为单个 JSON 字符串传递（而不是被 axios 序列化为 extend[host]=...&extend[version]=...），
-    const serializedParams = { ...params }
-    Object.keys(serializedParams).forEach((key) => {
-      const val = serializedParams[key]
-      if (val !== null && typeof val === 'object') {
-        try {
-          serializedParams[key] = JSON.stringify(val)
-        } catch (err) {
-          // 如果序列化失败，保留原值并打印警告
-          console.warn(`无法序列化参数 ${key}`, err)
-        }
-      }
-    })
-
     const response = await axios.get(apiUrl, {
-      params: serializedParams,
+      params: requestParams,
       timeout: 30000,
       headers: {
         'Accept': 'application/json'
