@@ -25,9 +25,14 @@ const buildModuleUrl = (module) => {
  * @returns {Promise} API响应
  */
 const directApiCall = async (apiUrl, params = {}) => {
+  // 处理扩展参数为JSON字符串
+  const requestParams = { ...params};
+  if (params.extend) {
+     requestParams.extend = (typeof params.extend === 'string')?params.extend : JSON.stringify(params.extend);
+  }
   try {
     const response = await axios.get(apiUrl, {
-      params,
+      params: requestParams,
       timeout: 30000,
       headers: {
         'Accept': 'application/json'
