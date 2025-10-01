@@ -8,6 +8,7 @@ import {
   getCategoryData,
   getVideoDetail,
   getPlayData,
+  parsePlayUrl,
   searchVideos,
   refreshModule,
   executeAction
@@ -319,6 +320,52 @@ class VideoService {
       }
     } catch (error) {
       console.error('解析视频地址失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 解析选集播放地址 - T4接口专用
+   * @param {string} module - 模块名称
+   * @param {object} params - 播放参数
+   * @param {string} params.play - 播放地址或ID（选集链接）
+   * @param {string} params.flag - 源标识（线路名称）
+   * @param {string} params.apiUrl - API地址
+   * @param {string} params.extend - 扩展参数
+   * @returns {Promise} 播放解析结果
+   */
+  async parseEpisodePlayUrl(module, params) {
+    if (!validateModule(module)) {
+      throw new Error('无效的模块名称')
+    }
+
+    const { play, flag, apiUrl, extend } = params
+
+    if (!play) {
+      throw new Error('播放地址不能为空')
+    }
+
+    try {
+      console.log('VideoService: 开始解析选集播放地址', { module, params })
+      
+      const parseParams = { play, extend }
+      
+      // 添加flag参数（线路名称）
+      if (flag) {
+        parseParams.flag = flag
+      }
+      
+      // 添加API地址
+      if (apiUrl) {
+        parseParams.apiUrl = apiUrl
+      }
+      
+      const result = await parsePlayUrl(module, parseParams)
+      console.log('VideoService: 选集播放解析结果', result)
+      
+      return result
+    } catch (error) {
+      console.error('VideoService: 解析选集播放地址失败:', error)
       throw error
     }
   }

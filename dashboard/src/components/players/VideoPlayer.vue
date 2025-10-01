@@ -1,52 +1,19 @@
 <template>
   <a-card v-if="visible && videoUrl" class="video-player-section">
-    <div class="player-header">
-      <h3>正在播放: {{ episodeName }}</h3>
-      <div class="player-controls">
-        <div class="compact-button-group">
-          <div class="compact-btn" :class="{ active: autoNext }" @click="toggleAutoNext">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 3l14 9-14 9V3z" fill="currentColor"/>
-              <path d="M19 3v18" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span class="btn-text">自动连播</span>
-          </div>
-          
-          <div class="compact-btn" :class="{ active: showCountdown }" @click="toggleCountdown">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span class="btn-text">倒计时</span>
-          </div>
-          
-          <div class="compact-btn selector-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <a-select
-              :model-value="playerType"
-              @change="handlePlayerTypeChange"
-              class="compact-select"
-              size="small"
-            >
-              <a-option value="default">默认播放器</a-option>
-              <a-option value="artplayer">ArtPlayer</a-option>
-            </a-select>
-          </div>
-          
-          <div class="compact-btn close-btn" @click="closePlayer">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
-              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span class="btn-text">关闭</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- 使用PlayerHeader组件 -->
+    <PlayerHeader
+      :episode-name="episodeName"
+      :player-type="playerType"
+      :episodes="episodes"
+      :auto-next-enabled="autoNext"
+      :countdown-enabled="showCountdown"
+      :skip-enabled="skipEnabled"
+      @toggle-auto-next="toggleAutoNext"
+      @toggle-countdown="toggleCountdown"
+      @player-change="handlePlayerTypeChange"
+      @open-skip-settings="openSkipSettingsDialog"
+      @close="closePlayer"
+    />
     <div class="video-player-container">
       <video 
         ref="videoPlayer"
@@ -58,6 +25,28 @@
       >
         您的浏览器不支持视频播放
       </video>
+      
+      <!-- 倍速控制器 -->
+      <div class="speed-control">
+        <label for="speed-select">倍速：</label>
+        <select 
+          id="speed-select" 
+          v-model="currentSpeed" 
+          @change="changePlaybackRate"
+          class="speed-selector"
+        >
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+          <option value="2.5">2.5x</option>
+          <option value="3">3x</option>
+          <option value="4">4x</option>
+          <option value="5">5x</option>
+        </select>
+      </div>
       
       <!-- 自动下一集倒计时弹窗 -->
       <div v-if="showAutoNextDialog" class="auto-next-dialog">
@@ -77,15 +66,29 @@
           </div>
         </div>
       </div>
+      
+      <!-- 使用SkipSettingsDialog组件 -->
+      <SkipSettingsDialog
+        :visible="showSkipSettingsDialog"
+        :skip-intro-enabled="skipIntroEnabled"
+        :skip-outro-enabled="skipOutroEnabled"
+        :skip-intro-seconds="skipIntroSeconds"
+        :skip-outro-seconds="skipOutroSeconds"
+        @close="closeSkipSettingsDialog"
+        @save="saveSkipSettings"
+      />
     </div>
   </a-card>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { IconClose } from '@arco-design/web-vue/es/icon'
 import Hls from 'hls.js'
+import PlayerHeader from './PlayerHeader.vue'
+import SkipSettingsDialog from './SkipSettingsDialog.vue'
+import { useSkipSettings } from '@/composables/useSkipSettings'
 
 // Props
 const props = defineProps({
@@ -132,16 +135,7 @@ const showAutoNextDialog = ref(false)
 const autoNextCountdown = ref(10)
 const countdownTimer = ref(null)
 const isProcessingAutoNext = ref(false) // 防止重复触发自动连播
-
-// 切换自动连播
-const toggleAutoNext = () => {
-  autoNext.value = !autoNext.value
-}
-
-// 切换倒计时显示
-const toggleCountdown = () => {
-  showCountdown.value = !showCountdown.value
-}
+const currentSpeed = ref(1) // 当前播放倍速
 
 // 检查是否有下一集
 const hasNextEpisode = () => {
@@ -157,6 +151,15 @@ const getNextEpisode = () => {
   return null
 }
 
+// 隐藏自动下一集对话框
+const hideAutoNextDialog = () => {
+  showAutoNextDialog.value = false
+  if (countdownTimer.value) {
+    clearInterval(countdownTimer.value)
+    countdownTimer.value = null
+  }
+}
+
 // 播放下一集
 const playNextEpisode = () => {
   if (hasNextEpisode()) {
@@ -168,6 +171,42 @@ const playNextEpisode = () => {
       isProcessingAutoNext.value = false
     }, 2000) // 2秒后重置，给视频切换足够的时间
   }
+}
+
+// 使用片头片尾跳过功能组合式函数
+const {
+  showSkipSettingsDialog,
+  skipIntroEnabled,
+  skipOutroEnabled,
+  skipIntroSeconds,
+  skipOutroSeconds,
+  skipEnabled,
+  initSkipSettings,
+  applySkipSettings,
+  handleTimeUpdate,
+  resetSkipState,
+  openSkipSettingsDialog,
+  closeSkipSettingsDialog,
+  saveSkipSettings: saveSkipSettingsComposable
+} = useSkipSettings({
+  onSkipToNext: playNextEpisode,
+  getCurrentTime: () => videoPlayer.value?.currentTime || 0,
+  setCurrentTime: (time) => {
+    if (videoPlayer.value) {
+      videoPlayer.value.currentTime = time
+    }
+  },
+  getDuration: () => videoPlayer.value?.duration || 0
+})
+
+// 切换自动连播
+const toggleAutoNext = () => {
+  autoNext.value = !autoNext.value
+}
+
+// 切换倒计时显示
+const toggleCountdown = () => {
+  showCountdown.value = !showCountdown.value
 }
 
 // 显示自动下一集对话框
@@ -185,20 +224,19 @@ const showAutoNextDialogFunc = () => {
   }, 1000)
 }
 
-// 隐藏自动下一集对话框
-const hideAutoNextDialog = () => {
-  showAutoNextDialog.value = false
-  if (countdownTimer.value) {
-    clearInterval(countdownTimer.value)
-    countdownTimer.value = null
-  }
-}
-
 // 取消自动下一集
 const cancelAutoNext = () => {
   hideAutoNextDialog()
   // 重置防抖标志
   isProcessingAutoNext.value = false
+}
+
+// 改变播放倍速
+const changePlaybackRate = () => {
+  if (videoPlayer.value) {
+    videoPlayer.value.playbackRate = parseFloat(currentSpeed.value)
+    console.log('播放倍速已设置为:', currentSpeed.value)
+  }
 }
 
 // 链接类型判断函数
@@ -250,11 +288,11 @@ const isDirectVideoLink = (url) => {
 const initVideoPlayer = (url) => {
   if (!videoPlayer.value || !url) return
   
-  console.log('初始化视频播放器:', url)
+  // 重置片头片尾跳过状态
+  resetSkipState()
   
   // 首先判断链接类型
   if (!isDirectVideoLink(url)) {
-    console.log('检测到网页链接，在新窗口打开:', url)
     Message.info('检测到网页链接，正在新窗口打开...')
     window.open(url, '_blank')
     emit('close') // 关闭播放器
@@ -271,11 +309,8 @@ const initVideoPlayer = (url) => {
   
   // 视频结束事件处理函数
   const handleVideoEnded = () => {
-    console.log('视频播放结束')
-    
     // 防抖：如果正在处理自动连播，则忽略
     if (isProcessingAutoNext.value) {
-      console.log('正在处理自动连播，忽略重复的ended事件')
       return
     }
     
@@ -361,16 +396,17 @@ const initVideoPlayer = (url) => {
     }
   } else {
     // 处理其他格式的视频（mp4, webm, avi等）
-    console.log('播放普通视频格式:', url)
     video.src = url
     
     // 添加事件监听器
     const handleLoadedMetadata = () => {
-      console.log('视频元数据加载完成，开始播放')
       video.play().catch(err => {
         console.warn('自动播放失败:', err)
         Message.warning('自动播放失败，请手动点击播放')
       })
+      
+      // 应用片头片尾设置
+      applySkipSettings()
     }
     
     const handleError = (e) => {
@@ -378,7 +414,6 @@ const initVideoPlayer = (url) => {
       
       // 如果播放失败，再次检查是否为网页链接
       if (!isDirectVideoLink(url)) {
-        console.log('播放失败，检测到可能是网页链接，在新窗口打开:', url)
         Message.info('视频播放失败，检测到网页链接，正在新窗口打开...')
         window.open(url, '_blank')
         emit('close') // 关闭播放器
@@ -389,18 +424,32 @@ const initVideoPlayer = (url) => {
     }
     
     const handleLoadStart = () => {
-      console.log('开始加载视频')
+      // 重置片头片尾跳过状态
+      resetSkipState()
+    }
+    
+    const handlePlaying = () => {
+      // 延迟一点应用跳过设置，确保视频已经开始播放
+      setTimeout(() => {
+        applySkipSettings()
+      }, 100)
     }
     
     // 移除之前的事件监听器（如果有）
     video.removeEventListener('loadedmetadata', handleLoadedMetadata)
     video.removeEventListener('error', handleError)
     video.removeEventListener('loadstart', handleLoadStart)
+    video.removeEventListener('playing', handlePlaying)
+    video.removeEventListener('timeupdate', handleTimeUpdate)
+    video.removeEventListener('ended', handleVideoEnded)
     
     // 添加新的事件监听器
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('error', handleError)
     video.addEventListener('loadstart', handleLoadStart)
+    video.addEventListener('playing', handlePlaying)
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    video.addEventListener('ended', handleVideoEnded)
     
     // 开始加载视频
     video.load()
@@ -410,6 +459,18 @@ const initVideoPlayer = (url) => {
   video.removeEventListener('ended', handleVideoEnded)
   video.addEventListener('ended', handleVideoEnded)
 }
+
+// 片头片尾跳过功能相关方法
+
+// 关闭片头片尾设置弹窗
+// 保存片头片尾设置
+const saveSkipSettings = (settings) => {
+  saveSkipSettingsComposable(settings)
+  Message.success('片头片尾设置已保存')
+  closeSkipSettingsDialog()
+}
+
+
 
 // 关闭播放器
 const closePlayer = () => {
@@ -427,6 +488,12 @@ const closePlayer = () => {
     hlsInstance.value = null
   }
   
+  // 清理片尾跳过定时器
+  if (skipOutroTimer.value) {
+    clearInterval(skipOutroTimer.value)
+    skipOutroTimer.value = null
+  }
+  
   emit('close')
 }
 
@@ -438,6 +505,7 @@ const handlePlayerTypeChange = (newType) => {
 // 监听视频URL变化
 watch(() => props.videoUrl, (newUrl) => {
   if (newUrl && props.visible) {
+    resetSkipState() // 重置片头片尾跳过状态
     nextTick(() => {
       initVideoPlayer(newUrl)
     })
@@ -457,6 +525,11 @@ watch(() => props.visible, (newVisible) => {
       hlsInstance.value = null
     }
   }
+})
+
+// 组件挂载时初始化
+onMounted(() => {
+  initSkipSettings()
 })
 
 // 组件卸载时清理资源
@@ -694,6 +767,49 @@ onUnmounted(() => {
 .btn-cancel:hover {
   background: #555;
 }
+
+/* 倍速控制器样式 */
+.speed-control {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.speed-control label {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.speed-selector {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.speed-selector:hover {
+  background: white;
+  border-color: #23ade5;
+}
+
+.speed-selector:focus {
+  border-color: #23ade5;
+  box-shadow: 0 0 0 2px rgba(35, 173, 229, 0.2);
+}
+
+
 
 /* 响应式设计 */
 @media (max-width: 768px) {
