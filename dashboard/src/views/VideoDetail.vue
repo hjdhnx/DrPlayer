@@ -50,8 +50,8 @@
     <div v-else-if="videoDetail" class="detail-content">
       <!-- 默认视频播放器组件 -->
       <VideoPlayer 
-        v-if="showVideoPlayer && currentEpisodeUrl && playerType === 'default'"
-        :video-url="currentEpisodeUrl"
+        v-if="showVideoPlayer && actualVideoUrl && playerType === 'default'"
+        :video-url="actualVideoUrl"
         :episode-name="currentEpisodeName"
         :poster="videoDetail?.vod_pic"
         :visible="showVideoPlayer"
@@ -65,8 +65,8 @@
 
       <!-- ArtPlayer 播放器组件 -->
       <ArtVideoPlayer 
-        v-if="showVideoPlayer && currentEpisodeUrl && playerType === 'artplayer'"
-        :video-url="currentEpisodeUrl"
+        v-if="showVideoPlayer && actualVideoUrl && playerType === 'artplayer'"
+        :video-url="actualVideoUrl"
         :episode-name="currentEpisodeName"
         :poster="videoDetail?.vod_pic"
         :visible="showVideoPlayer"
@@ -171,6 +171,36 @@
         :title="imageData.name"
       />
     </div>
+
+    <!-- 解析提示弹窗 -->
+    <ActionDialog
+      :visible="showParseDialog"
+      :title="parseDialogConfig.title"
+      :width="400"
+      @close="showParseDialog = false"
+    >
+      <div class="parse-dialog-content">
+        <div class="parse-message">
+          {{ parseDialogConfig.message }}
+        </div>
+        <div class="parse-hint">
+          <div class="hint-icon">
+            <icon-eye />
+          </div>
+          <div class="hint-text">
+            敬请期待后续版本支持！
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="parse-dialog-footer">
+          <a-button type="primary" @click="showParseDialog = false">
+            我知道了
+          </a-button>
+        </div>
+      </template>
+    </ActionDialog>
   </div>
 </template>
 
@@ -186,6 +216,7 @@ import { usePageStateStore } from '@/stores/pageStateStore'
 import VideoPlayer from '@/components/players/VideoPlayer.vue'
 import ArtVideoPlayer from '@/components/players/ArtVideoPlayer.vue'
 import EpisodeSelector from '@/components/players/EpisodeSelector.vue'
+import ActionDialog from '@/components/actions/ActionDialog.vue'
 import { 
   IconLeft, 
   IconPlayArrow, 
@@ -231,6 +262,16 @@ const currentSiteInfo = ref({
 
 // 视频播放器相关
 const showVideoPlayer = ref(false)
+// 解析后的播放URL（用于T4接口解析结果）
+const parsedVideoUrl = ref('')
+
+// 解析提示弹窗相关
+const showParseDialog = ref(false)
+const parseDialogConfig = ref({
+  title: '',
+  message: '',
+  type: '' // 'sniff' 或 'parse'
+})
 
 // 从localStorage读取用户的播放器偏好，默认为'default'
 const getPlayerPreference = () => {
@@ -329,6 +370,11 @@ const currentEpisodeUrl = computed(() => {
   const episodes = playRoutes.value[currentRoute.value]?.episodes || []
   const episode = episodes[currentEpisode.value]
   return episode?.url || ''
+})
+
+// 实际播放URL（优先使用解析后的URL）
+const actualVideoUrl = computed(() => {
+  return parsedVideoUrl.value || currentEpisodeUrl.value
 })
 
 const currentEpisodeName = computed(() => {
@@ -757,22 +803,84 @@ const handleEpisodeSelected = (episode) => {
   }
 }
 
-const selectEpisode = (index) => {
+const selectEpisode = async (index) => {
   currentEpisode.value = index
   
-  // 获取当前选集的URL
+  // 获取当前选集的URL和线路信息
   const episodeUrl = currentRouteEpisodes.value[index]?.url
+  const routeName = playRoutes.value[currentRoute.value]?.name
   
-  // 启动内置播放器播放所有格式的视频
-  if (episodeUrl) {
-    console.log('启动内置播放器播放视频:', episodeUrl)
-    showVideoPlayer.value = true
-    
-    Message.success(`开始播放: ${currentEpisodeName.value}`)
-  } else {
+  if (!episodeUrl) {
     console.log('选集URL为空，无法播放')
     Message.error('选集URL为空，无法播放')
+    return
   }
+
+  try {
+    console.log('开始解析选集播放地址:', { episodeUrl, routeName })
+    Message.info('正在解析播放地址...')
+    
+    // 调用T4播放API进行解析
+    const parseParams = {
+      play: episodeUrl,
+      flag: routeName,
+      apiUrl: currentSiteInfo.value.api,
+      extend: currentSiteInfo.value.ext
+    }
+    
+    const parseResult = await videoService.parseEpisodePlayUrl(currentSiteInfo.value.key, parseParams)
+    console.log('选集播放解析结果:', parseResult)
+    
+    // 根据解析结果处理播放
+     if (parseResult.playType === 'direct') {
+       // parse:0 - 直链播放
+       console.log('启动内置播放器播放直链视频:', parseResult.url)
+       parsedVideoUrl.value = parseResult.url
+       showVideoPlayer.value = true
+       Message.success(`开始播放: ${currentEpisodeName.value}`)
+     } else if (parseResult.playType === 'sniff') {
+       // parse:1 - 需要嗅探
+       console.log('需要嗅探播放:', parseResult)
+       // 清空解析URL，不启动播放器
+       parsedVideoUrl.value = ''
+       
+       // 显示嗅探提示弹窗
+       parseDialogConfig.value = {
+         title: '播放提示',
+         message: '该视频需要嗅探才能播放，当前版本暂不支持此功能。',
+         type: 'sniff'
+       }
+       showParseDialog.value = true
+     } else if (parseResult.playType === 'parse') {
+       // jx:1 - 需要解析
+       console.log('需要解析播放:', parseResult)
+       // 清空解析URL，不启动播放器
+       parsedVideoUrl.value = ''
+       
+       // 显示解析提示弹窗
+       parseDialogConfig.value = {
+         title: '播放提示',
+         message: '该视频需要解析才能播放，当前版本暂不支持此功能。',
+         type: 'parse'
+       }
+       showParseDialog.value = true
+     } else {
+       // 其他情况，回退到原始播放方式
+       console.log('使用原始播放方式:', episodeUrl)
+       parsedVideoUrl.value = ''
+       showVideoPlayer.value = true
+       Message.success(`开始播放: ${currentEpisodeName.value}`)
+     }
+  } catch (error) {
+     console.error('解析选集播放地址失败:', error)
+     Message.error('解析播放地址失败，请稍后重试')
+     
+     // 解析失败时回退到原始播放方式
+     console.log('回退到原始播放方式:', episodeUrl)
+     parsedVideoUrl.value = ''
+     showVideoPlayer.value = true
+     Message.warning(`播放可能不稳定: ${currentEpisodeName.value}`)
+   }
   
   // 添加到历史记录
   if (videoDetail.value && currentRouteEpisodes.value[index]) {
@@ -1759,5 +1867,45 @@ onUnmounted(() => {
   .video-info-card.collapsed-when-playing .title-main {
     font-size: 14px;
   }
+}
+
+/* 解析提示弹窗样式 */
+.parse-dialog-content {
+  padding: 20px 0;
+  text-align: center;
+}
+
+.parse-message {
+  font-size: 16px;
+  color: var(--color-text-1);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.parse-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--color-bg-2);
+  border-radius: 8px;
+  border-left: 4px solid var(--color-primary);
+}
+
+.hint-icon {
+  color: var(--color-primary);
+  font-size: 18px;
+}
+
+.hint-text {
+  color: var(--color-text-2);
+  font-size: 14px;
+}
+
+.parse-dialog-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
 }
 </style>

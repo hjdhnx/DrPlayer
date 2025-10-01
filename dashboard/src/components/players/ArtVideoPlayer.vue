@@ -1,53 +1,18 @@
 <template>
   <a-card v-if="visible && videoUrl" class="art-video-player-section">
-    <div class="player-header">
-      <h3>正在播放: {{ episodeName }}</h3>
-      <div class="player-controls">
-
-        
-        <div class="compact-button-group">
-          <div class="compact-btn" @click="toggleAutoNext" :class="{ active: autoNextEnabled }" v-if="props.episodes.length > 1">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 5v14l11-7z" fill="currentColor"/>
-            </svg>
-            <span class="btn-text">自动连播</span>
-          </div>
-          
-          <div class="compact-btn" @click="toggleCountdown" :class="{ active: countdownEnabled }" v-if="props.episodes.length > 1">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span class="btn-text">倒计时</span>
-          </div>
-          
-          <div class="compact-btn selector-btn">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <a-select
-              :model-value="playerType"
-              @change="handlePlayerTypeChange"
-              class="compact-select"
-              size="small"
-            >
-              <a-option value="default">默认播放器</a-option>
-              <a-option value="artplayer">ArtPlayer</a-option>
-            </a-select>
-          </div>
-          
-          <div class="compact-btn close-btn" @click="closePlayer">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
-              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span class="btn-text">关闭</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PlayerHeader
+      :episode-name="episodeName"
+      :player-type="playerType"
+      :episodes="episodes"
+      :auto-next-enabled="autoNextEnabled"
+      :countdown-enabled="countdownEnabled"
+      :skip-enabled="skipEnabled"
+      @toggle-auto-next="toggleAutoNext"
+      @toggle-countdown="toggleCountdown"
+      @player-change="handlePlayerTypeChange"
+      @open-skip-settings="openSkipSettingsDialog"
+      @close="closePlayer"
+    />
     <div class="art-player-wrapper" v-show="props.visible">
     
     <div ref="artPlayerContainer" class="art-player-container">
@@ -73,38 +38,34 @@
       </div>
     </div>
     
-    <!-- 选集列表弹窗 -->
-    <div v-if="showEpisodeDialog" class="episode-dialog">
-      <div class="episode-dialog-overlay" @click="closeEpisodeDialog"></div>
-      <div class="episode-dialog-content">
-        <div class="episode-dialog-header">
-          <h3>选择集数</h3>
-          <button @click="closeEpisodeDialog" class="episode-close-btn">×</button>
-        </div>
-        <div ref="episodeListRef" class="episode-list">
-          <button 
-            v-for="(episode, index) in props.episodes" 
-            :key="index"
-            :ref="el => { if (index === props.currentEpisodeIndex) currentEpisodeRef = el }"
-            @click="selectEpisode(episode)"
-            :class="['episode-item', { 'current': index === props.currentEpisodeIndex }]"
-          >
-            <span class="episode-number">{{ index + 1 }}</span>
-            <span class="episode-name">{{ episode.name || `第${index + 1}集` }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
+
+    
+    <!-- 片头片尾设置弹窗 -->
+    <SkipSettingsDialog
+      :visible="showSkipSettingsDialog"
+      :skip-intro-enabled="skipIntroEnabled"
+      :skip-outro-enabled="skipOutroEnabled"
+      :skip-intro-seconds="skipIntroSeconds"
+      :skip-outro-seconds="skipOutroSeconds"
+      @close="closeSkipSettingsDialog"
+      @save="saveSkipSettings"
+    />
   </div>
   </a-card>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { IconClose } from '@arco-design/web-vue/es/icon'
 import Artplayer from 'artplayer'
 import Hls from 'hls.js'
+
+// 配置自定义倍速选项
+Artplayer.PLAYBACK_RATE = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4, 5]
+import PlayerHeader from './PlayerHeader.vue'
+import SkipSettingsDialog from './SkipSettingsDialog.vue'
+import { useSkipSettings } from '@/composables/useSkipSettings'
 
 // Props - 已添加 HLS 支持、动态高度自适应和自动下一集功能
 const props = defineProps({
@@ -161,10 +122,41 @@ const autoNextTimer = ref(null) // 自动下一集定时器
 const showAutoNextDialog = ref(false) // 显示自动下一集对话框
 const countdownEnabled = ref(false) // 倒计时开关，默认关闭
 
-// 选集弹窗相关数据
-const showEpisodeDialog = ref(false) // 显示选集弹窗
-const episodeListRef = ref(null) // 选集列表容器引用
-const currentEpisodeRef = ref(null) // 当前选集按钮引用
+// 选集弹窗相关数据已移除，现在使用ArtPlayer的layer功能
+
+// 使用片头片尾设置组合式函数
+const {
+  showSkipSettingsDialog,
+  skipIntroEnabled,
+  skipOutroEnabled,
+  skipIntroSeconds,
+  skipOutroSeconds,
+  skipEnabled,
+  initSkipSettings,
+  resetSkipState,
+  applySkipSettings,
+  applyIntroSkipImmediate,
+  handleTimeUpdate,
+  closeSkipSettingsDialog,
+  saveSkipSettings: saveSkipSettingsComposable,
+  onUserSeekStart,
+  onUserSeekEnd,
+  onFullscreenChangeStart,
+  onFullscreenChangeEnd
+} = useSkipSettings({
+  onSkipToNext: () => {
+    if (autoNextEnabled.value && hasNextEpisode()) {
+      playNextEpisode()
+    }
+  },
+  getCurrentTime: () => artPlayerInstance.value?.video?.currentTime || 0,
+  setCurrentTime: (time) => {
+    if (artPlayerInstance.value?.video) {
+      artPlayerInstance.value.video.currentTime = time
+    }
+  },
+  getDuration: () => artPlayerInstance.value?.video?.duration || 0
+})
 
 // 链接类型判断函数
 const isDirectVideoLink = (url) => {
@@ -220,6 +212,9 @@ const initArtPlayer = async (url) => {
   // 重置重连状态
   resetRetryState()
   
+  // 重置片头片尾状态
+  resetSkipState()
+  
   // 等待 DOM 更新后计算动态高度
   await nextTick()
   dynamicHeight.value = calculateDynamicHeight()
@@ -236,16 +231,38 @@ const initArtPlayer = async (url) => {
     return
   }
   
-  // 清理之前的播放器实例
+  // 如果播放器实例已存在，使用 switchUrl 方法切换视频源
   if (artPlayerInstance.value) {
-    // 清理 HLS 实例
-    if (artPlayerInstance.value.hls) {
-      artPlayerInstance.value.hls.destroy()
-      artPlayerInstance.value.hls = null
-    }
+    console.log('使用 switchUrl 方法切换视频源:', url)
     
-    artPlayerInstance.value.destroy()
-    artPlayerInstance.value = null
+    try {
+      // 使用 switchUrl 方法切换视频源，这样可以保持全屏状态和其他用户设置
+      await artPlayerInstance.value.switchUrl(url)
+      console.log('视频源切换成功')
+      
+      // 重新应用片头片尾设置
+      applySkipSettings()
+      
+      return // 切换成功，直接返回
+    } catch (error) {
+      console.error('switchUrl 切换失败，回退到销毁重建方式:', error)
+      // 如果 switchUrl 失败，回退到原来的销毁重建方式
+      
+      // 清理缓冲区清理定时器
+      if (artPlayerInstance.value.bufferCleanupInterval) {
+        clearInterval(artPlayerInstance.value.bufferCleanupInterval)
+        artPlayerInstance.value.bufferCleanupInterval = null
+      }
+      
+      // 清理 HLS 实例
+      if (artPlayerInstance.value.hls) {
+        artPlayerInstance.value.hls.destroy()
+        artPlayerInstance.value.hls = null
+      }
+      
+      artPlayerInstance.value.destroy()
+      artPlayerInstance.value = null
+    }
   }
   
   try {
@@ -296,8 +313,42 @@ const initArtPlayer = async (url) => {
             const hls = new Hls({
               // HLS 配置选项
               enableWorker: true,
-              lowLatencyMode: true,
-              backBufferLength: 90,
+              lowLatencyMode: false, // 关闭低延迟模式，提高稳定性
+              
+              // 缓冲区配置 - 关键优化
+              backBufferLength: 15, // 减少后缓冲长度，避免内存占用过多
+              maxBufferLength: 30,  // 减少最大缓冲长度到30秒，避免内存问题
+              maxBufferSize: 30 * 1000 * 1000, // 减少最大缓冲大小到30MB
+              maxBufferHole: 0.3,   // 减少最大缓冲空洞到0.3秒
+              
+              // 网络配置
+              maxLoadingDelay: 3,   // 减少最大加载延迟到3秒
+              maxRetryDelay: 6,     // 减少最大重试延迟到6秒
+              maxRetry: 2,          // 减少最大重试次数到2次，避免过度重试
+              
+              // 片段配置
+              fragLoadingTimeOut: 15000,    // 减少片段加载超时到15秒
+              manifestLoadingTimeOut: 8000, // 减少清单加载超时到8秒
+              fragLoadingMaxRetry: 2,       // 片段加载最大重试次数
+              manifestLoadingMaxRetry: 2,   // 清单加载最大重试次数
+              
+              // 启用自动质量切换
+              enableSoftwareAES: true,
+              startLevel: -1,       // 自动选择起始质量
+              capLevelToPlayerSize: true, // 根据播放器大小限制质量
+              
+              // 错误恢复配置
+              liveSyncDurationCount: 3,
+              liveMaxLatencyDurationCount: Infinity,
+              liveDurationInfinity: false,
+              
+              // 新增配置项，提高稳定性
+              nudgeOffset: 0.1,     // 微调偏移量
+              nudgeMaxRetry: 3,     // 微调最大重试次数
+              maxSeekHole: 2,       // 最大寻址空洞
+              
+              // 调试配置（生产环境可关闭）
+              debug: false,
             })
             
             hls.loadSource(url)
@@ -311,25 +362,118 @@ const initArtPlayer = async (url) => {
               console.log('HLS manifest 解析完成')
             })
             
+            // 错误重试计数器
+            let networkErrorRetries = 0
+            let mediaErrorRetries = 0
+            const maxErrorRetries = 2 // 减少重试次数
+            
             hls.on(Hls.Events.ERROR, (event, data) => {
-              console.error('HLS 错误:', data)
+              // 只记录致命错误，减少控制台噪音
               if (data.fatal) {
+                console.error('HLS 致命错误:', data.type, data.details)
+                
                 switch (data.type) {
                   case Hls.ErrorTypes.NETWORK_ERROR:
-                    console.log('网络错误，尝试恢复...')
-                    hls.startLoad()
+                    networkErrorRetries++
+                    
+                    if (networkErrorRetries <= maxErrorRetries) {
+                      console.log(`网络错误恢复中... (${networkErrorRetries}/${maxErrorRetries})`)
+                      // 延迟重试，避免频繁请求
+                      setTimeout(() => {
+                        hls.startLoad()
+                      }, 1000 * networkErrorRetries) // 递增延迟
+                    } else {
+                      console.error('网络错误重试次数超限')
+                      Message.error('网络连接不稳定，请检查网络后重试')
+                      hls.destroy()
+                    }
                     break
+                    
                   case Hls.ErrorTypes.MEDIA_ERROR:
-                    console.log('媒体错误，尝试恢复...')
-                    hls.recoverMediaError()
+                    mediaErrorRetries++
+                    
+                    if (mediaErrorRetries <= maxErrorRetries) {
+                      console.log(`媒体错误恢复中... (${mediaErrorRetries}/${maxErrorRetries})`)
+                      setTimeout(() => {
+                        hls.recoverMediaError()
+                      }, 500 * mediaErrorRetries) // 递增延迟
+                    } else {
+                      console.error('媒体错误恢复次数超限')
+                      Message.error('视频解码错误，请尝试刷新页面')
+                      hls.destroy()
+                    }
                     break
+                    
                   default:
-                    console.log('无法恢复的错误，销毁 HLS 实例')
+                    // 对于其他致命错误，不显示用户提示，只记录日志
+                    console.error('无法恢复的HLS错误:', data.details)
                     hls.destroy()
                     break
                 }
+              } else {
+                // 非致命错误，只在调试模式下记录
+                if (data.details !== 'bufferAppendError' && data.details !== 'bufferStalledError') {
+                  console.debug('HLS 非致命错误:', data.details)
+                }
+                
+                // 对于缓冲区错误，尝试自动恢复
+                if (data.details === 'bufferStalledError') {
+                  console.debug('检测到缓冲停滞，自动处理中...')
+                  // HLS.js 会自动处理这类错误，无需手动干预
+                }
               }
             })
+            
+            // 监听缓冲区事件，用于性能优化
+            hls.on(Hls.Events.BUFFER_APPENDED, () => {
+              // 缓冲区数据追加成功，可以在这里做一些清理工作
+            })
+            
+            hls.on(Hls.Events.BUFFER_EOS, () => {
+              console.debug('缓冲区到达流结束')
+            })
+            
+            // 监听缓冲区清理事件
+            hls.on(Hls.Events.BUFFER_FLUSHED, () => {
+              console.debug('缓冲区已清理')
+            })
+            
+            // 重置错误计数器（当播放成功时）
+            hls.on(Hls.Events.FRAG_LOADED, () => {
+              // 片段加载成功，重置错误计数
+              if (networkErrorRetries > 0 || mediaErrorRetries > 0) {
+                console.log('连接恢复正常，重置错误计数器')
+                networkErrorRetries = 0
+                mediaErrorRetries = 0
+              }
+            })
+            
+            // 监听质量切换事件
+            hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+              console.debug(`质量切换到: ${data.level}`)
+            })
+            
+            // 定期清理缓冲区，避免内存占用过多
+            let bufferCleanupInterval = setInterval(() => {
+              if (hls && video && !video.paused) {
+                const currentTime = video.currentTime
+                // 清理当前播放位置前15秒以外的缓冲区
+                if (currentTime > 15) {
+                  try {
+                    hls.trigger(Hls.Events.BUFFER_FLUSHING, {
+                      startOffset: 0,
+                      endOffset: currentTime - 15,
+                      type: 'video'
+                    })
+                  } catch (e) {
+                    console.debug('缓冲区清理失败:', e)
+                  }
+                }
+              }
+            }, 30000) // 每30秒清理一次
+            
+            // 存储清理定时器，用于后续清理
+            art.bufferCleanupInterval = bufferCleanupInterval
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             // Safari 原生支持 HLS
             video.src = url
@@ -356,7 +500,7 @@ const initArtPlayer = async (url) => {
           tooltip: props.episodes.length > 1 ? '选择集数' : '',
           style: props.episodes.length > 1 ? {} : { display: 'none' },
           click: function () {
-            toggleEpisodeDialog()
+            toggleEpisodeLayer()
           },
         },
         {
@@ -387,7 +531,31 @@ const initArtPlayer = async (url) => {
         },
       ],
       // 图层配置
-      layers: [],
+      layers: [
+        {
+          name: 'episodeLayer',
+          html: '',
+          style: {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'none',
+            zIndex: '100',
+            padding: '0',
+            boxSizing: 'border-box',
+            overflow: 'hidden'
+          },
+          click: function(event) {
+            // 点击背景关闭layer
+            if (event.target.classList.contains('episode-layer-background')) {
+              hideEpisodeLayer()
+            }
+          }
+        }
+      ],
       // 插件配置
       plugins: [],
     })
@@ -395,22 +563,62 @@ const initArtPlayer = async (url) => {
     // 事件监听
     art.on('ready', () => {
       console.log('ArtPlayer 准备就绪')
+      // 应用片头片尾设置
+      applySkipSettings()
     })
 
     art.on('video:loadstart', () => {
-      console.log('开始加载视频')
+      // 重置片头片尾跳过状态
+      resetSkipState()
     })
 
     art.on('video:canplay', () => {
-      console.log('视频可以播放')
       // 视频可以播放时，重置重连计数器
       resetRetryState()
+      // 应用片头片尾设置
+      applySkipSettings()
+    })
+
+    art.on('video:timeupdate', () => {
+      handleTimeUpdate()
+    })
+
+    // 监听用户拖动进度条事件
+    art.on('video:seeking', () => {
+      onUserSeekStart()
+    })
+
+    art.on('video:seeked', () => {
+      onUserSeekEnd()
     })
 
     art.on('video:playing', () => {
-      console.log('视频开始播放')
       // 视频开始播放时，重置重连计数器
       resetRetryState()
+      
+      // 立即尝试片头跳过（针对视频刚开始播放的情况）
+      const immediateSkipped = applyIntroSkipImmediate()
+      
+      // 如果立即跳过未执行，则使用常规跳过逻辑
+      if (!immediateSkipped) {
+        applySkipSettings()
+        
+        // 为了确保片头跳过生效，再次检查（短延迟）
+        setTimeout(() => {
+          applySkipSettings()
+        }, 50) // 减少延迟到50ms
+      }
+    })
+
+    // 监听全屏状态变化
+    art.on('fullscreen', (isFullscreen) => {
+      // 标记全屏状态开始变化
+      onFullscreenChangeStart()
+      
+      // 500ms后标记全屏状态变化结束
+      setTimeout(() => {
+        onFullscreenChangeEnd()
+      }, 500)
     })
 
     art.on('video:error', (err) => {
@@ -476,9 +684,23 @@ const closePlayer = () => {
   emit('close')
 }
 
+
+
 // 处理播放器类型变更
 const handlePlayerTypeChange = (newType) => {
   emit('player-change', newType)
+}
+
+// 打开片头片尾设置弹窗
+const openSkipSettingsDialog = () => {
+  showSkipSettingsDialog.value = true
+}
+
+// 保存片头片尾设置
+const saveSkipSettings = (settings) => {
+  saveSkipSettingsComposable(settings)
+  Message.success('片头片尾设置已保存')
+  closeSkipSettingsDialog()
 }
 
 // 处理重连逻辑
@@ -524,7 +746,6 @@ const handleRetry = (url) => {
 const resetRetryState = () => {
   retryCount.value = 0
   isRetrying.value = false
-  console.log('重连状态已重置')
 }
 
 // 计算动态高度
@@ -602,13 +823,11 @@ const cancelAutoNext = () => {
 // 立即播放下一集
 const playNextEpisode = () => {
   if (!hasNextEpisode()) {
-    console.log('已经是最后一集')
     Message.info('已经是最后一集了')
     return
   }
   
   const nextEpisode = getNextEpisode()
-  console.log('播放下一集:', nextEpisode.name)
   
   // 清理倒计时
   cancelAutoNext()
@@ -623,7 +842,6 @@ const playNextEpisode = () => {
 // 切换自动下一集开关
 const toggleAutoNext = () => {
   autoNextEnabled.value = !autoNextEnabled.value
-  console.log('自动下一集开关:', autoNextEnabled.value ? '开启' : '关闭')
   
   if (!autoNextEnabled.value) {
     cancelAutoNext()
@@ -683,40 +901,171 @@ const scrollToCurrentEpisode = async () => {
   }
 }
 
-// 切换选集弹窗显示状态
-const toggleEpisodeDialog = async () => {
-  showEpisodeDialog.value = !showEpisodeDialog.value
-  console.log('选集弹窗:', showEpisodeDialog.value ? '显示' : '隐藏')
+// 创建选集layer的HTML内容
+const createEpisodeLayerHTML = () => {
+  if (!props.episodes || props.episodes.length === 0) {
+    return '<div class="episode-layer-background"></div>'
+  }
   
-  // 如果弹窗打开，等待弹窗动画完成后再滚动
-  if (showEpisodeDialog.value) {
-    // 延迟350ms，等待弹窗动画完成（CSS动画时长为300ms）
-    setTimeout(async () => {
-      await scrollToCurrentEpisode()
-    }, 350)
+  const episodeItems = props.episodes.map((episode, index) => {
+    const isCurrentEpisode = index === props.currentEpisodeIndex
+    return `
+      <button 
+        class="episode-layer-item ${isCurrentEpisode ? 'current' : ''}" 
+        data-episode-index="${index}"
+      >
+        <span class="episode-layer-number">${index + 1}</span>
+        <span class="episode-layer-name">${episode.name || `第${index + 1}集`}</span>
+      </button>
+    `
+  }).join('')
+  
+  return `
+    <div class="episode-layer-background">
+      <div class="episode-layer-content">
+        <div class="episode-layer-header">
+          <h3>选择集数</h3>
+          <button class="episode-layer-close">×</button>
+        </div>
+        <div class="episode-layer-list">
+          ${episodeItems}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+// 显示选集layer
+const showEpisodeLayer = () => {
+  if (!artPlayerInstance.value) return
+  
+  try {
+    // 更新layer内容和样式
+    artPlayerInstance.value.layers.update({
+      name: 'episodeLayer',
+      html: createEpisodeLayerHTML(),
+      style: {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        background: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        zIndex: '100',
+        padding: '0',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }
+    })
+    
+    // 添加事件监听器
+    nextTick(() => {
+      const episodeLayer = artPlayerInstance.value.layers.episodeLayer
+      if (episodeLayer) {
+        // 使用事件委托处理点击事件
+        episodeLayer.addEventListener('click', handleEpisodeLayerClick)
+      }
+    })
+    
+    console.log('显示选集layer')
+  } catch (error) {
+    console.error('显示选集layer失败:', error)
   }
 }
 
-// 关闭选集弹窗
-const closeEpisodeDialog = () => {
-  showEpisodeDialog.value = false
+// 处理选集layer的点击事件
+const handleEpisodeLayerClick = (event) => {
+  const target = event.target.closest('.episode-layer-item')
+  const closeBtn = event.target.closest('.episode-layer-close')
+  const background = event.target.closest('.episode-layer-background')
+  
+  if (closeBtn || (background && event.target === background)) {
+    // 点击关闭按钮或背景，隐藏layer
+    hideEpisodeLayer()
+  } else if (target) {
+    // 点击选集项
+    const episodeIndex = parseInt(target.dataset.episodeIndex)
+    if (!isNaN(episodeIndex)) {
+      selectEpisodeFromLayer(episodeIndex)
+      hideEpisodeLayer()
+    }
+  }
 }
 
-// 选择剧集
-const selectEpisode = (episode) => {
-  console.log('选择剧集:', episode)
+// 隐藏选集layer
+const hideEpisodeLayer = () => {
+  if (!artPlayerInstance.value) return
   
-  // 关闭弹窗
-  closeEpisodeDialog()
+  try {
+    // 移除事件监听器
+    const episodeLayer = artPlayerInstance.value.layers.episodeLayer
+    if (episodeLayer) {
+      episodeLayer.removeEventListener('click', handleEpisodeLayerClick)
+    }
+    
+    // 隐藏layer
+    artPlayerInstance.value.layers.update({
+      name: 'episodeLayer',
+      html: '',
+      style: {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        background: 'rgba(0, 0, 0, 0.8)',
+        display: 'none',
+        zIndex: '100',
+        padding: '0',
+        boxSizing: 'border-box',
+        overflow: 'hidden'
+      }
+    })
+    console.log('隐藏选集layer')
+  } catch (error) {
+    console.error('隐藏选集layer失败:', error)
+  }
+}
+
+// 切换选集layer显示状态
+const toggleEpisodeLayer = () => {
+  if (!artPlayerInstance.value) return
+  
+  try {
+    const episodeLayer = artPlayerInstance.value.layers.episodeLayer
+    if (episodeLayer && episodeLayer.style.display !== 'none') {
+      hideEpisodeLayer()
+    } else {
+      showEpisodeLayer()
+    }
+  } catch (error) {
+    console.error('切换选集layer失败:', error)
+    // 如果出错，尝试直接显示
+    showEpisodeLayer()
+  }
+}
+
+// 从layer中选择剧集
+const selectEpisodeFromLayer = (episodeIndex) => {
+  console.log('从layer选择剧集:', episodeIndex)
   
   // 发送选集事件给父组件
-  emit('episode-selected', episode)
+  const episode = props.episodes[episodeIndex]
+  if (episode) {
+    emit('episode-selected', episode)
+  }
 }
+
+// 原有的选集弹窗函数已移除，现在使用ArtPlayer的layer功能
 
 // 监听视频URL变化
 watch(() => props.videoUrl, async (newUrl) => {
   if (newUrl && props.visible) {
     resetRetryState() // 重置重连状态
+    resetSkipState() // 重置片头片尾跳过状态
     await nextTick()
     await initArtPlayer(newUrl)
   }
@@ -754,6 +1103,8 @@ onMounted(() => {
   console.log('ArtVideoPlayer 组件已挂载 - 动态高度版本')
   // 添加窗口大小变化监听
   window.addEventListener('resize', handleResize)
+  // 初始化片头片尾设置
+  initSkipSettings()
 })
 
 // 组件卸载时清理资源
@@ -768,6 +1119,19 @@ onUnmounted(() => {
   
   // 销毁播放器实例
   if (artPlayerInstance.value) {
+    // 清理缓冲区清理定时器
+    if (artPlayerInstance.value.bufferCleanupInterval) {
+      clearInterval(artPlayerInstance.value.bufferCleanupInterval)
+      artPlayerInstance.value.bufferCleanupInterval = null
+    }
+    
+    // 清理 HLS 实例
+    if (artPlayerInstance.value.hls) {
+      artPlayerInstance.value.hls.destroy()
+      artPlayerInstance.value.hls = null
+    }
+    
+    // 销毁播放器实例
     artPlayerInstance.value.destroy()
     artPlayerInstance.value = null
   }
@@ -1040,141 +1404,300 @@ onUnmounted(() => {
   background: #555;
 }
 
-/* 选集弹窗样式 */
-.episode-dialog {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 10000;
-  display: flex;
+/* 原有的选集弹窗样式已移除，现在使用ArtPlayer的layer功能 */
+
+/* 选集Layer样式 - 现代化设计 */
+:deep(.art-layer[data-name="episodeLayer"]) {
+  display: flex !important;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.episode-dialog-overlay {
+:deep(.episode-layer-background) {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
-.episode-dialog-content {
-  position: relative;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
-  max-height: 80vh;
-  width: 90%;
+:deep(.episode-layer-content) {
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  max-width: 900px;
+  max-height: 60vh;
+  width: 95%;
   overflow: hidden;
-  animation: episodeDialogShow 0.3s ease-out;
+  animation: episodeLayerShow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-@keyframes episodeDialogShow {
+@keyframes episodeLayerShow {
   from {
     opacity: 0;
-    transform: scale(0.9) translateY(-20px);
+    transform: scale(0.8) translateY(-40px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+    filter: blur(0);
   }
 }
 
-.episode-dialog-header {
+:deep(.episode-layer-header) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e8e8e8;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.episode-dialog-header h3 {
+:deep(.episode-layer-header h3) {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.episode-close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
+:deep(.episode-layer-close) {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 18px;
   cursor: pointer;
-  color: #666;
-  width: 32px;
-  height: 32px;
+  color: rgba(255, 255, 255, 0.8);
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 300;
 }
 
-.episode-close-btn:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #333;
+:deep(.episode-layer-close:hover) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: scale(1.05);
 }
 
-.episode-list {
-  padding: 16px;
-  max-height: 60vh;
+:deep(.episode-layer-close:active) {
+  transform: scale(0.95);
+}
+
+:deep(.episode-layer-list) {
+  padding: 16px 20px 20px;
+  max-height: 45vh;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
-.episode-item {
+/* 自定义滚动条 */
+:deep(.episode-layer-list::-webkit-scrollbar) {
+  width: 6px;
+}
+
+:deep(.episode-layer-list::-webkit-scrollbar-track) {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+:deep(.episode-layer-list::-webkit-scrollbar-thumb) {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+:deep(.episode-layer-list::-webkit-scrollbar-thumb:hover) {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+:deep(.episode-layer-item) {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border: 2px solid #e8e8e8;
-  border-radius: 8px;
-  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
-  min-height: 60px;
+  min-height: 56px;
+  position: relative;
+  overflow: hidden;
 }
 
-.episode-item:hover {
-  border-color: #23ade5;
-  background: #f8fcff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(35, 173, 229, 0.2);
+:deep(.episode-layer-item::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
-.episode-item.current {
-  border-color: #23ade5;
-  background: linear-gradient(135deg, #23ade5 0%, #1e90ff 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(35, 173, 229, 0.3);
+:deep(.episode-layer-item:hover) {
+  border-color: rgba(64, 150, 255, 0.4);
+  background: rgba(64, 150, 255, 0.08);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 32px rgba(64, 150, 255, 0.15),
+    0 0 0 1px rgba(64, 150, 255, 0.2);
 }
 
-.episode-item.current:hover {
-  background: linear-gradient(135deg, #1e90ff 0%, #23ade5 100%);
+:deep(.episode-layer-item:hover::before) {
+  opacity: 1;
 }
 
-.episode-number {
+:deep(.episode-layer-item.current) {
+  border-color: rgba(64, 150, 255, 0.6);
+  background: linear-gradient(135deg, rgba(64, 150, 255, 0.2) 0%, rgba(100, 180, 255, 0.15) 100%);
+  color: #ffffff;
+  box-shadow: 
+    0 8px 32px rgba(64, 150, 255, 0.25),
+    0 0 0 1px rgba(64, 150, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: scale(1.02);
+}
+
+:deep(.episode-layer-item.current::before) {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+}
+
+:deep(.episode-layer-item.current:hover) {
+  background: linear-gradient(135deg, rgba(64, 150, 255, 0.25) 0%, rgba(100, 180, 255, 0.2) 100%);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 
+    0 12px 40px rgba(64, 150, 255, 0.3),
+    0 0 0 1px rgba(64, 150, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+:deep(.episode-layer-number) {
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
   margin-right: 12px;
-  min-width: 24px;
-  text-align: center;
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
 }
 
-.episode-name {
+.episode-layer-item.current .episode-layer-number {
+  background: rgba(64, 150, 255, 0.3);
+  border-color: rgba(64, 150, 255, 0.4);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(64, 150, 255, 0.2);
+}
+
+:deep(.episode-layer-name) {
   font-size: 14px;
+  font-weight: 500;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
+
+:deep(.episode-layer-item.current .episode-layer-name) {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  :deep(.episode-layer-list) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  :deep(.episode-layer-content) {
+    max-width: 95%;
+    margin: 0 12px;
+    max-height: 70vh;
+  }
+  
+  :deep(.episode-layer-list) {
+    grid-template-columns: 1fr;
+    padding: 16px 20px 20px;
+    gap: 12px;
+    max-height: 50vh;
+  }
+  
+  :deep(.episode-layer-item) {
+    min-height: 60px;
+    padding: 12px 14px;
+  }
+  
+  :deep(.episode-layer-number) {
+    min-width: 26px;
+    height: 26px;
+    font-size: 15px;
+    margin-right: 10px;
+  }
+  
+  :deep(.episode-layer-name) {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  :deep(.episode-layer-background) {
+    padding: 12px;
+  }
+  
+  :deep(.episode-layer-content) {
+    max-height: 75vh;
+  }
+  
+  :deep(.episode-layer-header) {
+    padding: 14px 16px 10px;
+  }
+  
+  :deep(.episode-layer-header h3) {
+    font-size: 18px;
+  }
+  
+  :deep(.episode-layer-list) {
+    max-height: 55vh;
+    padding: 12px 16px 16px;
+  }
+}
+
+
 </style>

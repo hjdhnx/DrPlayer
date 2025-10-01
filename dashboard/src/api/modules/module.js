@@ -8,6 +8,30 @@ import { API_PATHS, MODULE_ACTIONS, PAGINATION } from '../config'
 import axios from 'axios'
 
 /**
+ * 处理extend参数，确保对象类型转换为JSON字符串
+ * @param {string|object} extend - 扩展参数
+ * @returns {string|undefined} 处理后的extend参数
+ */
+const processExtendParam = (extend) => {
+  if (!extend) {
+    return undefined
+  }
+  
+  // 如果extend是对象类型，转换为JSON字符串
+  if (typeof extend === 'object' && extend !== null) {
+    try {
+      return JSON.stringify(extend)
+    } catch (error) {
+      console.warn('extend参数JSON序列化失败:', error)
+      return undefined
+    }
+  }
+  
+  // 如果已经是字符串，直接返回
+  return extend
+}
+
+/**
  * 构建模块接口URL
  * @param {string} module - 模块名称
  * @returns {string} 完整的接口URL
@@ -51,7 +75,7 @@ const directApiCall = async (apiUrl, params = {}) => {
  * @param {string} module - 模块名称
  * @param {object} options - 选项参数
  * @param {number} options.filter - 过滤条件（1表示启用，默认启用）
- * @param {string} options.extend - 接口数据扩展参数
+ * @param {string|object} options.extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} options.apiUrl - 站点API地址（可选，如果提供则直接使用）
  * @returns {Promise} 首页数据
  */
@@ -59,8 +83,9 @@ export const getHomeData = async (module, options = {}) => {
   const { filter = 1, extend, apiUrl } = options
   const params = { filter }
   
-  if (extend) {
-    params.extend = extend
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    params.extend = processedExtend
   }
   
   // 如果提供了apiUrl，直接使用站点的API地址
@@ -80,7 +105,7 @@ export const getHomeData = async (module, options = {}) => {
  * @param {string} params.t - 分类ID
  * @param {number} params.pg - 页码（从1开始）
  * @param {string} params.ext - base64编码的筛选条件JSON字符串
- * @param {string} params.extend - 接口数据扩展参数
+ * @param {string|object} params.extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} params.apiUrl - 可选的直接API地址
  * @returns {Promise} 分类数据
  */
@@ -103,8 +128,9 @@ export const getCategoryData = async (module, params) => {
     requestParams.ext = ext
   }
   
-  if (extend) {
-    requestParams.extend = extend
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    requestParams.extend = processedExtend
   }
   
   // 如果提供了apiUrl，直接使用站点的API地址
@@ -121,7 +147,7 @@ export const getCategoryData = async (module, params) => {
  * @param {string} module - 模块名称
  * @param {object} params - 详情参数
  * @param {string} params.ids - 视频ID
- * @param {string} params.extend - 接口数据扩展参数
+ * @param {string|object} params.extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} params.apiUrl - 可选的直接API地址
  * @returns {Promise} 视频详情数据
  */
@@ -133,8 +159,9 @@ export const getVideoDetail = async (module, params) => {
     ids
   }
   
-  if (extend) {
-    requestParams.extend = extend
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    requestParams.extend = processedExtend
   }
   
   // 如果提供了apiUrl，直接使用站点的API地址
@@ -151,20 +178,27 @@ export const getVideoDetail = async (module, params) => {
  * @param {string} module - 模块名称
  * @param {object} params - 播放参数
  * @param {string} params.play - 播放地址或ID
- * @param {string} params.extend - 接口数据扩展参数
+ * @param {string} params.flag - 源标识（线路名称）
+ * @param {string|object} params.extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} params.apiUrl - 可选的直接API地址
  * @returns {Promise} 播放数据
  */
 export const getPlayData = async (module, params) => {
-  const { play, extend, apiUrl } = params
+  const { play, flag, extend, apiUrl } = params
   
   const requestParams = {
     ac: MODULE_ACTIONS.PLAY,
     play
   }
   
-  if (extend) {
-    requestParams.extend = extend
+  // 添加flag参数支持
+  if (flag) {
+    requestParams.flag = flag
+  }
+  
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    requestParams.extend = processedExtend
   }
   
   // 如果提供了apiUrl，直接使用站点的API地址
@@ -177,12 +211,89 @@ export const getPlayData = async (module, params) => {
 }
 
 /**
+ * 播放解析接口 - 专门用于选集播放解析
+ * @param {string} module - 模块名称
+ * @param {object} params - 播放参数
+ * @param {string} params.play - 播放地址或ID（选集链接）
+ * @param {string} params.flag - 源标识（线路名称）
+ * @param {string|object} params.extend - 接口数据扩展参数
+ * @param {string} params.apiUrl - 可选的直接API地址
+ * @returns {Promise} 播放解析结果
+ */
+export const parsePlayUrl = async (module, params) => {
+  try {
+    console.log('T4播放解析请求:', { module, params })
+    
+    const playData = await getPlayData(module, params)
+    console.log('T4播放解析响应:', playData)
+    
+    // 处理解析结果
+    const result = {
+      success: true,
+      data: playData,
+      // 解析播放类型
+      playType: 'direct', // 默认直链
+      url: '',
+      needParse: false,
+      needSniff: false,
+      message: ''
+    }
+    
+    // 检查返回数据格式
+    if (playData && typeof playData === 'object') {
+      // 检查parse字段
+      if (playData.parse === 0) {
+        // 直链播放
+        result.playType = 'direct'
+        result.url = playData.url || playData.play_url || ''
+        result.needParse = false
+        result.needSniff = false
+        result.message = '直链播放'
+      } else if (playData.parse === 1) {
+        // 需要嗅探
+        result.playType = 'sniff'
+        result.url = playData.url || playData.play_url || ''
+        result.needSniff = true
+        result.message = '需要嗅探才能播放，尽情期待'
+      } else if (playData.jx === 1) {
+        // 需要解析
+        result.playType = 'parse'
+        result.url = playData.url || playData.play_url || ''
+        result.needParse = true
+        result.message = '需要解析才能播放，尽情期待'
+      } else {
+        // 默认处理为直链
+        result.url = playData.url || playData.play_url || playData
+        result.message = '直链播放'
+      }
+    } else if (typeof playData === 'string') {
+      // 如果返回的是字符串，直接作为播放地址
+      result.url = playData
+      result.message = '直链播放'
+    }
+    
+    return result
+  } catch (error) {
+    console.error('T4播放解析失败:', error)
+    return {
+      success: false,
+      error: error.message || '播放解析失败',
+      playType: 'error',
+      url: '',
+      needParse: false,
+      needSniff: false,
+      message: '播放解析失败: ' + (error.message || '未知错误')
+    }
+  }
+}
+
+/**
  * 搜索接口
  * @param {string} module - 模块名称
  * @param {object} params - 搜索参数
  * @param {string} params.wd - 搜索关键词
  * @param {number} params.pg - 页码（从1开始）
- * @param {string} params.extend - 接口数据扩展参数
+ * @param {string|object} params.extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} params.apiUrl - 可选的直接API地址
  * @returns {Promise} 搜索结果
  */
@@ -199,8 +310,9 @@ export const searchVideos = async (module, params) => {
     pg
   }
   
-  if (extend) {
-    requestParams.extend = extend
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    requestParams.extend = processedExtend
   }
   
   // 如果提供了apiUrl，直接使用站点的API地址
@@ -217,7 +329,7 @@ export const searchVideos = async (module, params) => {
  * @param {string} module - 模块名称
  * @param {object} data - 动作数据
  * @param {string} data.action - 动作类型
- * @param {string} data.extend - 接口数据扩展参数
+ * @param {string|object} data.extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} data.apiUrl - 可选的直接API地址
  * @returns {Promise} 动作执行结果
  */
@@ -230,8 +342,9 @@ export const executeAction = async (module, data) => {
     ...otherData
   }
   
-  if (extend) {
-    requestData.extend = extend
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    requestData.extend = processedExtend
   }
   
   console.log('executeAction调用参数:', {
@@ -243,7 +356,6 @@ export const executeAction = async (module, data) => {
   
   // 如果提供了apiUrl，直接使用站点的API地址
   if (apiUrl) {
-    const axios = (await import('axios')).default
     console.log('直接调用API:', apiUrl, requestData)
     
     // 如果是测试用的JSON文件，使用GET请求
@@ -280,7 +392,7 @@ export const executeAction = async (module, data) => {
 /**
  * 刷新模块数据
  * @param {string} module - 模块名称
- * @param {string} extend - 接口数据扩展参数
+ * @param {string|object} extend - 接口数据扩展参数（对象类型会自动转换为JSON字符串）
  * @param {string} apiUrl - 可选的直接API地址
  * @returns {Promise} 刷新结果
  */
@@ -289,8 +401,9 @@ export const refreshModule = async (module, extend, apiUrl) => {
     refresh: '1'
   }
   
-  if (extend) {
-    params.extend = extend
+  const processedExtend = processExtendParam(extend)
+  if (processedExtend) {
+    params.extend = processedExtend
   }
   
   // 如果提供了apiUrl，直接使用站点的API地址
@@ -325,6 +438,7 @@ export default {
   getCategoryData,
   getVideoDetail,
   getPlayData,
+  parsePlayUrl,
   searchVideos,
   executeAction,
   refreshModule,

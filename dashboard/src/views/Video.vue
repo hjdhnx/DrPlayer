@@ -159,24 +159,48 @@ const getNowSite = () => {
   if (currentSite) {
     form.now_site = currentSite;
     form.now_site_title = currentSite.name;
+    // 同步到 siteStore
+    setCurrentSite(currentSite);
   } else if (nowSite && nowSite.name) {
     form.now_site = nowSite;
     form.now_site_title = nowSite.name;
     // 同步到siteService
     siteService.setCurrentSite(nowSite.key);
+  } else {
+    // 如果都没有，清空当前源
+    form.now_site = {};
+    form.now_site_title = "hipy影视";
   }
 };
 
 const checkNowSite = () => {
-  form.new_site = form.now_site;
-  if (!form.new_site.key && form.sites.length > 0) {
-    form.new_site = form.sites[0];
-  } else if (
-    form.new_site.key &&
-    !form.sites.map((i) => i.key).includes(form.new_site.key)
-  ) {
-    form.new_site = form.sites[0];
+  // 确保 form.now_site 有值，如果没有则从 siteService 获取
+  if (!form.now_site || !form.now_site.key) {
+    const currentSite = siteService.getCurrentSite();
+    if (currentSite) {
+      form.now_site = currentSite;
+      form.now_site_title = currentSite.name;
+    } else if (form.sites.length > 0) {
+      // 如果没有当前源，设置第一个可用源
+      const firstSite = form.sites.find(site => site.type === 4) || form.sites[0];
+      form.now_site = firstSite;
+      form.now_site_title = firstSite.name;
+      siteService.setCurrentSite(firstSite.key);
+    }
+  } else {
+    // 检查当前源是否在站点列表中
+    const siteExists = form.sites.some(site => site.key === form.now_site.key);
+    if (!siteExists && form.sites.length > 0) {
+      // 如果当前源不在列表中，设置第一个可用源
+      const firstSite = form.sites.find(site => site.type === 4) || form.sites[0];
+      form.now_site = firstSite;
+      form.now_site_title = firstSite.name;
+      siteService.setCurrentSite(firstSite.key);
+    }
   }
+  
+  // 设置 new_site 用于换源对话框
+  form.new_site = form.now_site;
 };
 
 // 启动定时器
@@ -427,7 +451,9 @@ const handleRefreshList = () => {
 
 const handleOpenForm = () => {
   form.visible = true;
-  form.form_title = `请选择数据源(${form.sites.length})`;
+  // 过滤出 type 为 4 的数据源
+  const type4Sites = form.sites.filter(site => site.type === 4);
+  form.form_title = `请选择数据源(${type4Sites.length})`;
   checkNowSite();
 };
 
