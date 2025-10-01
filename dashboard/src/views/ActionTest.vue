@@ -10,15 +10,25 @@
           </h1>
           <p class="page-subtitle">测试各种Action组件的功能和交互效果</p>
         </div>
-        <div class="nav-buttons">
-          <a-button type="primary" status="success" @click="goToDebugTest" class="nav-button">
-            <icon-bug />
-            综合测试工具
-          </a-button>
-          <a-button type="primary" status="warning" @click="goToVideoTest" class="nav-button">
-            <icon-play-arrow />
-            视频播放测试
-          </a-button>
+        <div class="nav-button-group">
+          <div class="nav-button-grid">
+            <a-button type="primary" status="success" @click="goToDebugTest" class="nav-grid-button">
+              <icon-bug />
+              <span>综合测试工具</span>
+            </a-button>
+            <a-button type="primary" status="warning" @click="goToVideoTest" class="nav-grid-button">
+              <icon-play-arrow />
+              <span>视频播放测试</span>
+            </a-button>
+            <a-button type="primary" status="normal" @click="goToCSPTest" class="nav-grid-button">
+              <icon-safe />
+              <span>CSP测试工具</span>
+            </a-button>
+            <!-- 预留位置，可以添加更多测试工具 -->
+            <div class="nav-grid-placeholder">
+              <span class="placeholder-text">更多工具</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -255,7 +265,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { IconCode, IconBug, IconPlayArrow } from '@arco-design/web-vue/es/icon'
+import { IconCode, IconBug, IconPlayArrow, IconSafe } from '@arco-design/web-vue/es/icon'
 import { 
   ActionRenderer,
   Actions,
@@ -277,7 +287,8 @@ export default {
     ActionRenderer,
     IconCode,
     IconBug,
-    IconPlayArrow
+    IconPlayArrow,
+    IconSafe
   },
   setup() {
     const router = useRouter()
@@ -342,6 +353,11 @@ export default {
     // 跳转到视频播放测试
     const goToVideoTest = () => {
       router.push('/video-test')
+    }
+
+    // 跳转到CSP测试
+    const goToCSPTest = () => {
+      router.push('/csp-test')
     }
 
     // 格式化时间
@@ -1300,6 +1316,7 @@ export default {
       addResult,
       goToDebugTest,
       goToVideoTest,
+      goToCSPTest,
       formatTime,
       formatResult,
       testInputAction,
@@ -1397,33 +1414,88 @@ export default {
   margin: 0 0 8px 0;
 }
 
-.nav-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.nav-button {
-  padding: 8px 16px;
-  background: var(--color-primary-6);
-  color: white;
-  border: none;
+.nav-button-group {
+  max-width: fit-content;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
   border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  text-decoration: none;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
 }
 
-.nav-button:hover {
-  background: var(--color-primary-7);
+.nav-button-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px;
+  padding: 6px;
+  justify-content: start;
+}
+
+.nav-grid-button {
+  min-height: 32px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.nav-grid-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(var(--primary-6), 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background: var(--color-bg-3);
+  border-color: var(--color-primary-6);
+}
+
+.nav-grid-button span {
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-grid-placeholder {
+  min-height: 32px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-bg-3);
+  border: 1px dashed var(--color-border-3);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.nav-grid-placeholder:hover {
+  border-color: var(--color-primary-6);
+  background: var(--color-primary-1);
+}
+
+.placeholder-text {
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-4);
+  text-align: center;
 }
 
 .title-icon {

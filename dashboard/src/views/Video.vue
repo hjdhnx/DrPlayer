@@ -125,7 +125,7 @@ const searchState = reactive({
 });
 
 const timer = ref(null);
-const getData = async () => {
+const getData = async (forceRefresh = false) => {
   try {
     // 首先尝试从配置服务获取站点数据
     const configStatus = siteService.getConfigStatus();
@@ -133,7 +133,7 @@ const getData = async () => {
     if (configStatus.hasConfigUrl) {
       try {
         // 如果有配置地址，从配置地址加载站点数据
-        await siteService.loadSitesFromConfig();
+        await siteService.loadSitesFromConfig(forceRefresh);
         console.log("从配置地址加载站点数据成功");
       } catch (configError) {
         console.error("从配置地址加载站点数据失败:", configError);
@@ -224,7 +224,7 @@ const handleConfirmClear = () => {
   form.now_site = form.new_site;
   setCurrentSite(form.now_site);
   form.visible = false;
-  getData();
+  getData(true); // 传递 forceRefresh=true 强制刷新配置数据
   checkNowSite();
 };
 

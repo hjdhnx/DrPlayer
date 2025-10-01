@@ -89,6 +89,7 @@ import Hls from 'hls.js'
 import PlayerHeader from './PlayerHeader.vue'
 import SkipSettingsDialog from './SkipSettingsDialog.vue'
 import { useSkipSettings } from '@/composables/useSkipSettings'
+import { applyCSPBypass, setVideoReferrerPolicy, REFERRER_POLICIES } from '@/utils/csp'
 
 // Props
 const props = defineProps({
@@ -308,6 +309,16 @@ const initVideoPlayer = (url) => {
   }
   
   const video = videoPlayer.value
+  
+  // 应用CSP绕过策略
+  try {
+    const appliedPolicy = applyCSPBypass(url, video)
+    console.log(`已为视频播放应用CSP策略: ${appliedPolicy}`)
+  } catch (error) {
+    console.warn('应用CSP策略失败:', error)
+    // 降级到基本的no-referrer策略
+    setVideoReferrerPolicy(video, REFERRER_POLICIES.NO_REFERRER)
+  }
   
   // 视频结束事件处理函数
   const handleVideoEnded = () => {

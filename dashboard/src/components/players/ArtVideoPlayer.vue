@@ -66,6 +66,7 @@ Artplayer.PLAYBACK_RATE = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4, 5]
 import PlayerHeader from './PlayerHeader.vue'
 import SkipSettingsDialog from './SkipSettingsDialog.vue'
 import { useSkipSettings } from '@/composables/useSkipSettings'
+import { applyCSPBypass, setVideoReferrerPolicy, REFERRER_POLICIES } from '@/utils/csp'
 
 // Props - 已添加 HLS 支持、动态高度自适应和自动下一集功能
 const props = defineProps({
@@ -209,6 +210,14 @@ const initArtPlayer = async (url) => {
   if (!artPlayerContainer.value || !url) return
   
   console.log('初始化 ArtPlayer:', url)
+  
+  // 应用CSP绕过策略
+  try {
+    const appliedPolicy = applyCSPBypass(url)
+    console.log(`已为ArtPlayer应用CSP策略: ${appliedPolicy}`)
+  } catch (error) {
+    console.warn('应用CSP策略失败:', error)
+  }
   
   // 重置重连状态
   resetRetryState()

@@ -11,6 +11,7 @@ import BookGallery from '@/views/BookGallery.vue';
 import ActionTest from '@/views/ActionTest.vue';
 import ActionDebugTest from '@/views/ActionDebugTest.vue';
 import VideoTest from '@/views/VideoTest.vue';
+import CSPTest from '@/views/CSPTest.vue';
 
 
 const routes = [
@@ -26,6 +27,7 @@ const routes = [
     {path: '/action-test', component: ActionTest, name: 'ActionTest'},
     {path: '/action-debug-test', component: ActionDebugTest, name: 'ActionDebugTest'},
     {path: '/video-test', component: VideoTest, name: 'VideoTest'},
+    {path: '/csp-test', component: CSPTest, name: 'CSPTest'},
 
     // 404 fallback路由 - 必须放在最后
     {path: '/:pathMatch(.*)*', redirect: '/'}

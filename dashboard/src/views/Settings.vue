@@ -487,6 +487,33 @@
               <a-switch v-model="settings.autoLive" />
             </div>
           </div>
+
+          <div class="setting-item" @click="handleSettingClick('csp-bypass')">
+            <div class="setting-info">
+              <icon-safe class="setting-icon" />
+              <div class="setting-text">
+                <div class="setting-title">CSP绕过</div>
+                <div class="setting-desc">自动绕过防盗链检测</div>
+              </div>
+            </div>
+            <div class="setting-value">
+              <a-switch v-model="settings.cspBypass" />
+            </div>
+          </div>
+
+          <div class="setting-item" @click="handleSettingClick('referrer-policy')">
+            <div class="setting-info">
+              <icon-link class="setting-icon" />
+              <div class="setting-text">
+                <div class="setting-title">Referrer策略</div>
+                <div class="setting-desc">设置HTTP Referrer策略</div>
+              </div>
+            </div>
+            <div class="setting-value">
+              <span class="value-text">{{ getCurrentReferrerPolicyName() }}</span>
+              <icon-right class="arrow-icon" />
+            </div>
+          </div>
         </div>
       </a-card>
 
@@ -708,10 +735,22 @@ import {
   IconPlayArrow,
   IconSearch,
   IconExclamationCircle,
-  IconRefresh
+  IconRefresh,
+  IconPalette,
+  IconLanguage,
+  IconImage,
+  IconComputer,
+  IconCode
 } from '@arco-design/web-vue/es/icon'
 import AddressHistory from '@/components/AddressHistory.vue'
 import PlayerSelector from '@/components/PlayerSelector.vue'
+import { 
+  getCSPConfig, 
+  saveCSPConfig, 
+  REFERRER_POLICIES_LIST, 
+  getCurrentReferrerPolicy,
+  setGlobalReferrerPolicy 
+} from '@/utils/csp'
 
 // 地址设置相关
 const addressSettings = reactive({
@@ -763,7 +802,9 @@ const settings = reactive({
   adFilter: true,
   ijkCache: false,
   autoLive: false,
-  secureDns: false
+  secureDns: false,
+  cspBypass: true, // CSP绕过开关
+  referrerPolicy: 'no-referrer' // 默认referrer策略
 })
 
 // 播放器选择对话框状态
@@ -969,6 +1010,54 @@ const getCurrentPlayerName = () => {
   return currentPlayer ? currentPlayer.label : 'IJK Player'
 }
 
+// 获取当前Referrer策略名称
+const getCurrentReferrerPolicyName = () => {
+  const policyNames = {
+    'no-referrer': '无引用',
+    'no-referrer-when-downgrade': '降级时无引用',
+    'origin': '仅域名',
+    'origin-when-cross-origin': '跨域时仅域名',
+    'same-origin': '同源',
+    'strict-origin': '严格域名',
+    'strict-origin-when-cross-origin': '跨域时严格域名',
+    'unsafe-url': '完整URL'
+  }
+  return policyNames[settings.referrerPolicy] || '无引用'
+}
+
+// 处理CSP绕过开关
+const handleCSPBypassToggle = () => {
+  const config = getCSPConfig()
+  config.autoBypass = settings.cspBypass
+  saveCSPConfig(config)
+  
+  if (settings.cspBypass) {
+    setGlobalReferrerPolicy(settings.referrerPolicy)
+    Message.success('已启用CSP绕过功能')
+  } else {
+    Message.info('已禁用CSP绕过功能')
+  }
+}
+
+// 处理Referrer策略选择
+const handleReferrerPolicySelect = () => {
+  // 使用导入的策略列表
+  const policyOptions = REFERRER_POLICIES_LIST.map(policy => ({
+    label: policy.label,
+    value: policy.value
+  }))
+  
+  // 显示选择对话框
+  const currentIndex = policyOptions.findIndex(p => p.value === settings.referrerPolicy)
+  
+  // 使用简单的循环切换策略
+  const nextIndex = (currentIndex + 1) % policyOptions.length
+  const nextPolicy = policyOptions[nextIndex]
+  
+  settings.referrerPolicy = nextPolicy.value
+  Message.success(`已切换Referrer策略为: ${nextPolicy.label}`)
+}
+
 // 处理播放器选择
 const handlePlayerSelect = (playerType) => {
   settings.playerType = playerType
@@ -997,6 +1086,12 @@ const handleSettingClick = (settingKey) => {
       break
     case 'auto-live':
       Message.info('启动时进直播设置')
+      break
+    case 'csp-bypass':
+      handleCSPBypassToggle()
+      break
+    case 'referrer-policy':
+      handleReferrerPolicySelect()
       break
     default:
       Message.info(`点击了设置项：${settingKey}`)
@@ -1042,11 +1137,33 @@ const loadConfig = async () => {
       console.error('Failed to load settings:', error)
     }
   }
+  
+  // 加载CSP设置
+  try {
+    const cspConfig = getCSPConfig()
+    settings.cspBypass = cspConfig.enabled
+    settings.referrerPolicy = cspConfig.referrerPolicy
+  } catch (error) {
+    console.error('Failed to load CSP config:', error)
+  }
 }
 
 // 保存设置项状态
 const saveSettings = () => {
   localStorage.setItem('appSettings', JSON.stringify(settings))
+  
+  // 保存CSP设置
+  try {
+    saveCSPConfig({
+      enabled: settings.cspBypass,
+      referrerPolicy: settings.referrerPolicy
+    })
+    
+    // 应用全局referrer策略
+    setGlobalReferrerPolicy(settings.referrerPolicy)
+  } catch (error) {
+    console.error('Failed to save CSP config:', error)
+  }
 }
 
 // 监听设置项变化并自动保存

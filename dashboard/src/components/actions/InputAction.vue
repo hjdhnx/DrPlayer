@@ -824,12 +824,19 @@ export default {
       
       imageCoords.value = { x, y }
       
-      // 将坐标填入输入框
-      const coordsText = `${x},${y}`
-      inputValue.value = coordsText
+      // 将坐标累积到输入框中，多个坐标用-符号分隔
+      const newCoordsText = `${x},${y}`
+      
+      if (inputValue.value.trim()) {
+        // 如果输入框已有内容，用-符号分隔追加新坐标
+        inputValue.value = `${inputValue.value}-${newCoordsText}`
+      } else {
+        // 如果输入框为空，直接设置新坐标
+        inputValue.value = newCoordsText
+      }
       
       // 触发输入验证
-      validateInput(coordsText)
+      validateInput(inputValue.value)
       
       // 不自动提交，让用户可以看到坐标并手动确认
     }

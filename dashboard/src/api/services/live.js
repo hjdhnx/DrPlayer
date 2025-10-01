@@ -73,10 +73,8 @@ class LiveService {
       
       // 获取直播文件内容
       const response = await axios.get(liveConfig.url, {
-        timeout: 15000,
-        headers: {
-          'User-Agent': liveConfig.ua || 'Mozilla/5.0'
-        }
+        timeout: 15000
+        // 注意：浏览器环境下不能设置 User-Agent 头，浏览器会自动处理
       })
 
       if (!response.data) {

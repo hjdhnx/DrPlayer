@@ -10,10 +10,26 @@
           </h1>
           <p class="page-subtitle">用于排查T4 API返回的action数据解析问题，并测试VideoGrid和SearchResults组件中的action功能</p>
         </div>
-        <a-button type="primary" status="success" @click="goToActionTest" class="nav-button">
-          <icon-bug />
-          返回测试页面
-        </a-button>
+        <div class="nav-button-group">
+          <div class="nav-button-grid">
+            <a-button type="primary" status="success" @click="goToActionTest" class="nav-grid-button">
+              <icon-bug />
+              <span>Action测试</span>
+            </a-button>
+            <a-button type="primary" status="warning" @click="goToVideoTest" class="nav-grid-button">
+              <icon-play-arrow />
+              <span>视频播放测试</span>
+            </a-button>
+            <a-button type="primary" status="normal" @click="goToCSPTest" class="nav-grid-button">
+              <icon-safe />
+              <span>CSP测试工具</span>
+            </a-button>
+            <!-- 预留位置，可以添加更多测试工具 -->
+            <div class="nav-grid-placeholder">
+              <span class="placeholder-text">更多工具</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -156,7 +172,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button as AButton } from '@arco-design/web-vue'
-import { IconCode, IconBug } from '@arco-design/web-vue/es/icon'
+import { IconCode, IconBug, IconPlayArrow, IconSafe } from '@arco-design/web-vue/es/icon'
 import ActionRenderer from '@/components/actions/ActionRenderer.vue'
 import VideoGrid from '@/components/VideoGrid.vue'
 import SearchResults from '@/components/SearchResults.vue'
@@ -168,6 +184,16 @@ const router = useRouter()
 // 跳转到Action测试页面
 const goToActionTest = () => {
   router.push('/action-test')
+}
+
+// 跳转到视频测试页面
+const goToVideoTest = () => {
+  router.push('/video-test')
+}
+
+// 跳转到CSP测试页面
+const goToCSPTest = () => {
+  router.push('/csp-test')
 }
 
 const rawData = ref('')
@@ -448,26 +474,87 @@ const handleActionError = (error) => {
   line-height: 1.5;
 }
 
-.nav-button {
-  padding: 8px 16px;
-  background: var(--color-primary-6);
-  color: white;
-  border: none;
+/* 导航按钮组样式 */
+.nav-button-group {
+  max-width: fit-content;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
   border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.nav-button:hover {
-  background: var(--color-primary-7);
+.nav-button-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px;
+  padding: 6px;
+  justify-content: start;
+}
+
+.nav-grid-button {
+  min-height: 32px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.nav-grid-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(var(--primary-6), 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background: var(--color-bg-3);
+  border-color: var(--color-primary-6);
+}
+
+.nav-grid-button span {
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-grid-placeholder {
+  min-height: 32px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-bg-3);
+  border: 1px dashed var(--color-border-3);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.nav-grid-placeholder:hover {
+  border-color: var(--color-primary-6);
+  background: var(--color-primary-1);
+}
+
+.placeholder-text {
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-4);
+  text-align: center;
 }
 
 /* 可滚动内容区域 */
