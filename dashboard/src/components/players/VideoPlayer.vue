@@ -181,6 +181,7 @@ const {
   skipIntroSeconds,
   skipOutroSeconds,
   skipEnabled,
+  skipOutroTimer,
   initSkipSettings,
   applySkipSettings,
   handleTimeUpdate,
@@ -260,23 +261,24 @@ const isDirectVideoLink = (url) => {
                            url.toLowerCase().includes('rtmp') ||
                            url.toLowerCase().includes('rtsp')
   
-  // 检查是否看起来像网页链接
-  const looksLikeWebpage = url.includes('://') && 
-                          (url.includes('.html') || 
-                           url.includes('.php') || 
-                           url.includes('.asp') || 
-                           url.includes('.jsp') ||
-                           url.match(/\/[^.]*$/) || // 没有扩展名的路径
-                           url.includes('?') || // 包含查询参数
-                           url.includes('#')) // 包含锚点
-  
   // 如果有视频扩展名或是流媒体格式，认为是直链
   if (hasVideoExtension || isStreamingFormat) {
     return true
   }
   
+  // 检查是否看起来像网页链接（但排除已经确认为视频的情况）
+  const looksLikeWebpage = url.includes('://') && 
+                          (url.includes('.html') || 
+                           url.includes('.php') || 
+                           url.includes('.asp') || 
+                           url.includes('.jsp') ||
+                           url.match(/\/[^.?#]*$/) // 没有扩展名且没有查询参数的路径
+                          ) &&
+                          !hasVideoExtension && 
+                          !isStreamingFormat
+  
   // 如果看起来像网页，认为不是直链
-  if (looksLikeWebpage && !hasVideoExtension && !isStreamingFormat) {
+  if (looksLikeWebpage) {
     return false
   }
   

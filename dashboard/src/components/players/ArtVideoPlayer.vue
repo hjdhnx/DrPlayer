@@ -1,5 +1,5 @@
 <template>
-  <a-card v-if="visible && videoUrl" class="art-video-player-section">
+  <a-card v-if="visible && videoUrl" class="video-player-section">
     <PlayerHeader
       :episode-name="episodeName"
       :player-type="playerType"
@@ -179,23 +179,24 @@ const isDirectVideoLink = (url) => {
                            url.toLowerCase().includes('rtmp') ||
                            url.toLowerCase().includes('rtsp')
   
-  // 检查是否看起来像网页链接
-  const looksLikeWebpage = url.includes('://') && 
-                          (url.includes('.html') || 
-                           url.includes('.php') || 
-                           url.includes('.asp') || 
-                           url.includes('.jsp') ||
-                           url.match(/\/[^.]*$/) || // 没有扩展名的路径
-                           url.includes('?') || // 包含查询参数
-                           url.includes('#')) // 包含锚点
-  
   // 如果有视频扩展名或是流媒体格式，认为是直链
   if (hasVideoExtension || isStreamingFormat) {
     return true
   }
   
+  // 检查是否看起来像网页链接（但排除已经确认为视频的情况）
+  const looksLikeWebpage = url.includes('://') && 
+                          (url.includes('.html') || 
+                           url.includes('.php') || 
+                           url.includes('.asp') || 
+                           url.includes('.jsp') ||
+                           url.match(/\/[^.?#]*$/) // 没有扩展名且没有查询参数的路径
+                          ) &&
+                          !hasVideoExtension && 
+                          !isStreamingFormat
+  
   // 如果看起来像网页，认为不是直链
-  if (looksLikeWebpage && !hasVideoExtension && !isStreamingFormat) {
+  if (looksLikeWebpage) {
     return false
   }
   
@@ -301,9 +302,10 @@ const initArtPlayer = async (url) => {
       theme: '#23ade5',
       lang: 'zh-cn',
       whitelist: ['*'],
-      moreVideoAttr: {
-        crossOrigin: 'anonymous',
-      },
+      // 移除crossOrigin设置以避免CORS问题
+      // moreVideoAttr: {
+      //   crossOrigin: 'anonymous',
+      // },
       // 自定义视频类型处理
       type: isHLS ? 'm3u8' : '',
       // 自定义加载器
@@ -1140,7 +1142,7 @@ onUnmounted(() => {
 
 <style scoped>
 /* ArtPlayer 播放器样式 */
-.art-video-player-section {
+.video-player-section {
   margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;

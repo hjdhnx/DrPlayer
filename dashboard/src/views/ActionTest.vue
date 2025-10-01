@@ -10,10 +10,16 @@
           </h1>
           <p class="page-subtitle">测试各种Action组件的功能和交互效果</p>
         </div>
-        <a-button type="primary" status="success" @click="goToDebugTest" class="nav-button">
-          <icon-bug />
-          综合测试工具
-        </a-button>
+        <div class="nav-buttons">
+          <a-button type="primary" status="success" @click="goToDebugTest" class="nav-button">
+            <icon-bug />
+            综合测试工具
+          </a-button>
+          <a-button type="primary" status="warning" @click="goToVideoTest" class="nav-button">
+            <icon-play-arrow />
+            视频播放测试
+          </a-button>
+        </div>
       </div>
     </div>
 
@@ -249,7 +255,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { IconCode } from '@arco-design/web-vue/es/icon'
+import { IconCode, IconBug, IconPlayArrow } from '@arco-design/web-vue/es/icon'
 import { 
   ActionRenderer,
   Actions,
@@ -269,7 +275,9 @@ export default {
   name: 'ActionTest',
   components: {
     ActionRenderer,
-    IconCode
+    IconCode,
+    IconBug,
+    IconPlayArrow
   },
   setup() {
     const router = useRouter()
@@ -329,6 +337,11 @@ export default {
     // 跳转到综合测试工具
     const goToDebugTest = () => {
       router.push('/action-debug-test')
+    }
+
+    // 跳转到视频播放测试
+    const goToVideoTest = () => {
+      router.push('/video-test')
     }
 
     // 格式化时间
@@ -1286,6 +1299,7 @@ export default {
       handleDebugActionError,
       addResult,
       goToDebugTest,
+      goToVideoTest,
       formatTime,
       formatResult,
       testInputAction,
@@ -1381,6 +1395,13 @@ export default {
   font-weight: 600;
   color: var(--color-text-1);
   margin: 0 0 8px 0;
+}
+
+.nav-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
 }
 
 .nav-button {

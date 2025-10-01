@@ -924,7 +924,7 @@ const selectEpisode = async (index) => {
 
 
 
-const playVideo = () => {
+const playVideo = async () => {
   // 检查是否有历史记录
   const videoId = originalVideoInfo.value.id
   const apiUrl = currentSiteInfo.value.api
@@ -944,42 +944,28 @@ const playVideo = () => {
         currentRoute.value = routeIndex
         
         // 等待currentRouteEpisodes更新后查找选集
-        nextTick(() => {
-          const episodes = currentRouteEpisodes.value
-          const targetEpisode = episodes.find(ep => ep.name === historyItem.current_episode_name)
-          
-          if (targetEpisode) {
-            const episodeIndex = episodes.indexOf(targetEpisode)
-            currentEpisode.value = episodeIndex
-            
-            // 等待currentEpisodeUrl更新后播放
-            nextTick(() => {
-              if (currentEpisodeUrl.value) {
-                console.log('播放历史记录位置:', historyItem.current_episode_name)
-                Message.info(`继续播放: ${historyItem.current_episode_name}`)
-                
-                // 启动内置播放器
-                showVideoPlayer.value = true
-                
-                // 更新历史记录的播放时间
-                updateHistoryRecord()
-              }
-            })
-          } else {
-            console.warn('未找到历史选集，播放第一个选集')
-            playFirstEpisode()
-          }
-        })
+        await nextTick()
+        const episodes = currentRouteEpisodes.value
+        const targetEpisode = episodes.find(ep => ep.name === historyItem.current_episode_name)
+        
+        if (targetEpisode) {
+          const episodeIndex = episodes.indexOf(targetEpisode)
+          // 调用selectEpisode进行T4解析
+          await selectEpisode(episodeIndex)
+        } else {
+          console.warn('未找到历史选集，播放第一个选集')
+          await playFirstEpisode()
+        }
       } else {
         console.warn('未找到历史线路，播放第一个选集')
-        playFirstEpisode()
+        await playFirstEpisode()
       }
     } else {
       console.log('无历史记录，播放第一个选集')
-      playFirstEpisode()
+      await playFirstEpisode()
     }
   } else {
-    playFirstEpisode()
+    await playFirstEpisode()
   }
 }
 
@@ -1014,7 +1000,7 @@ const findFirstM3u8Episode = () => {
   return null
 }
 
-const playFirstEpisode = () => {
+const playFirstEpisode = async () => {
   // 首先尝试智能查找第一个m3u8选集
   const m3u8Episode = findFirstM3u8Episode()
   
@@ -1023,45 +1009,19 @@ const playFirstEpisode = () => {
     console.log(`智能播放m3u8选集: ${m3u8Episode.route} - ${m3u8Episode.episode}`)
     currentRoute.value = m3u8Episode.routeIndex
     
-    nextTick(() => {
-      currentEpisode.value = m3u8Episode.episodeIndex
-      
-      nextTick(() => {
-        if (currentEpisodeUrl.value) {
-          console.log('播放m3u8选集:', m3u8Episode.episode)
-          Message.info(`智能播放: ${m3u8Episode.episode}`)
-          
-          // 启动内置播放器
-          showVideoPlayer.value = true
-          
-          // 添加到历史记录
-          updateHistoryRecord()
-        }
-      })
-    })
+    await nextTick()
+    // 调用selectEpisode进行T4解析
+    await selectEpisode(m3u8Episode.episodeIndex)
   } else {
     // 未找到m3u8选集，播放第一个线路的第一个选集（默认行为）
     if (playRoutes.value.length > 0) {
       currentRoute.value = 0
       
-      nextTick(() => {
-        if (currentRouteEpisodes.value.length > 0) {
-          currentEpisode.value = 0
-          
-          nextTick(() => {
-            if (currentEpisodeUrl.value) {
-              console.log('播放默认选集:', currentRouteEpisodes.value[0].name)
-              Message.info(`开始播放: ${currentRouteEpisodes.value[0].name}`)
-              
-              // 启动内置播放器
-              showVideoPlayer.value = true
-              
-              // 添加到历史记录
-              updateHistoryRecord()
-            }
-          })
-        }
-      })
+      await nextTick()
+      if (currentRouteEpisodes.value.length > 0) {
+        // 调用selectEpisode进行T4解析
+        await selectEpisode(0)
+      }
     }
   }
 }
