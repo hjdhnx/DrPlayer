@@ -217,7 +217,31 @@
         <div class="parse-message">
           {{ parseDialogConfig.message }}
         </div>
-        <div class="parse-hint">
+        
+
+        
+        <!-- 嗅探结果显示 -->
+        <div v-if="sniffResults.length > 0" class="sniff-results">
+          <div class="results-title">嗅探到的视频链接：</div>
+          <div class="results-list">
+            <div 
+              v-for="(result, index) in sniffResults.slice(0, 3)" 
+              :key="index"
+              class="result-item"
+            >
+              <div class="result-index">{{ index + 1 }}</div>
+              <div class="result-info">
+                <div class="result-url">{{ result.url }}</div>
+                <div class="result-type" v-if="result.type">{{ result.type }}</div>
+              </div>
+            </div>
+            <div v-if="sniffResults.length > 3" class="more-results">
+              还有 {{ sniffResults.length - 3 }} 个链接...
+            </div>
+          </div>
+        </div>
+        
+        <div v-if="!sniffing" class="parse-hint">
           <div class="hint-icon">
             <icon-eye />
           </div>
@@ -229,7 +253,7 @@
       
       <template #footer>
         <div class="parse-dialog-footer">
-          <a-button type="primary" @click="showParseDialog = false">
+          <a-button type="primary" @click="showParseDialog = false" :disabled="sniffing">
             我知道了
           </a-button>
         </div>
@@ -243,6 +267,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
 import videoService from '@/api/services/video'
+import { sniffVideoWithConfig, isSnifferEnabled } from '@/api/services/sniffer'
 import { useSiteStore } from '@/stores/siteStore'
 import { useFavoriteStore } from '@/stores/favoriteStore'
 import { useHistoryStore } from '@/stores/historyStore'
@@ -320,6 +345,10 @@ const parseDialogConfig = ref({
   message: '',
   type: '' // 'sniff' 或 'parse'
 })
+
+// 嗅探相关
+const sniffing = ref(false)
+const sniffResults = ref([])
 
 // 从localStorage读取用户的播放器偏好，默认为'default'
 const getPlayerPreference = () => {
@@ -1005,18 +1034,29 @@ const selectEpisode = async (index) => {
      } else if (parseResult.playType === 'sniff') {
        // parse:1 - 需要嗅探
        console.log('需要嗅探播放:', parseResult)
-       // 清空解析URL和小说内容，不启动播放器
-       parsedVideoUrl.value = ''
-       parsedNovelContent.value = null
-       showBookReader.value = false
        
-       // 显示嗅探提示弹窗
-       parseDialogConfig.value = {
-         title: '播放提示',
-         message: '该视频需要嗅探才能播放，当前版本暂不支持此功能。',
-         type: 'sniff'
+       // 检查嗅探功能是否启用
+       if (!isSnifferEnabled()) {
+         // 清空解析URL和小说内容，不启动播放器
+         parsedVideoUrl.value = ''
+         parsedNovelContent.value = null
+         showBookReader.value = false
+         
+         // 显示嗅探配置提示弹窗
+         parseDialogConfig.value = {
+           title: '嗅探功能未启用',
+           message: '该视频需要嗅探才能播放，请先在设置中配置嗅探器接口。',
+           type: 'sniff'
+         }
+         showParseDialog.value = true
+       } else {
+         // 执行嗅探，传递原始的T4数据（parseResult.data）
+         const sniffSuccess = await sniffVideoUrl(parseResult.data)
+         if (!sniffSuccess) {
+           // 嗅探失败，已在sniffVideoUrl函数中通过Message.error显示错误信息
+           // 不需要额外的弹窗处理
+         }
        }
-       showParseDialog.value = true
      } else if (parseResult.playType === 'parse') {
        // jx:1 - 需要解析
        console.log('需要解析播放:', parseResult)
@@ -1094,7 +1134,104 @@ const selectEpisode = async (index) => {
   }
 }
 
+// 嗅探视频链接
+const sniffVideoUrl = async (parseDataOrUrl) => {
+  let loadingMessage = null
+  
+  try {
+    // 检查嗅探功能是否启用
+    if (!isSnifferEnabled()) {
+      throw new Error('嗅探功能未启用，请在设置中配置嗅探器')
+    }
 
+    sniffing.value = true
+    sniffResults.value = []
+    
+    // 使用全局消息提示，设置duration为0让消息持续显示直到手动关闭
+    loadingMessage = Message.info({
+      content: '正在全力嗅探中，请稍等...',
+      duration: 0
+    })
+
+    console.log('开始嗅探视频链接:', parseDataOrUrl)
+    
+    // 检查是否是T4解析数据格式
+    let sniffData
+    if (typeof parseDataOrUrl === 'object' && parseDataOrUrl.parse === 1) {
+      // T4解析数据格式，直接使用
+      sniffData = parseDataOrUrl
+      console.log('使用T4解析数据进行嗅探:', sniffData)
+    } else {
+      // 普通URL格式
+      sniffData = typeof parseDataOrUrl === 'string' ? parseDataOrUrl : parseDataOrUrl.toString()
+      console.log('使用普通URL进行嗅探:', sniffData)
+    }
+
+    // 调用嗅探服务
+    const result = await sniffVideoWithConfig(sniffData, {
+      mode: '0', // 单个链接模式
+      is_pc: '0' // 移动设备模式
+    })
+
+    console.log('嗅探结果:', result)
+
+    if (result.success && result.data) {
+      // 处理不同的返回格式
+      let videoData
+      let videoCount
+      
+      if (Array.isArray(result.data)) {
+        // 多个链接模式：返回数组
+        if (result.data.length === 0) {
+          throw new Error('嗅探失败，未找到有效的视频链接')
+        }
+        videoData = result.data
+        videoCount = result.data.length
+        sniffResults.value = result.data
+      } else if (result.data.url) {
+        // 单个链接模式：返回单个对象
+        videoData = [result.data] // 转换为数组格式以保持一致性
+        videoCount = 1
+        sniffResults.value = videoData
+      } else {
+        throw new Error('嗅探结果格式无效')
+      }
+      
+      // 关闭loading消息
+      loadingMessage.close()
+      
+      // 自动选择第一个链接进行播放
+      const firstVideo = videoData[0]
+      if (firstVideo && firstVideo.url) {
+        console.log('使用嗅探到的第一个链接:', firstVideo.url)
+        parsedVideoUrl.value = firstVideo.url
+        parsedNovelContent.value = null
+        parsedComicContent.value = null
+        showBookReader.value = false
+        showComicReader.value = false
+        showVideoPlayer.value = true
+        
+        Message.success(`嗅探成功，开始播放: ${currentEpisodeName.value}`)
+        return true
+      } else {
+        throw new Error('嗅探到的链接无效')
+      }
+    } else {
+      throw new Error(result.message || '嗅探失败，未找到有效的视频链接')
+    }
+
+  } catch (error) {
+    console.error('嗅探失败:', error)
+    // 关闭loading消息（如果存在）
+    if (loadingMessage) {
+      loadingMessage.close()
+    }
+    Message.error(`嗅探失败: ${error.message}`)
+    return false
+  } finally {
+    sniffing.value = false
+  }
+}
 
 const playVideo = async () => {
   // 检查是否有历史记录
@@ -2039,5 +2176,99 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   padding-top: 16px;
+}
+
+/* 嗅探进度样式 */
+.sniff-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-bg-2);
+  border-radius: 8px;
+  margin: 16px 0;
+  border-left: 4px solid var(--color-warning);
+}
+
+.progress-icon {
+  color: var(--color-warning);
+}
+
+.progress-text {
+  color: var(--color-text-1);
+  font-size: 14px;
+}
+
+/* 嗅探结果样式 */
+.sniff-results {
+  margin: 16px 0;
+  text-align: left;
+}
+
+.results-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-1);
+  margin-bottom: 12px;
+}
+
+.results-list {
+  background: var(--color-bg-2);
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 4px solid var(--color-success);
+}
+
+.result-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
+}
+
+.result-index {
+  background: var(--color-success);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-url {
+  font-size: 12px;
+  color: var(--color-text-2);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.result-type {
+  font-size: 11px;
+  color: var(--color-text-3);
+  margin-top: 2px;
+}
+
+.more-results {
+  font-size: 12px;
+  color: var(--color-text-3);
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-2);
 }
 </style>

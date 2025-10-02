@@ -304,6 +304,17 @@
                     @select="(value) => addressSettings.proxySniff = value"
                   />
                   <a-button 
+                    type="outline" 
+                    @click="resetProxySniff"
+                    :loading="addressSaving.proxySniffReset"
+                    size="medium"
+                  >
+                    <template #icon>
+                      <icon-refresh />
+                    </template>
+                    重置
+                  </a-button>
+                  <a-button 
                     type="primary" 
                     @click="saveAddress('proxySniff')"
                     :loading="addressSaving.proxySniff"
@@ -331,6 +342,64 @@
                 <icon-exclamation-circle v-else-if="addressStatus.proxySniff.type === 'error'" class="config-icon" />
                 <icon-info-circle v-else class="config-icon" />
                 <span class="config-text">{{ addressStatus.proxySniff.message }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 嗅探超时设置 -->
+          <div class="address-config-item">
+            <div class="address-config-row">
+              <div class="address-config-info">
+                <icon-clock-circle class="address-config-icon" />
+                <div class="address-config-text">
+                  <div class="address-config-title">嗅探超时时间</div>
+                  <div class="address-config-desc">设置代理嗅探接口的超时时间（秒）</div>
+                </div>
+              </div>
+              <div class="address-config-input-group">
+                <a-input-number 
+                  v-model="addressSettings.snifferTimeout" 
+                  placeholder="15"
+                  size="medium"
+                  class="address-config-input"
+                  :min="5"
+                  :max="60"
+                  :step="1"
+                  :disabled="!addressSettings.proxySniffEnabled"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">秒</span>
+                  </template>
+                </a-input-number>
+                <div class="address-config-actions">
+                  <a-button 
+                    type="primary" 
+                    @click="saveAddress('snifferTimeout')"
+                    :loading="addressSaving.snifferTimeout"
+                    :disabled="!addressSettings.proxySniffEnabled"
+                    size="medium"
+                  >
+                    <template #icon>
+                      <icon-save />
+                    </template>
+                    保存
+                  </a-button>
+                </div>
+              </div>
+            </div>
+            <div v-if="addressStatus.snifferTimeout && addressStatus.snifferTimeout.message" class="address-config-status">
+              <div 
+                class="config-message"
+                :class="{
+                  'config-message-success': addressStatus.snifferTimeout.type === 'success',
+                  'config-message-error': addressStatus.snifferTimeout.type === 'error',
+                  'config-message-warning': addressStatus.snifferTimeout.type === 'warning'
+                }"
+              >
+                <icon-check-circle v-if="addressStatus.snifferTimeout.type === 'success'" class="config-icon" />
+                <icon-exclamation-circle v-else-if="addressStatus.snifferTimeout.type === 'error'" class="config-icon" />
+                <icon-info-circle v-else class="config-icon" />
+                <span class="config-text">{{ addressStatus.snifferTimeout.message }}</span>
               </div>
             </div>
           </div>
@@ -739,6 +808,7 @@ import {
   IconPalette,
   IconLanguage,
   IconImage,
+  IconClockCircle,
   IconComputer,
   IconCode
 } from '@arco-design/web-vue/es/icon'
@@ -760,8 +830,9 @@ const addressSettings = reactive({
   proxyAccessEnabled: false,
   proxyPlay: '',
   proxyPlayEnabled: false,
-  proxySniff: '',
-  proxySniffEnabled: false
+  proxySniff: 'http://localhost:57573/sniffer',
+  proxySniffEnabled: false,
+  snifferTimeout: 10
 })
 
 const addressSaving = reactive({
@@ -770,7 +841,9 @@ const addressSaving = reactive({
   liveConfigReset: false,
   proxyAccess: false,
   proxyPlay: false,
-  proxySniff: false
+  proxySniff: false,
+  proxySniffReset: false,
+  snifferTimeout: false
 })
 
 const addressTesting = reactive({
@@ -782,7 +855,8 @@ const addressStatus = reactive({
   liveConfig: null,
   proxyAccess: null,
   proxyPlay: null,
-  proxySniff: null
+  proxySniff: null,
+  snifferTimeout: null
 })
 
 // 播放器类型选项
@@ -814,8 +888,20 @@ const playerSelectVisible = ref(false)
 const saveAddress = async (configType) => {
   const addressValue = addressSettings[configType]
   
-  if (!addressValue || !addressValue.trim()) {
-    Message.warning('请输入地址')
+  // 对于字符串类型，检查是否为空或只包含空白字符
+  // 对于数字类型，检查是否为有效数字
+  if (typeof addressValue === 'string') {
+    if (!addressValue || !addressValue.trim()) {
+      Message.warning('请输入地址')
+      return
+    }
+  } else if (typeof addressValue === 'number') {
+    if (isNaN(addressValue) || addressValue <= 0) {
+      Message.warning('请输入有效的数值')
+      return
+    }
+  } else {
+    Message.warning('请输入有效的配置值')
     return
   }
   
@@ -992,6 +1078,76 @@ const resetLiveConfig = async () => {
   }
 }
 
+// 重置代理嗅探接口
+const resetProxySniff = async () => {
+  addressSaving.proxySniffReset = true
+  try {
+    // 重置为默认值
+    addressSettings.proxySniff = 'http://localhost:57573/sniffer'
+    addressSettings.proxySniffEnabled = false
+    
+    // 保存到本地存储
+    const savedAddresses = JSON.parse(localStorage.getItem('addressSettings') || '{}')
+    savedAddresses.proxySniff = addressSettings.proxySniff
+    savedAddresses.proxySniffEnabled = addressSettings.proxySniffEnabled
+    localStorage.setItem('addressSettings', JSON.stringify(savedAddresses))
+    
+    addressStatus.proxySniff = {
+      type: 'success',
+      message: '代理嗅探接口已重置为默认地址'
+    }
+    Message.success('代理嗅探接口重置成功')
+  } catch (error) {
+    console.error('重置代理嗅探接口失败:', error)
+    addressStatus.proxySniff = {
+      type: 'error',
+      message: '重置失败：' + (error.message || '未知错误')
+    }
+    Message.error('重置失败：' + (error.message || '未知错误'))
+  } finally {
+    addressSaving.proxySniffReset = false
+    // 8秒后清除状态消息
+    setTimeout(() => {
+      addressStatus.proxySniff = null
+    }, 8000)
+  }
+}
+
+// 保存嗅探超时设置
+const saveSnifferTimeout = async () => {
+  if (!addressSettings.snifferTimeout || addressSettings.snifferTimeout < 5 || addressSettings.snifferTimeout > 60) {
+    Message.warning('请输入有效的超时时间（5-60秒）')
+    return
+  }
+  
+  addressSaving.snifferTimeout = true
+  try {
+    // 保存到本地存储
+    const savedAddresses = JSON.parse(localStorage.getItem('addressSettings') || '{}')
+    savedAddresses.snifferTimeout = addressSettings.snifferTimeout
+    localStorage.setItem('addressSettings', JSON.stringify(savedAddresses))
+    
+    Message.success('嗅探超时设置保存成功')
+    addressStatus.snifferTimeout = {
+      type: 'success',
+      message: '设置保存成功'
+    }
+  } catch (error) {
+    console.error('保存嗅探超时设置失败:', error)
+    addressStatus.snifferTimeout = {
+      type: 'error',
+      message: '保存失败：' + (error.message || '未知错误')
+    }
+    Message.error('保存失败：' + (error.message || '未知错误'))
+  } finally {
+    addressSaving.snifferTimeout = false
+    // 3秒后清除状态消息
+    setTimeout(() => {
+      addressStatus.snifferTimeout = null
+    }, 3000)
+  }
+}
+
 // 获取配置键名
 const getConfigKey = (configType) => {
   const keyMap = {
@@ -1064,6 +1220,51 @@ const handlePlayerSelect = (playerType) => {
   Message.success(`已切换到 ${getCurrentPlayerName()}`)
 }
 
+// 重置所有设置到默认状态
+const resetAllSettings = () => {
+  // 重置地址设置
+  Object.assign(addressSettings, {
+    vodConfig: '',
+    liveConfig: '',
+    proxyAccess: '',
+    proxyAccessEnabled: false,
+    proxyPlay: '',
+    proxyPlayEnabled: false,
+    proxySniff: 'http://localhost:57573/sniffer',
+    proxySniffEnabled: false
+  })
+  
+  // 重置其他设置
+  Object.assign(settings, {
+    datasourceDisplay: true,
+    windowPreview: true,
+    playerType: 'ijk',
+    adFilter: true,
+    ijkCache: false,
+    autoLive: false,
+    secureDns: false,
+    cspBypass: true,
+    referrerPolicy: 'no-referrer'
+  })
+  
+  // 清除本地存储
+  localStorage.removeItem('addressSettings')
+  localStorage.removeItem('appSettings')
+  
+  // 重置CSP配置
+  try {
+    saveCSPConfig({
+      enabled: true,
+      referrerPolicy: 'no-referrer'
+    })
+    setGlobalReferrerPolicy('no-referrer')
+  } catch (error) {
+    console.error('Failed to reset CSP config:', error)
+  }
+  
+  Message.success('所有设置已重置为默认状态')
+}
+
 // 处理设置项点击
 const handleSettingClick = (settingKey) => {
   console.log('Setting clicked:', settingKey)
@@ -1093,6 +1294,9 @@ const handleSettingClick = (settingKey) => {
     case 'referrer-policy':
       handleReferrerPolicySelect()
       break
+    case 'reset':
+      resetAllSettings()
+      break
     default:
       Message.info(`点击了设置项：${settingKey}`)
       break
@@ -1108,6 +1312,14 @@ const loadConfig = async () => {
       try {
         const parsed = JSON.parse(savedAddresses)
         Object.assign(addressSettings, parsed)
+        // 确保代理嗅探接口有默认值
+        if (!addressSettings.proxySniff) {
+          addressSettings.proxySniff = 'http://localhost:57573/sniffer'
+        }
+        // 确保嗅探超时有默认值
+        if (!addressSettings.snifferTimeout) {
+          addressSettings.snifferTimeout = 10
+        }
       } catch (error) {
         console.error('Failed to load address settings:', error)
       }
