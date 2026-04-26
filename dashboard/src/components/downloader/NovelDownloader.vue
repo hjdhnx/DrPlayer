@@ -375,6 +375,9 @@ onUnmounted(() => {
 
 .download-list {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 16px 24px;
@@ -402,10 +405,11 @@ onUnmounted(() => {
 }
 
 .empty-state {
+  flex: 1;
+  min-height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 300px;
 }
 
 @media (min-width: 769px) {
@@ -499,7 +503,7 @@ onUnmounted(() => {
   }
 
   .empty-state {
-    height: 220px;
+    min-height: 0;
     border: 1px solid var(--dp-border-subtle);
     border-radius: var(--dp-radius-lg);
     background: var(--dp-bg-surface-muted);
