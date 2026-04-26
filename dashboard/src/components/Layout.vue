@@ -158,7 +158,7 @@
             type="button"
             @click="toggleMobileMore"
           >
-            <span class="mobile-nav-more-icon">•••</span>
+            <svg class="mobile-nav-icon"><use href="#icon-shezhi"></use></svg>
             <span>我的</span>
           </button>
         </nav>
@@ -556,7 +556,7 @@ export default defineComponent({
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) minmax(76px, auto) 40px;
+  grid-template-columns: 40px minmax(0, 1fr) minmax(84px, auto) 40px;
   align-items: center;
   gap: 6px;
   padding: env(safe-area-inset-top) 10px 0;
@@ -564,7 +564,7 @@ export default defineComponent({
 }
 
 .mobile-top-bar.home-theme-visible {
-  grid-template-columns: 40px minmax(0, 1fr) 36px minmax(76px, auto) 40px;
+  grid-template-columns: 40px minmax(0, 1fr) 36px minmax(84px, auto) 40px;
 }
 
 .mobile-brand,
@@ -583,17 +583,19 @@ export default defineComponent({
 }
 
 .mobile-search-pill {
-  min-width: 76px;
+  width: 84px;
+  min-width: 84px;
   height: 36px;
   border: 1px solid var(--dp-border-subtle);
   border-radius: 999px;
   background: var(--dp-bg-surface-muted);
   color: var(--dp-text-secondary);
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 18px 1fr 18px;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 0 12px;
+  justify-items: center;
+  gap: 0;
+  padding: 0 10px;
   font-size: 13px;
   font-weight: 800;
   font-family: inherit;
@@ -645,6 +647,11 @@ export default defineComponent({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.mobile-search-pill span {
+  grid-column: 2;
+  text-align: center;
 }
 
 .mobile-action-icon {

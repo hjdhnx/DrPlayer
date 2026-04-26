@@ -150,6 +150,13 @@
             @end="handleDragEnd"
             item-key="id"
             class="drag-container"
+            handle=".parser-drag-handle"
+            :delay="180"
+            :delay-on-touch-only="true"
+            :touch-start-threshold="8"
+            :fallback-tolerance="8"
+            ghost-class="parser-drag-ghost"
+            chosen-class="parser-drag-chosen"
           >
             <template #item="{ element: parser }">
               <div class="parser-item" :class="{ disabled: !parser.enabled }">
@@ -927,6 +934,15 @@ onMounted(async () => {
   border-bottom: 1px solid var(--dp-border-subtle);
   transition: background 0.2s ease;
   background: var(--dp-bg-surface);
+  touch-action: pan-y;
+}
+
+.parser-drag-ghost {
+  opacity: 0.7;
+}
+
+.parser-drag-chosen {
+  background: var(--dp-bg-surface-muted);
 }
 
 .parser-item:last-child {
@@ -950,6 +966,9 @@ onMounted(async () => {
   margin-right: 12px;
   cursor: grab;
   color: var(--dp-text-tertiary);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .parser-drag-handle:active {
