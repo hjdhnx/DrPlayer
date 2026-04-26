@@ -20,6 +20,7 @@ const loadFromStorage = () => {
     return {
         // Video页面状态
         video: {
+            siteKey: '',
             activeKey: '',
             currentPage: 1,
             videos: [],
@@ -111,8 +112,9 @@ export const usePageStateStore = defineStore('pageState', {
         },
         
         // 保存Video页面特定状态
-        saveVideoState(activeKey, currentPage, videos, hasMore, loading, scrollPosition = 0) {
+        saveVideoState(siteKey, activeKey, currentPage, videos, hasMore, loading, scrollPosition = 0) {
             this.savePageState('video', {
+                siteKey,
                 activeKey,
                 currentPage,
                 videos: [...videos], // 深拷贝数组

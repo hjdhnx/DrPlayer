@@ -13,6 +13,7 @@ export const ActionType = {
   SELECT: 'select',
   MSGBOX: 'msgbox',
   WEBVIEW: 'webview',
+  BROWSER: 'browser',
   HELP: 'help',
   // 专项动作类型（通常不包含type字段，通过其他字段识别）
   SPECIAL: 'special'
@@ -193,6 +194,21 @@ export const createWebViewActionConfig = (config) => ({
   url: '',
   height: 400,
   textZoom: 100
+})
+
+/**
+ * Browser Action配置
+ */
+export const createBrowserActionConfig = (config) => ({
+  ...createActionConfig(config),
+  type: ActionType.BROWSER,
+  title: '',
+  url: '',
+  width: 980,
+  height: 680,
+  keep: false,
+  header: {},
+  ...config
 })
 
 /**

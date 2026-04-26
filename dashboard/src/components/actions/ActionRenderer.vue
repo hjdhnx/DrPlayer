@@ -75,6 +75,7 @@ const MenuAction = defineAsyncComponent(() => import('./MenuAction.vue'))
 
 const MsgBoxAction = defineAsyncComponent(() => import('./MsgBoxAction.vue'))
 const WebViewAction = defineAsyncComponent(() => import('./WebViewAction.vue'))
+const BrowserAction = defineAsyncComponent(() => import('./BrowserAction.vue'))
 const HelpAction = defineAsyncComponent(() => import('./HelpAction.vue'))
 
 export default {
@@ -86,6 +87,7 @@ export default {
     MenuAction,
     MsgBoxAction,
     WebViewAction,
+    BrowserAction,
     HelpAction
   },
   props: {
@@ -137,6 +139,7 @@ export default {
       [ActionType.SELECT]: 'MenuAction', // 多选菜单，使用MenuAction组件
       [ActionType.MSGBOX]: 'MsgBoxAction',
       [ActionType.WEBVIEW]: 'WebViewAction',
+      [ActionType.BROWSER]: 'BrowserAction',
       [ActionType.HELP]: 'HelpAction'
     }
 

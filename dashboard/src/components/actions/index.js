@@ -9,6 +9,7 @@ import MenuAction from './MenuAction.vue'
 
 import MsgBoxAction from './MsgBoxAction.vue'
 import WebViewAction from './WebViewAction.vue'
+import BrowserAction from './BrowserAction.vue'
 import HelpAction from './HelpAction.vue'
 
 // 导入类型定义和工具函数
@@ -41,6 +42,7 @@ const components = {
   MenuAction,
   MsgBoxAction,
   WebViewAction,
+  BrowserAction,
   HelpAction
 }
 
@@ -80,6 +82,7 @@ export {
   MenuAction,
   MsgBoxAction,
   WebViewAction,
+  BrowserAction,
   HelpAction
 }
 
@@ -124,7 +127,10 @@ export const Actions = {
   
   // 显示网页视图
   webView: (config) => showAction({ ...config, type: types.ActionType.WEBVIEW }),
-  
+
+  // 显示内置浏览器
+  browser: (config) => showAction({ ...config, type: types.ActionType.BROWSER }),
+
   // 显示帮助
   help: (config) => showAction({ ...config, type: types.ActionType.HELP }),
   
@@ -216,4 +222,5 @@ export const createMenuActionConfig = types.createMenuActionConfig
 
 export const createMsgBoxActionConfig = types.createMsgBoxActionConfig
 export const createWebViewActionConfig = types.createWebViewActionConfig
+export const createBrowserActionConfig = types.createBrowserActionConfig
 export const createHelpActionConfig = types.createHelpActionConfig

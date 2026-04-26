@@ -22,7 +22,9 @@
        >
         <a-tab-pane v-if="hasRecommendVideos" key="recommendTuijian404">
           <template #title>
-            <span>推荐</span>
+            <div class="category-tab-title category-recommend-title">
+              <span class="category-name">推荐</span>
+            </div>
           </template>
         </a-tab-pane>
         <a-tab-pane 
@@ -497,6 +499,8 @@ onBeforeUnmount(() => {
 
   .category-tab-title {
     min-height: 30px;
+    min-width: 56px;
+    justify-content: center;
     padding: 0 11px;
   }
 

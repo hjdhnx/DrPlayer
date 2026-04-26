@@ -12,7 +12,13 @@
           <div
             v-if="visible && !isClosing"
             class="action-dialog glass-effect card-modern animate-bounce-in"
-            :class="[customClass, { 'action-dialog-mobile': isMobile }]"
+            :class="[
+              customClass,
+              {
+                'action-dialog-mobile': isMobile,
+                'action-dialog-resizable': resizable && !isMobile
+              }
+            ]"
             :style="dialogStyle"
             @click.stop
           >
@@ -105,6 +111,10 @@ export default {
     escapeToClose: {
       type: Boolean,
       default: true
+    },
+    resizable: {
+      type: Boolean,
+      default: false
     },
     // 自定义类名
     customClass: {
@@ -294,6 +304,15 @@ export default {
   max-width: 90vw;
   display: flex;
   flex-direction: column;
+}
+
+.action-dialog-resizable {
+  resize: both;
+  overflow: hidden;
+  min-width: min(560px, 90vw);
+  min-height: min(420px, calc(100vh - 2rem));
+  max-width: 96vw;
+  max-height: calc(100vh - 2rem);
 }
 
 /* 装饰性背景 */

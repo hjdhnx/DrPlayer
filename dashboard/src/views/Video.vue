@@ -177,6 +177,8 @@ const form = reactive({
   videoList: {},
 });
 
+const currentSiteKey = () => form.now_site?.key || nowSite?.key || '';
+
 // 搜索相关状态
 const searchState = reactive({
   isSearching: false,
@@ -333,6 +335,7 @@ const handleConfirmClear = () => {
 
 const handleConfirmChange = (site) => {
   form.now_site = site;
+  pageStateStore.clearPageState('video');
   // 使用 siteStore 统一管理站点切换
   setCurrentSite(site);
   form.now_site_title = site.name;
@@ -578,6 +581,7 @@ const handleVideoClick = (video) => {
       // 保存分类状态
       if (currentActiveKey.value) {
         pageStateStore.saveVideoState(
+          currentSiteKey(),
           currentActiveKey.value,
           1, // 当前页码
           [], // 视频列表
@@ -1074,9 +1078,14 @@ onMounted(async () => {
       }
     }
     
-    // 只有在没有folder状态需要恢复时，才设置shouldRestoreState
+    // 只有在没有folder状态需要恢复且保存状态属于当前数据源时，才恢复列表数据
     if (!hasFolderStateToRestore) {
-      shouldRestoreState = true;
+      const canRestoreSavedState = savedState?.siteKey && savedState.siteKey === currentSiteKey();
+      if (canRestoreSavedState) {
+        shouldRestoreState = true;
+      } else {
+        pageStateStore.clearPageState('video');
+      }
     }
     
     // 清除URL中的返回参数
@@ -1085,9 +1094,14 @@ onMounted(async () => {
     delete newQuery.folderState; // 同时清除folder状态参数
     router.replace({ query: newQuery });
   } else if (savedState && savedState.activeKey && !isStateExpired) {
-    // 如果有保存的状态且未过期，恢复状态
-    currentActiveKey.value = savedState.activeKey;
-    shouldRestoreState = true;
+    // 如果有保存的状态且未过期，只恢复同一数据源的状态
+    const canRestoreSavedState = savedState.siteKey && savedState.siteKey === currentSiteKey();
+    if (canRestoreSavedState) {
+      currentActiveKey.value = savedState.activeKey;
+      shouldRestoreState = true;
+    } else {
+      pageStateStore.clearPageState('video');
+    }
   }
   
   // 确保分类列表已加载
@@ -1125,6 +1139,7 @@ onBeforeUnmount(() => {
   if (currentActiveKey.value && videoListRef.value) {
     const currentState = videoListRef.value.getCurrentState();
     pageStateStore.saveVideoState(
+      currentSiteKey(),
       currentActiveKey.value,
       currentState.currentPage, // 从VideoList组件获取当前页码
       currentState.videos, // 从VideoList组件获取视频列表
