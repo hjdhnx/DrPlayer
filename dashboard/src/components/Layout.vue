@@ -9,7 +9,7 @@
   >
     <div class="fixed-header">
       <Header v-if="!isMobile" />
-      <div v-else class="mobile-top-bar">
+      <div v-else class="mobile-top-bar" :class="{ 'home-theme-visible': showHomeThemeToggle }">
         <button v-if="showMobileBack" class="mobile-icon-btn" type="button" title="返回" @click="goBack">
           <span class="mobile-back-icon">‹</span>
         </button>
@@ -22,6 +22,9 @@
           <div v-if="mobileSubtitle" class="mobile-subtitle">{{ mobileSubtitle }}</div>
         </div>
 
+        <button v-if="showHomeThemeToggle" class="mobile-icon-btn mobile-theme-toggle" type="button" :title="themeToggleTitle" @click="toggleTheme">
+          <span class="mobile-theme-text">{{ resolvedTheme === THEME_MODE.DARK ? '浅' : '深' }}</span>
+        </button>
         <button class="mobile-search-pill" type="button" title="搜索" @click="goSearch">
           <svg class="mobile-action-icon"><use href="#icon-sousuo"></use></svg>
           <span>搜索</span>
@@ -183,6 +186,7 @@ import { desktopMenuItems, mobilePrimaryItems, mobileMoreGroups } from '@/config
 import logoPc from '@/assets/logo-pc.png';
 import logoMobile from '@/assets/logo-mobile.png';
 import '@/assets/icon_font/iconfont.js';
+import { getStoredThemeMode, resolveThemeMode, setStoredThemeMode, THEME_MODE } from '@/utils/theme';
 
 export default defineComponent({
   components: {
@@ -202,6 +206,7 @@ export default defineComponent({
     const isImmersivePage = computed(() => Boolean(route.meta?.immersive));
     const showMobileBottomNav = computed(() => route.meta?.showBottomNav !== false && !isImmersivePage.value);
     const showMobileBack = computed(() => isImmersivePage.value || route.name === 'SearchAggregation');
+    const showHomeThemeToggle = computed(() => route.name === 'Home');
     const mobileTitle = computed(() => route.meta?.title || 'DrPlayer');
     const mobileSubtitle = computed(() => {
       if (route.name === 'Home') return '影视、直播、阅读与工具';
@@ -214,6 +219,13 @@ export default defineComponent({
     const siderCollapsed = ref(JSON.parse(localStorage.getItem('sidebar-collapsed') || 'false'));
     const mobileMoreOpen = ref(false);
     const isMobile = ref(false);
+    const resolvedTheme = ref(resolveThemeMode(getStoredThemeMode()));
+
+    const themeToggleTitle = computed(() => resolvedTheme.value === THEME_MODE.DARK ? '切换到浅色模式' : '切换到深色模式');
+
+    const updateThemeState = (event) => {
+      resolvedTheme.value = event?.detail?.resolvedTheme || resolveThemeMode(getStoredThemeMode());
+    };
 
     const menuItems = ref(desktopMenuItems);
     const logoSrc = computed(() => isMobile.value ? logoMobile : logoPc);
@@ -240,6 +252,11 @@ export default defineComponent({
 
     const toggleMobileMore = () => {
       mobileMoreOpen.value = !mobileMoreOpen.value;
+    };
+
+    const toggleTheme = () => {
+      const nextMode = resolvedTheme.value === THEME_MODE.DARK ? THEME_MODE.LIGHT : THEME_MODE.DARK;
+      resolvedTheme.value = setStoredThemeMode(nextMode);
     };
 
     const isRouteActive = (routeName) => route.name === routeName;
@@ -284,11 +301,14 @@ export default defineComponent({
 
     onMounted(() => {
       updateIsMobile();
+      updateThemeState();
       window.addEventListener('resize', updateIsMobile);
+      window.addEventListener('themeChanged', updateThemeState);
     });
 
     onBeforeUnmount(() => {
       window.removeEventListener('resize', updateIsMobile);
+      window.removeEventListener('themeChanged', updateThemeState);
     });
 
     return {
@@ -299,6 +319,7 @@ export default defineComponent({
       isImmersivePage,
       showMobileBottomNav,
       showMobileBack,
+      showHomeThemeToggle,
       mobileTitle,
       mobileSubtitle,
       menuItems,
@@ -308,6 +329,10 @@ export default defineComponent({
       isMoreRouteActive,
       logoSrc,
       logoDesc,
+      resolvedTheme,
+      themeToggleTitle,
+      THEME_MODE,
+      toggleTheme,
       onClickMenuItem,
       onSiderCollapse,
       closeMobileMore,
@@ -538,6 +563,10 @@ export default defineComponent({
   background: var(--dp-bg-shell);
 }
 
+.mobile-top-bar.home-theme-visible {
+  grid-template-columns: 40px minmax(0, 1fr) 36px minmax(76px, auto) 40px;
+}
+
 .mobile-brand,
 .mobile-icon-btn {
   width: 36px;
@@ -569,6 +598,17 @@ export default defineComponent({
   font-weight: 800;
   font-family: inherit;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.mobile-theme-toggle {
+  border: 1px solid var(--dp-border-subtle);
+  color: var(--dp-primary-readable);
+  font-weight: 800;
+}
+
+.mobile-theme-text {
+  font-size: 13px;
+  line-height: 1;
 }
 
 .mobile-brand-logo {

@@ -706,17 +706,24 @@
             </div>
           </div>
 
-          <div class="setting-item" @click="handleSettingClick('theme')">
+          <div class="setting-item theme-setting-item">
             <div class="setting-info">
               <icon-palette class="setting-icon"/>
               <div class="setting-text">
                 <div class="setting-title">主题</div>
-                <div class="setting-desc">选择应用主题</div>
+                <div class="setting-desc">选择应用浅色或深色模式</div>
               </div>
             </div>
-            <div class="setting-value">
-              <span class="value-text">奈飞</span>
-              <icon-right class="arrow-icon"/>
+            <div class="setting-value theme-setting-value" @click.stop>
+              <a-radio-group v-model="settings.themeMode" type="button" size="small" class="theme-mode-group">
+                <a-radio
+                  v-for="option in themeOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </a-radio>
+              </a-radio-group>
             </div>
           </div>
 
@@ -1009,6 +1016,7 @@ import ScrollToBottom from '@/components/ScrollToBottom.vue'
 import configService from '@/api/services/config'
 import siteService from '@/api/services/site'
 import {factoryResetWithConfirmation} from '@/services/resetService'
+import { applyTheme, normalizeThemeMode, themeOptions } from '@/utils/theme'
 import {
   getCSPConfig,
   saveCSPConfig,
@@ -1089,7 +1097,8 @@ const settings = reactive({
   secureDns: false,
   cspBypass: true, // CSP绕过开关
   referrerPolicy: 'no-referrer', // 默认referrer策略
-  searchAggregation: false // 聚搜功能开关，默认关闭
+  searchAggregation: false, // 聚搜功能开关，默认关闭
+  themeMode: 'light' // 应用主题模式
 })
 
 // 开发者调试设置
@@ -1650,10 +1659,15 @@ const loadConfig = async () => {
       if (!settings.playerType) {
         settings.playerType = 'ijk'
       }
+      settings.themeMode = normalizeThemeMode(settings.themeMode)
     } catch (error) {
       console.error('Failed to load settings:', error)
     }
+  } else {
+    settings.themeMode = normalizeThemeMode(settings.themeMode)
   }
+
+  applyTheme(settings.themeMode)
 
   // 加载CSP设置
   try {
@@ -1682,6 +1696,16 @@ const saveSettings = () => {
     console.error('Failed to save CSP config:', error)
   }
 }
+
+// 监听主题变化并立即应用
+watch(() => settings.themeMode, (mode) => {
+  const normalizedMode = normalizeThemeMode(mode)
+  if (normalizedMode !== mode) {
+    settings.themeMode = normalizedMode
+    return
+  }
+  applyTheme(normalizedMode)
+})
 
 // 监听设置项变化并自动保存
 watch(settings, saveSettings, {deep: true})
@@ -2454,6 +2478,33 @@ onMounted(async () => {
   gap: 8px;
 }
 
+.theme-setting-value {
+  max-width: none;
+  overflow: visible;
+}
+
+.theme-mode-group {
+  max-width: 100%;
+  border-color: var(--dp-border) !important;
+  background: var(--dp-bg-surface) !important;
+}
+
+.theme-mode-group :deep(.arco-radio-button-content) {
+  padding: 0 12px;
+  color: var(--dp-text-secondary);
+  font-weight: 600;
+}
+
+.theme-mode-group :deep(.arco-radio-checked .arco-radio-button-content) {
+  color: #fff;
+  background: var(--dp-primary-readable);
+}
+
+.theme-mode-group :deep(.arco-radio-group-button) {
+  border-color: var(--dp-border);
+  background: var(--dp-bg-surface);
+}
+
 .value-text {
   max-width: 100%;
   padding: 3px 8px;
@@ -2497,6 +2548,36 @@ onMounted(async () => {
 .config-input :deep(.arco-input) {
   border-color: var(--dp-border);
   background: var(--dp-bg-surface);
+  color: var(--dp-text-primary);
+}
+
+.address-config-input :deep(.arco-input:disabled),
+.config-input :deep(.arco-input:disabled) {
+  color: var(--dp-text-tertiary);
+  background: var(--dp-bg-surface-muted);
+}
+
+.address-config-input :deep(.arco-input::placeholder),
+.config-input :deep(.arco-input::placeholder) {
+  color: var(--dp-text-tertiary);
+}
+
+.config-actions .arco-btn-outline,
+.address-config-actions :deep(.arco-btn-outline) {
+  border-color: var(--dp-border);
+  color: var(--dp-primary-readable);
+}
+
+.config-actions .arco-btn-outline:hover,
+.address-config-actions :deep(.arco-btn-outline:hover) {
+  border-color: var(--dp-primary-readable);
+  color: var(--dp-primary-readable);
+  background: color-mix(in srgb, var(--dp-primary-readable) 8%, transparent);
+}
+
+.setting-value :deep(.arco-switch),
+.address-config-switch :deep(.arco-switch) {
+  background: var(--dp-border);
 }
 
 .address-config-actions {
@@ -2611,6 +2692,25 @@ onMounted(async () => {
 
   .setting-value {
     max-width: 100%;
+  }
+
+  .theme-setting-item {
+    align-items: flex-start;
+  }
+
+  .theme-setting-value {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .theme-mode-group {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .theme-mode-group::-webkit-scrollbar {
+    display: none;
   }
 
   .value-text {

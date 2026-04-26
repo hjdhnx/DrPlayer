@@ -269,6 +269,16 @@ onBeforeUnmount(() => {
   border-bottom: none;
 }
 
+.category-tabs :deep(.arco-tabs-nav::before),
+.category-tabs :deep(.arco-tabs-nav-tab::before),
+.category-tabs :deep(.arco-tabs-tab::before) {
+  display: none !important;
+}
+
+.category-tabs :deep(.arco-tabs-content) {
+  border-top: none !important;
+}
+
 .category-tabs :deep(.arco-tabs-nav-tab) {
   padding: 0;
   margin-right: 8px;

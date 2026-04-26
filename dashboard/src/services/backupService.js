@@ -5,6 +5,7 @@
 
 import { Message } from '@arco-design/web-vue'
 import siteService from '@/api/services/site'
+import { applyTheme, normalizeThemeMode } from '@/utils/theme'
 
 // 备份数据版本号，用于兼容性检查
 const BACKUP_VERSION = '1.0.0'
@@ -303,9 +304,11 @@ export const restoreBackupData = (backupData) => {
     let restoredCount = 0
     let failedCount = 0
     const errors = []
-    
+    let restoredThemeMode = null
+
     // 还原设置数据
     if (backupData.settings) {
+      restoredThemeMode = normalizeThemeMode(backupData.settings.appSettings?.themeMode)
       for (const [key, value] of Object.entries(backupData.settings)) {
         if (key === 'parsers') {
           // 特殊处理解析器数据
@@ -458,6 +461,10 @@ export const restoreBackupData = (backupData) => {
       }
     }
     
+    if (restoredThemeMode) {
+      applyTheme(restoredThemeMode)
+    }
+
     // 显示还原结果
     if (failedCount === 0) {
       Message.success(`数据还原成功！共还原 ${restoredCount} 项数据`)

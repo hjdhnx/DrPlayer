@@ -84,7 +84,30 @@
   --action-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* 基础重置 */
+body[arco-theme='dark'] {
+  --action-primary: var(--color-primary-6);
+  --action-primary-hover: var(--color-primary-5);
+  --action-primary-active: var(--color-primary-7);
+  --action-success: var(--color-success-6);
+  --action-warning: var(--color-warning-6);
+  --action-error: var(--color-danger-6);
+  --action-text: var(--color-text-1);
+  --action-text-secondary: var(--color-text-2);
+  --action-text-disabled: var(--color-text-4);
+  --action-border: var(--color-border-2);
+  --action-border-hover: var(--color-primary-5);
+  --action-background: var(--color-bg-2);
+  --action-background-light: var(--color-fill-2);
+  --action-background-disabled: var(--color-fill-1);
+  --action-color-secondary: var(--color-text-2);
+  --action-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --action-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --action-shadow-small: 0 1px 3px rgba(0, 0, 0, 0.28);
+  --action-shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.32);
+  --action-shadow-large: 0 10px 25px rgba(0, 0, 0, 0.42);
+  --action-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.48);
+}
+
 .action-component * {
   box-sizing: border-box;
 }

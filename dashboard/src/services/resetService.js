@@ -5,6 +5,7 @@
 
 import { Message, Modal } from '@arco-design/web-vue'
 import { saveCSPConfig, setGlobalReferrerPolicy } from '@/utils/csp'
+import { applyTheme } from '@/utils/theme'
 
 // 默认配置值
 const DEFAULT_CONFIGS = {
@@ -33,7 +34,8 @@ const DEFAULT_CONFIGS = {
     secureDns: false,
     cspBypass: true,
     referrerPolicy: 'no-referrer',
-    searchAggregation: false // 聚合搜索功能默认关闭
+    searchAggregation: false, // 聚合搜索功能默认关闭
+    themeMode: 'light'
   },
   
   // CSP配置默认值
@@ -173,6 +175,7 @@ export const performFactoryReset = async () => {
     try {
       saveCSPConfig(DEFAULT_CONFIGS.cspConfig)
       setGlobalReferrerPolicy('no-referrer')
+      applyTheme(DEFAULT_CONFIGS.appSettings.themeMode)
     } catch (error) {
       console.warn('CSP配置重置失败:', error)
     }

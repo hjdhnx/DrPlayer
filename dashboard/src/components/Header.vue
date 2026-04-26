@@ -78,6 +78,11 @@
     </div>
 
     <div class="header-right">
+      <a-button class="theme-toggle-btn" shape="circle" @click="toggleTheme" :title="themeToggleTitle">
+        <template #icon>
+          <span class="theme-toggle-icon">{{ resolvedTheme === THEME_MODE.DARK ? '浅' : '深' }}</span>
+        </template>
+      </a-button>
       <a-button shape="circle" @click="minimize" title="退出全屏">
         <template #icon>
           <icon-shrink />
@@ -125,6 +130,7 @@ import { defineComponent, ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import SearchSettingsModal from './SearchSettingsModal.vue';
+import { getStoredThemeMode, resolveThemeMode, setStoredThemeMode, THEME_MODE } from '@/utils/theme';
 
 export default defineComponent({
   components: {
@@ -144,6 +150,13 @@ export default defineComponent({
     const searchValue = ref('');
     const showSearchSettings = ref(false);
     const forceUpdate = ref(0);
+    const resolvedTheme = ref(resolveThemeMode(getStoredThemeMode()));
+
+    const themeToggleTitle = computed(() => resolvedTheme.value === THEME_MODE.DARK ? '切换到浅色模式' : '切换到深色模式');
+
+    const updateThemeState = (event) => {
+      resolvedTheme.value = event?.detail?.resolvedTheme || resolveThemeMode(getStoredThemeMode());
+    };
 
     const isSearchAggregationPage = computed(() => route.name === 'SearchAggregation');
 
@@ -191,6 +204,7 @@ export default defineComponent({
     };
 
     window.addEventListener('storage', updateSearchAggregationStatus);
+    window.addEventListener('themeChanged', updateThemeState);
     const checkInterval = setInterval(updateSearchAggregationStatus, 1000);
 
     watch(() => route.query.keyword, (keyword) => {
@@ -207,6 +221,7 @@ export default defineComponent({
 
     onBeforeUnmount(() => {
       window.removeEventListener('storage', updateSearchAggregationStatus);
+      window.removeEventListener('themeChanged', updateThemeState);
       clearInterval(checkInterval);
     });
 
@@ -217,10 +232,17 @@ export default defineComponent({
       showSearchSettings,
       isSearchAggregationPage,
       hasSearchResults,
+      resolvedTheme,
+      themeToggleTitle,
+      THEME_MODE,
       router
     };
   },
   methods: {
+    toggleTheme() {
+      const nextMode = this.resolvedTheme === THEME_MODE.DARK ? THEME_MODE.LIGHT : THEME_MODE.DARK;
+      this.resolvedTheme = setStoredThemeMode(nextMode);
+    },
     goBack() {
       Message.info('后退按钮');
     },
@@ -455,6 +477,12 @@ export default defineComponent({
   background: var(--color-danger-7);
   border-color: var(--color-danger-7);
   color: #fff;
+}
+
+.theme-toggle-icon {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 800;
 }
 
 .search-container {

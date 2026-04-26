@@ -2762,9 +2762,21 @@ onUnmounted(() => {
 .video-actions {
   margin-top: 20px;
   padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: color-mix(in srgb, var(--dp-primary-readable) 5%, var(--dp-bg-surface-muted));
   border-radius: 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--dp-border-subtle);
+}
+
+.copy-btn {
+  color: var(--dp-text-primary);
+  background: var(--dp-bg-surface);
+  border-color: var(--dp-border);
+}
+
+.copy-btn:hover {
+  color: var(--dp-primary-readable);
+  background: var(--dp-bg-hover);
+  border-color: var(--dp-primary-readable);
 }
 
 .play-actions,

@@ -1,5 +1,6 @@
 import {createApp} from 'vue'
 import './style.css'
+import { initTheme } from '@/utils/theme'
 import App from './App.vue'
 import router from './router'  // 引入路由
 import ArcoVue from '@arco-design/web-vue'
@@ -37,6 +38,8 @@ use([
   LegendComponent,
   TitleComponent
 ])
+
+initTheme()
 
 const app = createApp(App)
 app.use(router)
