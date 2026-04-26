@@ -539,28 +539,30 @@ const handleScroll = (e) => {
 };
 
 const checkTextOverflow = () => {
-  // 简化的文本溢出检查，确保浏览器兼容性
   if (isProcessing || updateCount >= MAX_UPDATES_PER_SECOND) {
     return;
   }
-  
-  try {
-    const titleElements = document.querySelectorAll('.title-text');
-    if (titleElements && titleElements.length > 0) {
+
+  requestAnimationFrame(() => {
+    try {
+      const titleElements = containerRef.value?.querySelectorAll('.title-text') || [];
       titleElements.forEach(element => {
-        if (element && element.scrollWidth && element.clientWidth) {
-          // 只检查，不修改DOM，避免触发重排
-          const hasOverflow = element.scrollWidth > element.clientWidth;
-          if (hasOverflow) {
-            // 可以在这里添加一些简单的样式类，但不修改内容
-            element.setAttribute('title', element.textContent || '');
-          }
+        element.removeAttribute('data-overflow');
+        element.style.removeProperty('--title-marquee-distance');
+
+        const wrapperWidth = element.parentElement?.clientWidth || element.clientWidth;
+        const overflowDistance = element.scrollWidth - wrapperWidth;
+        element.setAttribute('title', element.textContent || '');
+
+        if (overflowDistance > 2) {
+          element.style.setProperty('--title-marquee-distance', `${overflowDistance}px`);
+          element.setAttribute('data-overflow', 'true');
         }
       });
+    } catch (error) {
+      console.error('checkTextOverflow error:', error);
     }
-  } catch (error) {
-    console.error('checkTextOverflow error:', error);
-  }
+  });
 };
 
 onMounted(() => {
@@ -589,6 +591,7 @@ onMounted(() => {
           // 延迟检查内容高度，确保数据已经渲染
           setTimeout(() => {
             checkContentHeight();
+            checkTextOverflow();
           }, 1000);
         }
       } catch (error) {
@@ -616,6 +619,7 @@ if (ENABLE_BASIC_UPDATES) {
     resizeTimer = setTimeout(() => {
       if (!isProcessing && containerRef.value) {
         updateScrollAreaHeight();
+        setTimeout(checkTextOverflow, 100);
       }
     }, 800); // 增加延迟，减少频率
   };
@@ -689,6 +693,7 @@ watch([() => props.videos, () => props.showStats], ([newVideos, newShowStats]) =
       console.log('Videos updated:', newVideos.length);
       // 检查内容高度
       checkContentHeight();
+      checkTextOverflow();
       // 延迟检查高度恢复，确保内容已经渲染完成
       setTimeout(() => {
         checkHeightRestore();
@@ -913,39 +918,32 @@ defineExpose({
   transition: color 0.2s ease;
   margin: 0;
   width: 100%;
+  min-width: 0;
   display: block;
-}
-
-/* 普通状态下隐藏溢出文本 */
-.title-text:not([data-overflow="true"]) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* 跑马灯效果 - 电子公告屏幕样式 */
 .title-text[data-overflow="true"] {
-  animation: marquee 10s linear infinite;
-  animation-delay: 1s;
   width: max-content;
+  max-width: none;
   min-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  animation: title-marquee 10s linear 0.8s infinite;
+  will-change: transform;
 }
 
 .title-text[data-overflow="true"]:hover {
   animation-play-state: paused;
 }
 
-@keyframes marquee {
-  0% {
+@keyframes title-marquee {
+  0%, 12% {
     transform: translateX(0);
   }
-  15% {
-    transform: translateX(0);
-  }
-  85% {
-    transform: translateX(calc(-100% + 100px));
-  }
-  100% {
-    transform: translateX(calc(-100% + 100px));
+  70%, 100% {
+    transform: translateX(calc(-1 * var(--title-marquee-distance, 0px)));
   }
 }
 
