@@ -5,7 +5,7 @@
       <div class="header-left">
         <h2 class="downloader-title">
           <icon-download />
-          小说下载器
+          下载
         </h2>
         <div class="download-stats">
           <span class="stat-item">
@@ -406,5 +406,238 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   height: 300px;
+}
+
+@media (min-width: 769px) {
+  .novel-downloader {
+    background: var(--dp-bg-surface);
+  }
+
+  .downloader-header {
+    padding: 10px 14px;
+    background: var(--dp-bg-surface);
+    border-bottom-color: var(--dp-border-subtle);
+  }
+
+  .header-left {
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .downloader-title {
+    gap: 6px;
+    font-size: 16px;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+
+  .download-stats {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface-muted);
+    border: 1px solid var(--dp-border-subtle);
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .header-right {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .header-right :deep(.arco-btn) {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .filter-tabs {
+    gap: 12px;
+    padding: 8px 14px;
+    border-bottom-color: var(--dp-border-subtle);
+  }
+
+  .filter-left {
+    min-width: 0;
+  }
+
+  .filter-left :deep(.arco-radio-group-button) {
+    min-height: 30px;
+  }
+
+  .filter-left :deep(.arco-radio-button-content) {
+    padding: 4px 10px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .storage-stats {
+    min-width: 260px;
+    max-width: 340px;
+  }
+
+  .storage-info {
+    gap: 4px;
+  }
+
+  .storage-header {
+    gap: 6px;
+  }
+
+  .storage-title,
+  .storage-details {
+    font-size: 11px;
+  }
+
+  .download-list {
+    padding: 0;
+  }
+
+  .empty-state {
+    height: 220px;
+    border: 1px solid var(--dp-border-subtle);
+    border-radius: var(--dp-radius-lg);
+    background: var(--dp-bg-surface-muted);
+  }
+}
+@media (max-width: 768px) {
+  .novel-downloader {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top right, rgba(114, 46, 209, 0.1), transparent 32%),
+      var(--dp-bg-app);
+  }
+
+  .downloader-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 10px 0 12px;
+    background: transparent;
+    border-bottom: none;
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .downloader-title {
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: var(--dp-text-primary);
+  }
+
+  .download-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .stat-item {
+    min-width: 0;
+    padding: 10px 8px;
+    border-radius: 16px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .header-right {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .header-right :deep(.arco-btn) {
+    min-width: 0;
+    height: 40px;
+    border-radius: 999px;
+    padding: 0 10px;
+  }
+
+  .filter-tabs {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 0 0 12px;
+    border-bottom: none;
+  }
+
+  .filter-left {
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .filter-left::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-left :deep(.arco-radio-group-button) {
+    display: inline-flex;
+    min-width: max-content;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .filter-left :deep(.arco-radio-button) {
+    border-radius: 999px;
+  }
+
+  .filter-left :deep(.arco-radio-button-content) {
+    min-width: 68px;
+    text-align: center;
+  }
+
+  .storage-stats {
+    min-width: 0;
+    padding: 12px;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .download-list {
+    padding: 0 0 12px;
+    min-height: 0;
+  }
+
+  .download-list :deep(.download-task-item) {
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .empty-state {
+    height: 320px;
+    border-radius: 22px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+  }
+}
+
+@media (max-width: 420px) {
+  .header-right {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .header-right :deep(.arco-btn:last-child) {
+    grid-column: 1 / -1;
+  }
 }
 </style>

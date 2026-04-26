@@ -2,7 +2,7 @@
   <a-modal
     v-model:visible="visible"
     title="数据备份还原"
-    width="520px"
+    width="min(520px, calc(100vw - 24px))"
     :footer="false"
     @cancel="handleCancel"
   >
@@ -594,6 +594,104 @@ onMounted(() => {
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.backup-restore-container {
+  min-width: 0;
+}
+
+.stats-section,
+.operation-section {
+  padding: 12px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-md);
+  background: var(--dp-bg-surface-muted);
+}
+
+.section-title {
+  margin: 0 0 10px;
+  color: var(--dp-text-primary);
+}
+
+.stats-grid {
+  gap: 6px;
+}
+
+.stat-item {
+  background: var(--dp-bg-surface);
+  border-color: var(--dp-border-subtle);
+}
+
+.data-size,
+.operation-content {
+  background: var(--dp-bg-surface);
+  border-color: var(--dp-border-subtle);
+}
+
+.operation-section {
+  margin-bottom: 12px;
+}
+
+.operation-content {
+  padding: 10px;
+}
+
+.restore-actions {
+  width: 100%;
+  align-items: stretch;
+}
+
+.restore-actions :deep(.arco-upload),
+.restore-actions :deep(.arco-upload-trigger) {
+  width: 100%;
+}
+
+.restore-actions :deep(.arco-btn) {
+  justify-content: center;
+}
+
+.custom-file-list {
+  width: 100%;
+  min-width: 0;
+}
+
+.custom-upload-item {
+  min-width: 0;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+}
+
+.file-info {
+  min-width: 0;
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.warning-section :deep(.arco-alert) {
+  border-radius: var(--dp-radius-md);
+}
+
+@media (max-width: 560px) {
+  .stats-section,
+  .operation-section {
+    padding: 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .section-title {
+    font-size: 15px;
+  }
+
+  .operation-desc {
+    font-size: 12px;
   }
 }
 </style>

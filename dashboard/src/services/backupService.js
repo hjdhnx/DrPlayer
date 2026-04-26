@@ -407,18 +407,18 @@ export const restoreBackupData = (backupData) => {
       // 如果还原了当前站点，需要同步到siteService
       if (restoredCurrentSite) {
         try {
-          // 解析当前站点数据（可能是字符串或对象）
-          const currentSiteData = typeof restoredCurrentSite === 'string' 
-            ? JSON.parse(restoredCurrentSite) 
+          const currentSiteData = typeof restoredCurrentSite === 'string' && restoredCurrentSite.trim().startsWith('{')
+            ? JSON.parse(restoredCurrentSite)
             : restoredCurrentSite
-          
-          if (currentSiteData && currentSiteData.key) {
+          const currentSiteKey = typeof currentSiteData === 'string' ? currentSiteData : currentSiteData?.key
+
+          if (currentSiteKey) {
             // 同步到siteService（如果站点存在）
-            const success = siteService.setCurrentSite(currentSiteData.key)
+            const success = siteService.setCurrentSite(currentSiteKey)
             if (success) {
-              console.log('已同步还原的当前站点到siteService:', currentSiteData.name)
+              console.log('已同步还原的当前站点到siteService:', typeof currentSiteData === 'string' ? currentSiteKey : currentSiteData.name)
             } else {
-              console.warn('还原的当前站点在站点列表中不存在，可能需要重新配置:', currentSiteData.key)
+              console.warn('还原的当前站点在站点列表中不存在，可能需要重新配置:', currentSiteKey)
             }
           }
         } catch (error) {

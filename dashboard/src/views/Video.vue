@@ -1,21 +1,47 @@
 <template>
-  <Breadcrumb
-    @handleOpenForm="handleOpenForm"
-    @refreshPage="refreshPage"
-    @minimize="minimize"
-    @maximize="maximize"
-    @closeWindow="closeWindow"
-    @onSearch="onSearch"
-    @handlePush="handlePush"
-    @actionExecuted="handleActionExecuted"
-    :now_site_title="form.now_site_title"
-    :sites="form.sites"
-  >
-    <!-- 默认插槽的内容放这里 -->
-    <div class="current-time">
-      <span>{{ currentDateTime }}</span>
+  <div class="desktop-video-breadcrumb">
+    <Breadcrumb
+      ref="breadcrumbRef"
+      @handleOpenForm="handleOpenForm"
+      @refreshPage="refreshPage"
+      @minimize="minimize"
+      @maximize="maximize"
+      @closeWindow="closeWindow"
+      @onSearch="onSearch"
+      @handlePush="handlePush"
+      @actionExecuted="handleActionExecuted"
+      :now_site_title="form.now_site_title"
+      :sites="form.sites"
+    >
+      <!-- 默认插槽的内容放这里 -->
+      <div class="current-time">
+        <span>{{ currentDateTime }}</span>
+      </div>
+    </Breadcrumb>
+  </div>
+
+  <div class="mobile-video-hub">
+    <div class="mobile-video-source-row">
+      <button class="mobile-source-chip" type="button" @click="handleOpenForm">
+        <span class="mobile-chip-label">当前片源</span>
+        <strong>{{ form.now_site_title || '选择片源' }}</strong>
+      </button>
+      <div class="mobile-video-actions">
+        <button class="mobile-tool-btn" type="button" @click="refreshPage">刷新</button>
+        <button class="mobile-tool-btn" type="button" @click="router.push({ name: 'SearchAggregation' })">聚合</button>
+        <button class="mobile-tool-btn" type="button" @click="openMobilePush">推送</button>
+        <button class="mobile-tool-btn" type="button" @click="openMobileGlobalAction">动作</button>
+      </div>
     </div>
-  </Breadcrumb>
+    <form class="mobile-video-search" @submit.prevent="runMobileSearch">
+      <input v-model="mobileSearchKeyword" type="search" placeholder="搜索当前片源的影片" />
+      <button type="submit">搜索</button>
+    </form>
+    <div v-if="searchState.isSearching" class="mobile-search-state">
+      <span>正在查看“{{ searchState.searchKeyword }}”的结果</span>
+      <button type="button" @click="clearMobileSearch">返回分类</button>
+    </div>
+  </div>
 
   <!-- 内容区域 -->
   <div class="main-container">
@@ -136,8 +162,10 @@ const formatDate = (date) => {
 };
 
 const currentDateTime = ref(formatDate(new Date())); // 初始化时就设置当前时间
+const mobileSearchKeyword = ref('');
 const currentActiveKey = ref(route.query.activeKey || ""); // 当前选中的分类key，优先使用URL参数
 const videoListRef = ref(null); // VideoList组件引用
+const breadcrumbRef = ref(null);
 const form = reactive({
   sites: [],
   now_site_title: "hipy影视",
@@ -440,6 +468,23 @@ const onSearch = async (value) => {
   } finally {
     searchState.searchLoading = false;
   }
+};
+
+const runMobileSearch = () => {
+  onSearch(mobileSearchKeyword.value);
+};
+
+const openMobilePush = () => {
+  breadcrumbRef.value?.openPushModal?.();
+};
+
+const openMobileGlobalAction = () => {
+  breadcrumbRef.value?.openGlobalActionDialog?.();
+};
+
+const clearMobileSearch = () => {
+  mobileSearchKeyword.value = '';
+  exitSearch();
 };
 
 // 搜索加载更多
@@ -1093,23 +1138,37 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* 样式代码 */
+.desktop-video-breadcrumb {
+  display: block;
+  max-width: var(--dp-page-max-width);
+  margin: 0 auto 16px;
+}
+
+.mobile-video-hub {
+  display: none;
+}
+
 .main-container {
-  /* 减去Breadcrumb组件的总高度：
-     - Breadcrumb基础高度：53px (padding: 16px*2 + content: 20px + border: 1px)
-     - current-time元素额外高度：14px (padding + border)
-     - 总计：67px */
-  height: calc(100% - 67px);
-  /* 使用100%最小高度，继承父容器 */
-  /* min-height: 100%;  */
+  width: 100%;
+  max-width: var(--dp-page-max-width);
+  height: calc(100% - 58px);
+  min-height: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .content {
   flex: 1;
+  min-height: 0;
   overflow: hidden;
-  padding: 0;
+  padding: 16px;
+  background: transparent;
 }
 
 /* 时间显示样式 */
@@ -1167,5 +1226,161 @@ onBeforeUnmount(() => {
   padding: 4px 12px;
   height: auto;
   min-height: 28px;
+}
+
+@media (min-width: 769px) {
+  .desktop-video-breadcrumb {
+    margin-bottom: 8px;
+  }
+
+  .main-container {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .content {
+    padding: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-video-breadcrumb {
+    display: none;
+  }
+
+  .mobile-video-hub {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0 12px;
+    background: var(--dp-bg-app);
+  }
+
+  .mobile-video-source-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .mobile-video-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 52px);
+    gap: 6px;
+  }
+
+  .mobile-source-chip,
+  .mobile-tool-btn,
+  .mobile-video-search button,
+  .mobile-search-state button {
+    border: none;
+    font-family: inherit;
+  }
+
+  .mobile-source-chip {
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+    color: var(--dp-text-primary);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mobile-chip-label {
+    font-size: 10px;
+    color: var(--dp-text-tertiary);
+  }
+
+  .mobile-source-chip strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+
+  .mobile-tool-btn {
+    min-width: 52px;
+    min-height: 30px;
+    padding: 0 8px;
+    border-radius: 16px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    color: var(--dp-text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .mobile-video-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62px;
+    gap: 8px;
+  }
+
+  .mobile-video-search input {
+    min-width: 0;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--dp-border-subtle);
+    background: var(--dp-bg-surface);
+    color: var(--dp-text-primary);
+    outline: none;
+  }
+
+  .mobile-video-search button {
+    border-radius: 999px;
+    background: var(--dp-primary-readable);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--dp-primary-readable) 24%, transparent);
+  }
+
+  .mobile-search-state {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: var(--dp-bg-hover);
+    color: var(--dp-text-secondary);
+    font-size: 12px;
+  }
+
+  .mobile-search-state span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-search-state button {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    color: var(--color-primary-6);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .main-container {
+    height: calc(100% - 116px);
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .content {
+    padding: 0;
+  }
 }
 </style>

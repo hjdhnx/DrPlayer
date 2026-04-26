@@ -6,7 +6,7 @@
       ref="scrollbarRef"
       :style="containerStyle"
     >
-      <a-grid :cols="{ xs: 2, sm: 3, md: 4, lg: 5, xl: 6, xxl: 8 }" :rowGap="16" :colGap="12">
+      <a-grid class="video-grid" :cols="{ xs: 3, sm: 3, md: 3, lg: 7, xl: 9, xxl: 10 }" :rowGap="12" :colGap="12">
         <a-grid-item
           v-for="(video, index) in videos"
           :key="`${video.vod_id}_${index}_${video.vod_name || ''}`"
@@ -166,10 +166,8 @@ let autoLoadTimer = null;
 
 // 计算属性：容器样式
 const containerStyle = computed(() => {
-  // 触发器确保在需要时重新计算
-  containerHeightTrigger.value;
   return {
-    height: containerHeight + 'px',
+    height: '100%',
     overflow: 'auto'
   };
 });
@@ -982,5 +980,91 @@ defineExpose({
 
 .bottom-spacer {
   height: 8px;
+}
+
+.video-grid-container :deep(.arco-scrollbar),
+.video-grid-container :deep(.arco-scrollbar-container) {
+  height: 100%;
+}
+
+.video-scroll-container {
+  min-height: 0;
+  padding: 4px 10px 8px 4px;
+}
+
+.video-grid {
+  width: 100%;
+}
+
+.video_list_item {
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--dp-shadow-sm);
+}
+
+.video_list_item:hover {
+  border-color: color-mix(in srgb, var(--dp-primary-readable) 30%, var(--dp-border-subtle));
+  box-shadow: var(--dp-shadow-md);
+}
+
+.video_list_item_img,
+.folder-icon-container,
+.file-icon-container,
+.video_list_item::v-deep(.arco-image),
+.video_list_item::v-deep(.arco-image-img) {
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: 12px 12px 0 0;
+}
+
+.video_list_item_img_cover {
+  height: 100%;
+}
+
+.video_list_item_title {
+  min-height: 34px;
+  padding: 9px 10px;
+  background: var(--dp-bg-surface);
+}
+
+.title-text {
+  color: var(--dp-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+@media (min-width: 769px) {
+  .video-grid :deep(.arco-grid) {
+    row-gap: 14px !important;
+    column-gap: 12px !important;
+  }
+
+  .video_list_item_title {
+    min-height: 28px;
+    padding: 7px 8px;
+  }
+
+  .title-text {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-scroll-container {
+    padding: 2px 10px 2px 8px;
+  }
+
+  .video-grid :deep(.arco-grid) {
+    row-gap: 8px !important;
+    column-gap: 6px !important;
+  }
+
+  .folder-icon,
+  .file-type-icon {
+    font-size: 42px;
+  }
 }
 </style>

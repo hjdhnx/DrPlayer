@@ -9,28 +9,38 @@
       <!-- vod_remarks 浮层 (仅video类型显示) -->
       <div v-if="props.type === 'video' && item.vod_remarks" class="video-remarks-overlay" v-html="item.vod_remarks"></div>
       <div class="card-overlay">
-        <a-button type="primary" size="small" class="play-btn">
+        <a-button
+          type="primary"
+          size="small"
+          shape="circle"
+          class="overlay-action-btn play-btn"
+          title="播放"
+          @click.stop="handleCardClick"
+        >
           <template #icon>
             <icon-play-arrow />
           </template>
-          播放
         </a-button>
-        <a-button 
+        <a-button
           v-if="props.type !== 'video'"
-          type="outline" 
-          size="small" 
-          class="image-btn"
+          type="outline"
+          size="small"
+          shape="circle"
+          class="overlay-action-btn image-btn"
+          title="查看封面"
           @click.stop="handleImageClick"
         >
           <template #icon>
             <icon-eye />
           </template>
         </a-button>
-        <a-button 
+        <a-button
           v-if="showActionButton"
-          type="outline" 
-          size="small" 
-          :class="actionButtonClass"
+          type="outline"
+          size="small"
+          shape="circle"
+          :class="['overlay-action-btn', actionButtonClass]"
+          :title="actionButtonTitle"
           @click.stop="handleActionClick"
         >
           <template #icon>
@@ -102,13 +112,11 @@ const showActionButton = computed(() => {
   return props.type === 'favorite' || props.type === 'history'
 })
 
-const actionButtonClass = computed(() => {
-  return props.type === 'favorite' ? 'remove-btn' : 'delete-btn'
-})
+const actionButtonClass = computed(() => 'delete-btn')
 
-const actionButtonIcon = computed(() => {
-  return props.type === 'favorite' ? IconHeartFill : IconDelete
-})
+const actionButtonTitle = computed(() => '删除')
+
+const actionButtonIcon = computed(() => IconDelete)
 
 const timeLabel = computed(() => {
   return props.type === 'favorite' ? '收藏于' : '观看于'
@@ -170,18 +178,19 @@ const formatDate = (dateString) => {
 
 <style scoped>
 .video-card {
-  background: var(--color-bg-2);
-  border-radius: 8px;
+  background: var(--dp-bg-surface);
+  border-radius: 12px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   cursor: pointer;
-  border: 1px solid var(--color-border-2);
+  border: 1px solid var(--dp-border-subtle);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .video-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: var(--color-primary-light-3);
+  transform: translateY(-3px);
+  box-shadow: var(--dp-shadow-md);
+  border-color: color-mix(in srgb, var(--dp-primary-readable) 30%, var(--dp-border-subtle));
 }
 
 /* 最后点击的视频样式 */
@@ -192,7 +201,7 @@ const formatDate = (dateString) => {
 .card-poster {
   position: relative;
   width: 100%;
-  height: 240px;
+  aspect-ratio: 2 / 3;
   overflow: hidden;
 }
 
@@ -209,53 +218,83 @@ const formatDate = (dateString) => {
 
 .card-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 14, 24, 0.18), rgba(9, 14, 24, 0.74));
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.22s ease;
 }
 
 .video-card:hover .card-overlay {
   opacity: 1;
 }
 
+.overlay-action-btn {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(10px);
+  transform: translateY(6px) scale(0.94);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.video-card:hover .overlay-action-btn {
+  transform: translateY(0) scale(1);
+}
+
+.overlay-action-btn :deep(.arco-icon) {
+  font-size: 17px;
+}
+
 .play-btn {
-  background: var(--color-primary);
-  border: none;
+  background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+  border-color: rgba(134, 239, 172, 0.8) !important;
 }
 
-.image-btn, .remove-btn, .delete-btn {
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  color: var(--color-text-1);
+.image-btn {
+  background: linear-gradient(135deg, #2563eb, #38bdf8) !important;
+  border-color: rgba(147, 197, 253, 0.85) !important;
 }
 
-.remove-btn:hover {
-  background: var(--color-danger);
-  color: white;
+.remove-btn {
+  background: linear-gradient(135deg, #e11d48, #fb7185) !important;
+  border-color: rgba(253, 164, 175, 0.85) !important;
 }
 
+.delete-btn {
+  background: linear-gradient(135deg, #dc2626, #f97316) !important;
+  border-color: rgba(253, 186, 116, 0.85) !important;
+}
+
+.overlay-action-btn:hover {
+  transform: translateY(-2px) scale(1.06) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.play-btn:hover,
+.image-btn:hover,
+.remove-btn:hover,
 .delete-btn:hover {
-  background: var(--color-danger);
-  color: white;
+  color: #fff !important;
 }
 
 .card-info {
-  padding: 16px;
+  padding: 12px 12px 14px;
 }
 
 .card-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  color: var(--color-text-1);
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 700;
+  margin: 0 0 7px 0;
+  color: var(--dp-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -318,5 +357,84 @@ const formatDate = (dateString) => {
 /* 最后点击的视频样式 */
 .video-card.last-clicked .card-title {
   color: var(--color-primary);
+}
+
+@media (min-width: 769px) {
+  .video-card {
+    border-radius: 10px;
+  }
+
+  .video-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .card-info {
+    padding: 8px 8px 10px;
+  }
+
+  .card-title {
+    margin-bottom: 5px;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .card-meta,
+  .card-history {
+    margin-bottom: 5px;
+  }
+
+  .card-source,
+  .card-time,
+  .history-episode {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .history-episode {
+    padding: 3px 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-card {
+    border-radius: 10px;
+  }
+
+  .video-card:hover {
+    transform: none;
+  }
+
+  .card-info {
+    padding: 7px 6px 8px;
+  }
+
+  .card-title {
+    margin-bottom: 4px;
+    font-size: 12px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  .card-meta,
+  .card-history {
+    margin-bottom: 4px;
+  }
+
+  .card-source,
+  .card-time,
+  .history-episode {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .history-episode {
+    padding: 3px 5px;
+  }
+
+  .video-remarks-overlay {
+    max-width: 72%;
+    padding: 2px 4px;
+    font-size: 9px;
+  }
 }
 </style>

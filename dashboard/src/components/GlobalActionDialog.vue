@@ -659,33 +659,68 @@ watch(() => props.visible, (newVisible) => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .global-action-dialog :deep(.arco-modal) {
-    width: 95vw !important;
-    margin: 20px auto;
+    width: calc(100vw - 24px) !important;
+    margin: 12px auto;
   }
-  
+
+  .global-action-dialog :deep(.arco-modal-body) {
+    max-height: calc(100vh - 148px);
+    overflow: hidden;
+  }
+
+  .search-section {
+    padding: 14px;
+  }
+
   .search-filters {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
-  
+
+  .action-search,
   .site-filter {
+    min-width: 0;
+    max-width: none;
     width: 100%;
   }
-  
+
+  .action-list-container {
+    min-height: 220px;
+    max-height: calc(100vh - 320px);
+  }
+
+  .action-item {
+    padding: 12px 14px;
+  }
+
   .action-main {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
+  .action-name {
+    width: 100%;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
   .action-source {
     margin-left: 0;
+    max-width: 100%;
+    color: var(--dp-text-secondary);
+    word-break: break-word;
   }
-  
+
+  .action-arrow {
+    display: none;
+  }
+
   .action-stats {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px;
+    padding: 12px 14px;
   }
 }
 

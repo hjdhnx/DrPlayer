@@ -3,7 +3,7 @@
     <!-- 头部 -->
     <div class="book-gallery-header">
       <div class="header-left">
-        <h1 class="page-title">我的书画柜</h1>
+        <h1 class="page-title">书画柜</h1>
         <a-badge :count="bookGalleryCount" class="count-badge" />
       </div>
       <div class="header-actions">
@@ -69,37 +69,12 @@
       <div class="filter-container">
         <!-- 分类按钮 -->
         <div class="filter-tabs">
-          <a-button
-            :type="selectedCategory === 'all' ? 'primary' : 'outline'"
-            @click="selectedCategory = 'all'"
-            size="small"
-          >
-            全部 ({{ bookGalleryCount }})
-          </a-button>
-          <a-button
-            :type="selectedCategory === '小说' ? 'primary' : 'outline'"
-            @click="selectedCategory = '小说'"
-            size="small"
-            v-if="novelCount > 0"
-          >
-            我的书架 ({{ novelCount }})
-          </a-button>
-          <a-button
-            :type="selectedCategory === '本地图书' ? 'primary' : 'outline'"
-            @click="selectedCategory = '本地图书'"
-            size="small"
-            v-if="localBookCount > 0"
-          >
-            本地图书 ({{ localBookCount }})
-          </a-button>
-          <a-button
-            :type="selectedCategory === '漫画' ? 'primary' : 'outline'"
-            @click="selectedCategory = '漫画'"
-            size="small"
-            v-if="comicCount > 0"
-          >
-            我的漫画柜 ({{ comicCount }})
-          </a-button>
+          <a-radio-group v-model="selectedCategory" type="button">
+            <a-radio value="all">全部 ({{ bookGalleryCount }})</a-radio>
+            <a-radio v-if="novelCount > 0" value="小说">我的书架 ({{ novelCount }})</a-radio>
+            <a-radio v-if="localBookCount > 0" value="本地图书">本地图书 ({{ localBookCount }})</a-radio>
+            <a-radio v-if="comicCount > 0" value="漫画">我的漫画柜 ({{ comicCount }})</a-radio>
+          </a-radio-group>
         </div>
 
         <!-- 储存空间统计 -->
@@ -684,54 +659,69 @@ onUnmounted(() => {
 
 <style scoped>
 .book-gallery-container {
+  width: 100%;
+  max-width: var(--dp-page-max-width);
   height: 100%;
+  min-height: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-1);
+  background: transparent;
 }
 
 .book-gallery-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
-  background: var(--color-bg-2);
-  border-bottom: 1px solid var(--color-border-2);
+  gap: 24px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .page-title {
   font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-1);
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--dp-text-primary);
   margin: 0;
 }
 
 .count-badge {
-  margin-left: 8px;
+  margin-left: 2px;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .filter-section {
-  padding: 16px 24px;
-  background: var(--color-bg-2);
-  border-bottom: 1px solid var(--color-border-2);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .filter-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 24px;
 }
 
@@ -741,10 +731,16 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
+.filter-tabs :deep(.arco-btn) {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
 .book-gallery-content {
   flex: 1;
-  padding: 24px;
+  min-height: 0;
   overflow-y: auto;
+  padding: 2px 4px 28px;
 }
 
 .empty-state {
@@ -752,12 +748,16 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 .danger-option {
@@ -770,26 +770,31 @@ onUnmounted(() => {
 }
 
 .storage-info {
-  max-width: 300px;
-  min-width: 250px;
+  width: min(360px, 34vw);
+  min-width: 280px;
+  padding: 12px 14px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-lg);
+  background: var(--dp-bg-surface-muted);
 }
 
 .storage-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .storage-icon {
   font-size: 16px;
-  color: var(--color-text-2);
+  color: var(--dp-text-secondary);
 }
 
 .storage-title {
+  flex: 1;
   font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-1);
+  font-weight: 700;
+  color: var(--dp-text-primary);
 }
 
 .storage-progress {
@@ -798,13 +803,14 @@ onUnmounted(() => {
 
 .storage-details {
   display: flex;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 12px;
-  color: var(--color-text-3);
+  color: var(--dp-text-tertiary);
 }
 
 .storage-used {
-  color: var(--color-text-2);
+  color: var(--dp-text-secondary);
 }
 
 .storage-available {
@@ -812,68 +818,184 @@ onUnmounted(() => {
 }
 
 .storage-total {
-  color: var(--color-text-3);
+  color: var(--dp-text-tertiary);
 }
 
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .books-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 10px;
+  }
+
+  .filter-container {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .storage-info {
+    width: 100%;
+    min-width: 0;
   }
 }
 
 @media (max-width: 768px) {
+  .book-gallery-container {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(245, 154, 35, 0.12), transparent 34%),
+      var(--dp-bg-app);
+  }
+
   .book-gallery-header {
     flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .header-actions {
-    flex-direction: column;
     gap: 12px;
+    align-items: stretch;
+    padding: 10px 0 12px;
+    margin-bottom: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
-  
+
+  .header-left {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .page-title {
+    font-size: 0;
+  }
+
+  .page-title::before {
+    content: '书画柜';
+    display: block;
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: var(--dp-text-primary);
+  }
+
+  .count-badge {
+    margin-left: 0;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+
   .header-actions .arco-input-wrapper {
     width: 100% !important;
+    height: 42px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
   }
-  
+
+  .header-actions :deep(.arco-btn) {
+    height: 42px;
+    border-radius: 999px;
+  }
+
   .filter-section {
-    padding: 12px 16px;
+    padding: 0 0 12px;
+    background: transparent;
+    border-bottom: none;
   }
-  
+
   .filter-container {
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
   }
-  
+
+  .filter-tabs {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tabs :deep(.arco-btn) {
+    flex: 0 0 auto;
+    min-width: 92px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    color: var(--dp-text-secondary);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .filter-tabs :deep(.arco-btn-primary) {
+    background: var(--dp-primary-readable) !important;
+    border-color: var(--dp-primary-readable) !important;
+    color: #fff !important;
+    font-weight: 800;
+  }
+
+  .filter-tabs :deep(.arco-btn-outline:not(.arco-btn-disabled)) {
+    background: var(--dp-bg-surface) !important;
+    border-color: var(--dp-border) !important;
+    color: var(--dp-text-secondary) !important;
+    font-weight: 700;
+  }
+
+  .storage-stats {
+    width: 100%;
+  }
+
   .storage-info {
     max-width: none;
-    min-width: auto;
+    min-width: 0;
+    padding: 12px;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
   }
-  
+
+  .storage-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .storage-details span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .book-gallery-content {
-    padding: 16px;
+    padding: 0 0 12px;
+    min-height: 0;
   }
-  
+
   .books-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .empty-state {
+    min-height: 320px;
+    border-radius: 22px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
   }
 }
 
 @media (max-width: 480px) {
-  .book-gallery-header {
-    padding: 16px;
-  }
-  
-  .page-title {
-    font-size: 20px;
-  }
-  
   .books-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

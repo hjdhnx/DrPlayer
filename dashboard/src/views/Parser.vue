@@ -2,7 +2,7 @@
   <div class="parser-container">
     <!-- 简化的标题显示 -->
     <div class="simple-header">
-      <span class="navigation-title">解析管理</span>
+      <span class="navigation-title">解析</span>
     </div>
 
     <!-- 操作按钮区域 -->
@@ -10,7 +10,7 @@
       <div class="header-content">
         <div class="header-left">
           <div class="header-info">
-            <h2 class="page-title">解析配置</h2>
+            <h2 class="page-title">解析</h2>
             <p class="page-subtitle">管理视频解析接口，支持排序、测试和配置</p>
             <a-badge :count="parserStore.parserCount" class="count-badge" />
           </div>
@@ -795,58 +795,68 @@ onMounted(async () => {
 
 <style scoped>
 .parser-container {
+  width: 100%;
+  max-width: var(--dp-page-narrow-width);
   height: 100%;
+  min-height: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: transparent;
 }
 
 .simple-header {
-  padding: 16px 24px;
-  background: var(--color-bg-1);
-  border-bottom: 1px solid var(--color-border-2);
+  display: none;
 }
 
 .navigation-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-1);
+  color: var(--dp-text-primary);
 }
 
 .parser-header {
-  background: var(--color-bg-2);
-  border-bottom: 1px solid var(--color-border-2);
-  padding: 16px 24px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .header-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 24px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
 }
 
 .header-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .page-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-1);
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--dp-text-primary);
   margin: 0;
 }
 
 .page-subtitle {
-  font-size: 12px;
-  color: var(--color-text-3);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--dp-text-tertiary);
   margin: 0;
 }
 
@@ -857,14 +867,17 @@ onMounted(async () => {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .parser-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 24px;
-  background: var(--color-bg-1);
+  padding: 0 0 28px;
+  background: transparent;
 }
 
 .loading-container,
@@ -880,23 +893,26 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: var(--color-bg-2);
-  border-radius: 8px;
-  border: 1px solid var(--color-border-2);
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--dp-bg-surface);
+  border-radius: var(--dp-radius-xl);
+  border: 1px solid var(--dp-border-subtle);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .filter-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .parsers-list {
-  background: var(--color-bg-2);
-  border-radius: 8px;
-  border: 1px solid var(--color-border-2);
+  background: var(--dp-bg-surface);
+  border-radius: var(--dp-radius-xl);
+  border: 1px solid var(--dp-border-subtle);
+  box-shadow: var(--dp-shadow-sm);
   overflow: hidden;
 }
 
@@ -907,10 +923,10 @@ onMounted(async () => {
 .parser-item {
   display: flex;
   align-items: flex-start;
-  padding: 16px;
-  border-bottom: 1px solid var(--color-border-2);
-  transition: all 0.2s ease;
-  background: var(--color-bg-2);
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--dp-border-subtle);
+  transition: background 0.2s ease;
+  background: var(--dp-bg-surface);
 }
 
 .parser-item:last-child {
@@ -918,22 +934,22 @@ onMounted(async () => {
 }
 
 .parser-item:hover {
-  background: var(--color-fill-1);
+  background: var(--dp-bg-surface-muted);
 }
 
 .parser-item.disabled {
-  opacity: 0.6;
+  opacity: 0.62;
 }
 
 .parser-drag-handle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   margin-right: 12px;
   cursor: grab;
-  color: var(--color-text-3);
+  color: var(--dp-text-tertiary);
 }
 
 .parser-drag-handle:active {
@@ -954,8 +970,8 @@ onMounted(async () => {
 
 .parser-name {
   font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-1);
+  font-weight: 800;
+  color: var(--dp-text-primary);
 }
 
 .parser-actions {
@@ -969,8 +985,8 @@ onMounted(async () => {
 }
 
 .parser-url {
-  font-size: 14px;
-  color: var(--color-text-2);
+  font-size: 13px;
+  color: var(--dp-text-secondary);
   margin-bottom: 8px;
   word-break: break-all;
 }
@@ -1068,41 +1084,151 @@ onMounted(async () => {
   color: var(--color-text-3);
 }
 
+@media (max-width: 1024px) {
+  .header-content,
+  .filter-section {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .header-actions,
+  .filter-controls {
+    justify-content: flex-start;
+  }
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .parser-container {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(22, 93, 255, 0.1), transparent 34%),
+      var(--dp-bg-app);
+  }
+
+  .simple-header {
+    display: none;
+  }
+
   .parser-header {
-    padding: 16px;
+    padding: 10px 0 12px;
+    margin-bottom: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
-  
+
   .header-content {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .header-actions {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .filter-section {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
   }
-  
-  .parser-content {
-    padding: 16px;
+
+  .header-left {
+    justify-content: space-between;
+    gap: 10px;
   }
-  
+
+  .page-title {
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: var(--dp-text-primary);
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--dp-text-secondary);
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .header-actions :deep(.arco-btn) {
+    min-width: 0;
+    height: 40px;
+    border-radius: 999px;
+  }
+
+  .parser-content {
+    padding: 0 0 12px;
+    background: transparent;
+  }
+
+  .filter-section {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .filter-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .filter-controls :deep(.arco-select),
+  .filter-controls :deep(.arco-input-wrapper) {
+    min-width: 0;
+    width: 100% !important;
+  }
+
+  .filter-section > :deep(.arco-btn) {
+    height: 40px;
+    border-radius: 999px;
+  }
+
+  .parsers-list {
+    border-radius: 18px;
+    background: transparent;
+    border: none;
+    overflow: visible;
+  }
+
+  .drag-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .parser-item {
+    padding: 12px;
+    border: 1px solid var(--dp-border-subtle);
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
   .parser-header-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .parser-actions {
-    align-self: flex-end;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .parser-actions :deep(.arco-btn) {
+    min-width: 0;
+  }
+
+  .parser-meta {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 </style>

@@ -468,7 +468,7 @@ const handleActionError = (error) => {
 }
 
 .page-subtitle {
-  color: var(--color-text-3);
+  color: var(--dp-text-secondary);
   font-size: 16px;
   margin: 0;
   line-height: 1.5;
@@ -553,7 +553,7 @@ const handleActionError = (error) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--color-text-4);
+  color: var(--dp-text-secondary);
   text-align: center;
 }
 
@@ -782,5 +782,248 @@ const handleActionError = (error) => {
 
 .integration-test-subsection:first-child {
   margin-top: 20px;
+}
+
+@media (min-width: 769px) {
+  .debug-header {
+    padding: 14px 16px;
+    background: var(--dp-bg-surface);
+    border-bottom-color: var(--dp-border-subtle);
+  }
+
+  .header-content {
+    align-items: center;
+    gap: 16px;
+  }
+
+  .page-title {
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .title-icon {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .nav-button-group {
+    border-radius: var(--dp-radius-md);
+    background: var(--dp-bg-surface-muted);
+    box-shadow: none;
+  }
+
+  .nav-button-grid {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .nav-grid-button,
+  .nav-grid-placeholder {
+    min-height: 28px;
+    padding: 4px 9px;
+    border-radius: var(--dp-radius-sm);
+  }
+
+  .debug-content {
+    padding: 0;
+  }
+
+  .debug-sections {
+    gap: 8px;
+  }
+
+  .debug-section {
+    margin-bottom: 0;
+    padding: 12px 14px;
+    border-radius: var(--dp-radius-lg);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .debug-section:hover {
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .debug-section h2 {
+    gap: 6px;
+    margin: 0 0 10px;
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  .debug-section h2::before {
+    width: 3px;
+    height: 15px;
+  }
+
+  .debug-section p,
+  .integration-test-subsection p {
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .debug-textarea {
+    min-height: 90px;
+    padding: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .debug-result,
+  .debug-error-box {
+    margin-top: 8px;
+  }
+
+  .debug-result h3,
+  .debug-result h4,
+  .debug-error-box h4,
+  .integration-test-subsection h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+  }
+
+  .debug-json,
+  .debug-error,
+  .debug-error-box {
+    padding: 8px;
+    border-radius: var(--dp-radius-md);
+    font-size: 12px;
+  }
+
+  .debug-fields li,
+  .debug-validation li {
+    padding: 4px 0;
+    font-size: 12px;
+  }
+
+  .preset-buttons {
+    gap: 8px;
+  }
+
+  .preset-buttons :deep(.arco-btn),
+  .debug-section > :deep(.arco-btn) {
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .integration-test-subsection,
+  .integration-test-subsection:first-child {
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: var(--dp-radius-md);
+  }
+}
+@media (max-width: 768px) {
+  .action-debug-test {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(22, 93, 255, 0.1), transparent 34%),
+      var(--dp-bg-app);
+  }
+
+  .debug-header {
+    position: static;
+    padding: 10px 0 12px;
+    background: transparent;
+    border-bottom: none;
+    backdrop-filter: none;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+  }
+
+  .title-icon {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .nav-button-group {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+    scrollbar-width: none;
+  }
+
+  .nav-button-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-button-grid {
+    display: flex;
+    min-width: max-content;
+    gap: 6px;
+    padding: 3px;
+  }
+
+  .nav-grid-button,
+  .nav-grid-placeholder {
+    min-height: 34px;
+    border-radius: 999px;
+  }
+
+  .debug-content {
+    padding: 0 0 12px;
+  }
+
+  .debug-sections {
+    gap: 12px;
+  }
+
+  .debug-section,
+  .integration-test-subsection {
+    margin-bottom: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .debug-section h2 {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .preset-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .preset-buttons :deep(.arco-btn) {
+    min-width: 0;
+    height: 40px;
+    border-radius: 999px;
+  }
+
+  .debug-json,
+  .debug-error,
+  .debug-textarea {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
 </style>

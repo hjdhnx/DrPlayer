@@ -23,7 +23,7 @@
         @scroll="handleScroll"
       >
         <div class="search-results-grid" :style="{ padding: gridPadding }">
-          <a-grid :cols="{ xs: 2, sm: 3, md: 4, lg: 5, xl: 6, xxl: 8 }" :rowGap="16" :colGap="12">
+          <a-grid class="search-video-grid" :cols="{ xs: 2, sm: 3, md: 4, lg: 5, xl: 6, xxl: 8 }" :rowGap="12" :colGap="12">
             <a-grid-item
               v-for="(video, index) in videos"
               :key="`${video.vod_id}_${index}`"
@@ -683,5 +683,85 @@ defineExpose({
 
 .bottom-spacing {
   height: 10px;
+}
+
+.search-grid-container,
+.search-scroll-container,
+.search-grid-container :deep(.arco-scrollbar),
+.search-grid-container :deep(.arco-scrollbar-container) {
+  min-height: 0;
+}
+
+.search-results-grid {
+  padding: 8px 12px;
+}
+
+.video_list_item_img,
+.video-poster {
+  height: auto;
+  aspect-ratio: 2 / 3;
+}
+
+.video_list_item_img :deep(.arco-image),
+.video_list_item_img :deep(.arco-image img),
+.video-poster-img {
+  height: 100%;
+}
+
+.video_list_item_title {
+  min-height: 34px;
+  padding: 9px 10px;
+  background: var(--dp-bg-surface);
+}
+
+.title-text {
+  color: var(--dp-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.video_list_hover,
+.video-card {
+  background: var(--dp-bg-surface);
+  border-color: var(--dp-border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--dp-shadow-sm);
+}
+
+.video_list_hover:hover,
+.video-card:hover {
+  border-color: color-mix(in srgb, var(--dp-primary-readable) 30%, var(--dp-border-subtle));
+  box-shadow: var(--dp-shadow-md);
+}
+
+.video_list_item_img,
+.video-poster {
+  border-radius: 12px 12px 0 0;
+}
+
+@media (min-width: 769px) {
+  .search-video-grid :deep(.arco-grid) {
+    row-gap: 18px !important;
+    column-gap: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-results-grid {
+    padding: 8px;
+  }
+
+  .search-video-grid :deep(.arco-grid) {
+    row-gap: 8px !important;
+    column-gap: 8px !important;
+  }
+
+  .error-state,
+  .loading-state,
+  .empty-state {
+    min-height: 240px;
+    height: auto;
+  }
 }
 </style>

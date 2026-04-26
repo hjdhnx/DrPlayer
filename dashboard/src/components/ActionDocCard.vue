@@ -426,7 +426,8 @@ const multiInputExample = ref(`{
 }
 
 .card-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
@@ -440,7 +441,7 @@ const multiInputExample = ref(`{
 .card-title {
   display: flex;
   align-items: center;
-  color: white;
+  color: var(--dp-text-primary);
   font-weight: 600;
   font-size: 16px;
 }
@@ -451,19 +452,19 @@ const multiInputExample = ref(`{
 }
 
 .expand-btn {
-  color: white !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--dp-primary-readable) !important;
+  border: 1px solid color-mix(in srgb, var(--dp-primary-readable) 30%, transparent) !important;
+  background: var(--dp-bg-hover) !important;
   transition: all 0.3s ease;
 }
 
 .expand-btn:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: color-mix(in srgb, var(--dp-primary-readable) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--dp-primary-readable) 45%, transparent) !important;
 }
 
 .card-content {
-  color: white;
+  color: var(--dp-text-primary);
 }
 
 .overview-section {
@@ -476,7 +477,7 @@ const multiInputExample = ref(`{
 .overview-item {
   text-align: center;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--dp-bg-surface-muted);
   border-radius: 8px;
   backdrop-filter: blur(10px);
 }
@@ -502,6 +503,9 @@ const multiInputExample = ref(`{
 .nav-tag {
   cursor: pointer;
   transition: all 0.3s ease;
+  color: var(--dp-text-primary) !important;
+  background: var(--dp-bg-surface-muted) !important;
+  border: 1px solid var(--dp-border) !important;
 }
 
 .nav-tag:hover {
@@ -515,7 +519,7 @@ const multiInputExample = ref(`{
 .section {
   margin-bottom: 30px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--dp-bg-hover);
   border-radius: 8px;
   backdrop-filter: blur(10px);
 }
@@ -524,7 +528,7 @@ const multiInputExample = ref(`{
   display: flex;
   align-items: center;
   margin-bottom: 15px;
-  color: white;
+  color: var(--dp-text-primary);
   font-size: 18px;
   font-weight: 600;
 }
@@ -542,14 +546,14 @@ const multiInputExample = ref(`{
 
 .concept-item {
   padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--dp-bg-surface-muted);
   border-radius: 6px;
 }
 
 .concept-title {
   font-weight: 600;
   margin-bottom: 8px;
-  color: #ffd700;
+  color: var(--dp-primary-readable);
 }
 
 .concept-desc {
@@ -565,8 +569,8 @@ const multiInputExample = ref(`{
 }
 
 .action-type-card {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: var(--dp-bg-surface) !important;
+  border: 1px solid var(--dp-border-subtle) !important;
 }
 
 .action-type-header {
@@ -578,21 +582,21 @@ const multiInputExample = ref(`{
 
 .action-type-code {
   font-family: 'Courier New', monospace;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--dp-bg-surface);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
-  color: #ffd700;
+  color: var(--dp-primary-readable);
 }
 
 .action-type-desc {
-  color: white;
+  color: var(--dp-text-primary);
   margin-bottom: 8px;
   font-size: 14px;
 }
 
 .action-type-usage {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--dp-text-secondary);
   font-size: 12px;
 }
 
@@ -604,9 +608,9 @@ const multiInputExample = ref(`{
 
 .special-action-item {
   padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--dp-bg-surface-muted);
   border-radius: 6px;
-  border-left: 4px solid #ffd700;
+  border-left: 4px solid var(--dp-primary-readable);
 }
 
 .special-action-header {
@@ -617,17 +621,17 @@ const multiInputExample = ref(`{
 }
 
 .action-id {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--dp-bg-surface);
   padding: 4px 8px;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
-  color: #ffd700;
+  color: var(--dp-primary-readable);
   font-size: 12px;
 }
 
 .action-name {
   font-weight: 600;
-  color: white;
+  color: var(--dp-text-primary);
 }
 
 .special-action-desc {
@@ -643,7 +647,7 @@ const multiInputExample = ref(`{
 
 .param-tag {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
+  background: color-mix(in srgb, var(--dp-primary-readable) 12%, var(--dp-bg-surface));
   padding: 2px 6px;
   margin: 0 4px 4px 0;
   border-radius: 3px;
@@ -658,7 +662,7 @@ const multiInputExample = ref(`{
 
 .param-item {
   padding: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--dp-bg-surface-muted);
   border-radius: 6px;
 }
 
@@ -671,10 +675,10 @@ const multiInputExample = ref(`{
 
 .param-name {
   font-family: 'Courier New', monospace;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--dp-bg-surface);
   padding: 2px 6px;
   border-radius: 4px;
-  color: #ffd700;
+  color: var(--dp-primary-readable);
   font-size: 12px;
 }
 
@@ -684,16 +688,16 @@ const multiInputExample = ref(`{
 }
 
 .example-tabs {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--dp-bg-surface-muted);
   border-radius: 6px;
   padding: 15px;
 }
 
 .code-block {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--dp-bg-surface);
   padding: 15px;
   border-radius: 6px;
-  color: #ffd700;
+  color: var(--dp-primary-readable);
   font-family: 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.5;
@@ -701,10 +705,10 @@ const multiInputExample = ref(`{
   white-space: pre-wrap;
 }
 
-/* 深色主题适配 */
+/* 主题适配 */
 :deep(.arco-card-header) {
   background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent) !important;
 }
 
 :deep(.arco-card-body) {
@@ -712,18 +716,35 @@ const multiInputExample = ref(`{
 }
 
 :deep(.arco-tabs-nav) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: color-mix(in srgb, var(--dp-bg-surface-muted) 92%, transparent) !important;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: 10px;
 }
 
 :deep(.arco-tabs-tab) {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: var(--dp-text-secondary) !important;
+  font-weight: 600;
 }
 
 :deep(.arco-tabs-tab-active) {
-  color: white !important;
+  color: var(--dp-primary-readable) !important;
 }
 
 :deep(.arco-tabs-content) {
   background: transparent !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :deep(.arco-tabs-nav) {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  :deep(.arco-tabs-tab) {
+    color: rgba(255, 255, 255, 0.82) !important;
+  }
+
+  :deep(.arco-tabs-tab-active) {
+    color: #fff !important;
+  }
 }
 </style>

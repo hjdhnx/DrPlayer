@@ -2317,7 +2317,7 @@ onUnmounted(() => {
 
 <style scoped>
 .video-detail {
-  min-height: 100vh;
+  min-height: 100%;
   background: var(--color-bg-1);
 }
 
@@ -2498,7 +2498,7 @@ onUnmounted(() => {
 .video-poster {
   flex-shrink: 0;
   width: 200px;
-  height: 280px;
+  aspect-ratio: 5 / 7;
   border-radius: 8px;
   overflow: hidden;
   background: var(--color-bg-3);
@@ -2924,8 +2924,7 @@ onUnmounted(() => {
   }
   
   .video-poster {
-    width: 150px;
-    height: 210px;
+    width: min(150px, 44vw);
     margin: 0 auto;
   }
   
@@ -3049,6 +3048,192 @@ onUnmounted(() => {
 
   .video-info-card.collapsed-when-playing .title-main {
     font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-detail {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top right, rgba(22, 93, 255, 0.1), transparent 34%),
+      var(--dp-bg-app);
+  }
+
+  .detail-header {
+    display: none;
+  }
+
+  .detail-content {
+    padding: 0;
+    max-width: none;
+  }
+
+  .video-info-card {
+    margin-bottom: 12px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .video-info-card :deep(.arco-card-body) {
+    padding: 14px;
+  }
+
+  .video-header {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    margin-bottom: 14px;
+  }
+
+  .video-poster {
+    width: 112px;
+    margin: 0;
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  }
+
+  .video-meta {
+    min-width: 0;
+  }
+
+  .video-title {
+    margin: 0 0 10px;
+    text-align: left;
+    font-size: 21px;
+    line-height: 1.24;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .video-tags {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .video-info-grid {
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .info-item {
+    min-width: 0;
+  }
+
+  .info-item .label {
+    min-width: 42px;
+  }
+
+  .info-item .value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .video-actions {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .action-buttons-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .play-btn,
+  .copy-btn,
+  .download-btn {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+
+  .download-row {
+    margin-top: 8px;
+    display: block;
+  }
+
+  .video-description {
+    margin-top: 4px;
+    padding-top: 14px;
+  }
+
+  .video-description h3 {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+
+  .description-content {
+    max-height: 84px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .episodes-header {
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .episodes-controls {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .route-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .route-btn {
+    flex: 0 0 auto;
+    min-width: 104px;
+    height: 36px;
+    border-radius: 999px;
+  }
+
+  .episodes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    gap: 8px;
+  }
+
+  .episode-btn {
+    min-height: 36px;
+    border-radius: 999px;
+  }
+
+  .video-info-card.collapsed-when-playing .video-header {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .video-info-card.collapsed-when-playing .video-poster {
+    width: 78px;
+    height: auto;
+    align-self: start;
+  }
+
+  .video-info-card.collapsed-when-playing .video-title,
+  .video-info-card.collapsed-when-playing .title-main {
+    font-size: 17px;
   }
 }
 
@@ -3184,5 +3369,72 @@ onUnmounted(() => {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--color-border-2);
+}
+
+@media (max-width: 768px) {
+  .detail-header {
+    gap: 8px;
+  }
+
+  .detail-header .left-section,
+  .header-title {
+    min-width: 0;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .detail-content {
+    padding: 12px;
+  }
+
+  .episodes-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .episodes-controls {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .video-actions {
+    padding: 12px;
+  }
+
+  .action-buttons,
+  .action-buttons-row,
+  .download-row {
+    gap: 8px;
+    justify-content: stretch !important;
+  }
+
+  .action-buttons :deep(.arco-btn),
+  .action-buttons-row :deep(.arco-btn),
+  .download-row :deep(.arco-btn) {
+    flex: 1 1 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-content {
+    padding: 8px;
+  }
+
+  .video-title {
+    font-size: 20px;
+  }
+
+  .route-btn {
+    min-width: 0;
+    flex: 1 1 calc(50% - 4px);
+  }
+
+  .video-player {
+    min-height: 180px;
+  }
 }
 </style>

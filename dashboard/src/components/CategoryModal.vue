@@ -5,11 +5,11 @@
     :footer="false"
     width="80%"
     class="category-modal"
+    modal-class="category-modal-panel"
     @cancel="handleClose"
   >
     <div class="category-modal-content">
-      <!-- 推荐分类 -->
-      <div 
+      <div
         v-if="hasRecommendVideos"
         class="category-item"
         :class="{ active: activeKey === 'recommendTuijian404' }"
@@ -17,9 +17,8 @@
       >
         推荐
       </div>
-      
-      <!-- 其他分类 -->
-      <div 
+
+      <div
         v-for="item in classList.class"
         :key="item.type_id"
         class="category-item"
@@ -67,67 +66,65 @@ const handleSelectCategory = (categoryId) => {
 <style scoped>
 .category-modal-content {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  max-height: 60vh;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 10px;
+  max-height: min(68vh, 620px);
   overflow-y: auto;
-  padding: 16px 0;
+  padding: 4px 0 8px;
 }
 
 .category-item {
-  padding: 12px 16px;
-  background: #f7f8fa;
-  border: 1px solid #e5e6eb;
-  border-radius: 8px;
+  padding: 11px 14px;
+  background: var(--dp-bg-surface-muted);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
-  font-weight: 500;
-  color: #1d2129;
+  font-weight: 700;
+  color: var(--dp-text-secondary);
 }
 
 .category-item:hover {
-  background: #e8f3ff;
-  border-color: #7bc4ff;
-  color: #165dff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--dp-bg-hover);
+  border-color: color-mix(in srgb, var(--dp-primary-readable) 45%, var(--dp-border));
+  color: var(--dp-primary-readable);
+  transform: translateY(-1px);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .category-item.active {
-  background: #165dff !important;
-  border-color: #165dff !important;
-  color: white !important;
-  font-weight: 600;
+  background: var(--dp-primary-readable) !important;
+  border-color: var(--dp-primary-readable) !important;
+  color: #fff !important;
+  font-weight: 800;
 }
 
 .category-item.active:hover {
-  background: #4080ff !important;
-  border-color: #4080ff !important;
-  color: white !important;
+  background: var(--color-primary-6) !important;
+  border-color: var(--color-primary-6) !important;
+  color: #fff !important;
 }
 
-/* 滚动条样式 */
 .category-modal-content::-webkit-scrollbar {
   width: 6px;
 }
 
 .category-modal-content::-webkit-scrollbar-track {
-  background: #f7f8fa;
+  background: var(--dp-bg-surface-muted);
   border-radius: 3px;
 }
 
 .category-modal-content::-webkit-scrollbar-thumb {
-  background: #c9cdd4;
+  background: var(--dp-border);
   border-radius: 3px;
 }
 
 .category-modal-content::-webkit-scrollbar-thumb:hover {
-  background: #a9aeb8;
+  background: var(--dp-text-tertiary);
 }
 
-/* 暗色主题适配 */
 @media (prefers-color-scheme: dark) {
   .category-item {
     background: #2a2a2b;
@@ -151,6 +148,113 @@ const handleSelectCategory = (categoryId) => {
 
   .category-modal-content::-webkit-scrollbar-thumb:hover {
     background: #5a5a5c;
+  }
+}
+
+@media (min-width: 769px) {
+  :global(.category-modal-panel) {
+    width: min(680px, calc(100vw - 112px)) !important;
+    border-radius: var(--dp-radius-lg) !important;
+  }
+
+  :global(.category-modal-panel .arco-modal-header) {
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid var(--dp-border-subtle);
+  }
+
+  :global(.category-modal-panel .arco-modal-title) {
+    color: var(--dp-text-primary);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  :global(.category-modal-panel .arco-modal-close-btn) {
+    top: 10px;
+    right: 12px;
+  }
+
+  :global(.category-modal-panel .arco-modal-body) {
+    padding: 12px 16px 16px !important;
+  }
+
+  .category-modal-content {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 6px;
+    max-height: min(58vh, 420px);
+    padding: 0 2px 2px 0;
+  }
+
+  .category-item {
+    min-width: 0;
+    height: 30px;
+    padding: 0 9px;
+    border-radius: var(--dp-radius-sm);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .category-item:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 768px) {
+  :deep(.category-modal-panel) {
+    width: calc(100vw - 20px) !important;
+    max-width: 520px;
+    margin: 0 auto;
+    border-radius: 22px !important;
+  }
+
+  :deep(.category-modal-panel .arco-modal-header) {
+    padding: 16px 18px 10px;
+    border-bottom: none;
+  }
+
+  :deep(.category-modal-panel .arco-modal-title) {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--dp-text-primary);
+  }
+
+  :deep(.category-modal-panel .arco-modal-body) {
+    padding: 6px 14px 16px !important;
+    max-height: min(70vh, 560px);
+  }
+
+  .category-modal-content {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    max-height: min(58vh, 460px);
+    padding: 4px 0 2px;
+  }
+
+  .category-item {
+    min-width: 0;
+    min-height: 40px;
+    padding: 9px 8px;
+    border-radius: 999px;
+    color: var(--dp-text-secondary);
+    background: var(--dp-bg-surface-muted);
+    border-color: var(--dp-border-subtle);
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .category-item:hover {
+    transform: none;
+    box-shadow: none;
   }
 }
 </style>

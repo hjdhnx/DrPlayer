@@ -105,7 +105,7 @@ import GlobalActionDialog from './GlobalActionDialog.vue'
 const props = defineProps({
   navigation_title: {
     type: String,
-    default: "Video",
+    default: "点播",
   },
 
   now_site_title: String,
@@ -200,6 +200,11 @@ const handleActionExecuted = (event) => {
     }
   }
 };
+
+defineExpose({
+  openPushModal: handlePush,
+  openGlobalActionDialog: handleGlobalAction
+});
 
 // 确认推送
 const confirmPush = () => {

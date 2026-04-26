@@ -6,7 +6,7 @@
         <div class="header-left">
           <h1 class="page-title">
             <icon-code class="title-icon" />
-            Action组件测试
+            测试
           </h1>
           <p class="page-subtitle">测试各种Action组件的功能和交互效果</p>
         </div>
@@ -1494,7 +1494,7 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--color-text-4);
+  color: var(--dp-text-secondary);
   text-align: center;
 }
 
@@ -1504,7 +1504,7 @@ export default {
 }
 
 .page-subtitle {
-  color: var(--color-text-3);
+  color: var(--dp-text-secondary);
   font-size: 16px;
   margin: 0;
   line-height: 1.5;
@@ -1844,6 +1844,195 @@ export default {
   line-height: 1.5;
 }
 
+@media (min-width: 769px) {
+  .test-header {
+    padding: 14px 16px;
+    background: var(--dp-bg-surface);
+    border-bottom-color: var(--dp-border-subtle);
+  }
+
+  .header-content {
+    align-items: center;
+    gap: 16px;
+  }
+
+  .page-title {
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .title-icon {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .nav-button-group {
+    padding: 2px;
+    border-radius: var(--dp-radius-md);
+    background: var(--dp-bg-surface-muted);
+  }
+
+  .nav-button-grid {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .nav-grid-button,
+  .nav-grid-placeholder {
+    min-height: 28px;
+    padding: 4px 9px;
+    border-radius: var(--dp-radius-sm);
+  }
+
+  .test-content {
+    padding: 0;
+  }
+
+  .test-section {
+    margin-bottom: 8px;
+    padding: 12px 14px;
+    border-radius: var(--dp-radius-lg);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .test-section:hover {
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .test-section h2 {
+    gap: 6px;
+    margin: 0 0 10px;
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  .test-section h2::before {
+    width: 3px;
+    height: 15px;
+  }
+
+  .section-description,
+  .debug-description {
+    margin: 0 0 8px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .test-buttons {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 8px;
+  }
+
+  .test-buttons :deep(.arco-btn),
+  .status-buttons :deep(.arco-btn),
+  .debug-buttons :deep(.arco-btn),
+  .validation-buttons :deep(.arco-btn) {
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .image-preview-test {
+    margin-bottom: 10px !important;
+  }
+
+  .image-preview-test h3,
+  .debug-input-section h3,
+  .debug-result-section h3,
+  .debug-error-section h4,
+  .debug-success-content h4,
+  .debug-error-content h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+  }
+
+  .image-preview-test img {
+    max-width: 140px !important;
+    max-height: 96px !important;
+  }
+
+  .image-preview-test p {
+    margin: 6px 0 0;
+    font-size: 12px;
+  }
+
+  .debug-area,
+  .debug-result-section,
+  .debug-error-section,
+  .status-info,
+  .result-area {
+    padding: 10px;
+    border-radius: var(--dp-radius-md);
+    margin-bottom: 10px;
+  }
+
+  .debug-area {
+    margin-top: 8px;
+  }
+
+  .debug-input-section {
+    margin-bottom: 10px;
+  }
+
+  .debug-buttons,
+  .status-buttons,
+  .validation-buttons {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .status-info {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+  }
+
+  .status-item,
+  .result-item {
+    padding: 8px 10px;
+    border-radius: var(--dp-radius-md);
+  }
+
+  .status-item label,
+  .status-item span,
+  .validation-item,
+  .debug-status {
+    font-size: 12px;
+  }
+
+  .result-area {
+    max-height: 320px;
+  }
+
+  .result-item {
+    grid-template-columns: 72px 110px 72px 1fr;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .debug-textarea :deep(.arco-textarea) {
+    min-height: 120px;
+    font-size: 12px;
+  }
+
+  .debug-json,
+  .debug-error-message {
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .debug-field {
+    padding: 3px 0;
+  }
+}
+
 /* 滚动条样式 */
 .test-content::-webkit-scrollbar,
 .result-area::-webkit-scrollbar {
@@ -1880,72 +2069,150 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .test-header {
-    padding: 20px 24px;
+  .action-test-container {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(22, 93, 255, 0.1), transparent 34%),
+      var(--dp-bg-app);
   }
-  
+
+  .test-header {
+    position: static;
+    padding: 10px 0 12px;
+    background: transparent;
+    border-bottom: none;
+    backdrop-filter: none;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nav-button-group {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+    scrollbar-width: none;
+  }
+
+  .nav-button-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-button-grid {
+    display: flex;
+    min-width: max-content;
+    gap: 6px;
+    padding: 3px;
+  }
+
+  .nav-grid-button,
+  .nav-grid-placeholder {
+    min-height: 34px;
+    border-radius: 999px;
+  }
+
   .page-title {
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+  }
+
+  .title-icon {
     font-size: 24px;
   }
-  
-  .title-icon {
-    font-size: 28px;
+
+  .page-subtitle {
+    font-size: 13px;
   }
-  
+
   .test-content {
-    padding: 20px;
+    padding: 0 0 12px;
   }
-  
+
   .test-buttons {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .test-section {
-    padding: 20px;
-  }
-  
-  .status-info {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .status-buttons {
-    flex-direction: column;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
-  
+
+  .test-buttons :deep(.arco-btn),
+  .status-buttons :deep(.arco-btn),
+  .debug-buttons :deep(.arco-btn),
+  .validation-buttons :deep(.arco-btn) {
+    min-width: 0;
+    min-height: 40px;
+    border-radius: 999px;
+  }
+
+  .test-section,
+  .status-info,
+  .result-area {
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .status-info {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .status-buttons,
+  .debug-buttons,
+  .validation-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
   .result-item {
     grid-template-columns: 1fr;
     gap: 8px;
     font-size: 12px;
   }
+
+  .debug-area,
+  .debug-result-section,
+  .debug-error-section {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .debug-json,
+  .debug-error-message {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 480px) {
   .test-header {
-    padding: 16px 20px;
+    padding: 10px 0 12px;
   }
-  
+
   .page-title {
-    font-size: 20px;
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
   }
-  
+
   .test-content {
-    padding: 16px;
+    padding: 0 0 12px;
   }
-  
-  .test-section {
-    padding: 16px;
-    margin-bottom: 24px;
-  }
-  
+
+  .test-section,
   .status-info,
   .result-area {
-    padding: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
   }
 }
 </style>

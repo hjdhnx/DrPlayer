@@ -775,34 +775,75 @@ onUnmounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .local-book-reader {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .reader-content {
+    -webkit-overflow-scrolling: touch;
+  }
+
   .chapter-container {
-    padding: 20px !important;
+    padding: 18px 18px 72px !important;
+    max-width: none !important;
   }
-  
+
   .chapter-title {
-    font-size: 20px;
-    margin: 20px 0;
+    font-size: 22px !important;
+    line-height: 1.35 !important;
+    margin: 18px 0 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+    text-align: left;
   }
-  
+
+  .chapter-text {
+    max-width: none !important;
+    margin-bottom: 36px;
+  }
+
   .chapter-navigation {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    margin-top: 28px;
+    padding: 16px 0 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   }
-  
+
   .nav-btn {
     width: 100%;
+    min-width: 0;
+    height: 42px;
     margin: 0 !important;
+    border-radius: 999px;
   }
-  
+
   .chapter-progress {
+    grid-column: 1 / -1;
     text-align: center;
     order: -1;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 8%, transparent);
   }
-  
+
   .paragraph {
-    text-indent: 1.5em;
-    margin-bottom: 1.2em;
+    text-indent: 1.6em;
+    margin-bottom: 1.25em;
+  }
+
+  .progress-bar {
+    height: calc(4px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .progress-text {
+    right: 12px;
+    top: -28px;
+    border-radius: 999px;
   }
 }
 </style>

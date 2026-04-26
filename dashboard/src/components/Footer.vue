@@ -81,9 +81,9 @@ const handleProjectClick = () => {
 }
 
 .stats-text {
-  font-size: 13px;
-  color: var(--color-text-2);
-  font-weight: 500;
+  font-size: 12px;
+  color: var(--dp-text-tertiary);
+  font-weight: 600;
 }
 
 .default-footer {
@@ -91,26 +91,23 @@ const handleProjectClick = () => {
   align-items: center;
   justify-content: center;
   width: 100%;
-  color: var(--color-text-2);
-  font-size: 13px;
+  color: var(--dp-text-tertiary);
+  font-size: 12px;
 }
 
 .footer-info {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border-radius: 20px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
-  transition: all 0.3s ease;
+  gap: 10px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--dp-text-tertiary);
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .footer-info:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
-  border-color: rgba(99, 102, 241, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+  color: var(--dp-text-secondary);
+  background: var(--dp-bg-hover);
 }
 
 .copyright-section,
@@ -122,66 +119,44 @@ const handleProjectClick = () => {
 }
 
 .footer-icon {
-  font-size: 14px;
-  color: var(--color-primary-6);
-  transition: all 0.3s ease;
+  font-size: 13px;
+  color: currentColor;
 }
 
 .copyright-text,
 .license-text {
-  font-size: 13px;
-  color: var(--color-text-2);
+  font-size: 12px;
+  color: currentColor;
   font-weight: 500;
-  transition: color 0.3s ease;
 }
 
 .project-link {
-  font-size: 13px;
-  color: var(--color-primary-6);
+  font-size: 12px;
+  color: var(--dp-primary-readable);
   text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
+  font-weight: 600;
 }
 
 .project-link:hover {
   color: var(--color-primary-7);
-  transform: translateY(-1px);
-}
-
-.project-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--color-primary-6);
-  transition: width 0.3s ease;
-}
-
-.project-link:hover::after {
-  width: 100%;
 }
 
 .separator {
-  color: var(--color-border-3);
+  color: var(--dp-border);
   font-size: 12px;
-  opacity: 0.6;
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
   .footer-info {
     gap: 8px;
     padding: 0 12px;
     font-size: 12px;
   }
-  
+
   .footer-icon {
     font-size: 12px;
   }
-  
+
   .copyright-text,
   .license-text,
   .project-link {
@@ -195,11 +170,11 @@ const handleProjectClick = () => {
     gap: 4px;
     padding: 8px 12px;
   }
-  
+
   .separator {
     display: none;
   }
-  
+
   .copyright-section,
   .project-section,
   .license-section {

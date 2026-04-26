@@ -178,7 +178,68 @@
   color: var(--action-text);
 }
 
-/* 按钮样式 */
+@media (max-width: 768px) {
+  .action-mask {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .action-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - 24px);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .action-dialog-header {
+    flex-shrink: 0;
+    padding: 16px 48px 10px 16px;
+    margin-bottom: 0;
+  }
+
+  .action-dialog-title {
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .action-dialog-content {
+    flex: 1;
+    min-height: 0;
+    padding: 14px 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    word-break: break-word;
+  }
+
+  .action-dialog-footer {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .action-dialog-footer .action-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    border-radius: 999px;
+    white-space: normal;
+  }
+
+  .action-input,
+  .action-textarea,
+  .action-select {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 .action-button {
   padding: var(--action-padding-sm) var(--action-padding);
   border: 1px solid var(--action-border);

@@ -6,7 +6,7 @@
         <div class="welcome-section">
           <h1 class="dashboard-title">
             <icon-home class="title-icon" />
-            数据看板
+            主页
           </h1>
           <p class="dashboard-subtitle">欢迎回来，今天也要愉快地追剧哦～</p>
         </div>
@@ -29,11 +29,46 @@
       </div>
     </div>
 
+    <!-- 移动端影视 App 首页入口 -->
+    <div class="mobile-home-feed">
+      <section class="mobile-hero-card">
+        <div class="mobile-hero-copy">
+          <span class="mobile-eyebrow">DrPlayer Mobile</span>
+          <h2>今天想看点什么？</h2>
+          <p>从点播、直播、书画柜快速进入，常用内容都在“我的”。</p>
+        </div>
+        <router-link class="mobile-hero-action" to="/video">去点播</router-link>
+      </section>
+
+      <section class="mobile-quick-grid">
+        <router-link class="mobile-quick-card primary" to="/video">
+          <svg><use href="#icon-dianbo"></use></svg>
+          <span>点播</span>
+          <small>片源 / 分类</small>
+        </router-link>
+        <router-link class="mobile-quick-card" to="/live">
+          <svg><use href="#icon-shipinzhibo"></use></svg>
+          <span>直播</span>
+          <small>频道播放</small>
+        </router-link>
+        <router-link class="mobile-quick-card" to="/collection">
+          <svg><use href="#icon-shoucang"></use></svg>
+          <span>收藏</span>
+          <small>内容库</small>
+        </router-link>
+        <router-link class="mobile-quick-card" to="/history">
+          <svg><use href="#icon-lishi"></use></svg>
+          <span>历史</span>
+          <small>继续观看</small>
+        </router-link>
+      </section>
+    </div>
+
     <!-- 可滚动内容区域 -->
     <div class="dashboard-content">
       <div class="content-grid">
         <!-- 最近观看统计 -->
-        <div class="dashboard-card watch-stats-card">
+        <div v-if="!isMobileView" class="dashboard-card watch-stats-card">
           <div class="card-header">
             <h3 class="card-title">
               <icon-bar-chart class="card-icon" />
@@ -384,6 +419,7 @@ const statsTimeRange = ref('week')
 const recommendType = ref('hot')
 
 // 观看统计数据
+const isMobileView = ref(window.matchMedia('(max-width: 768px)').matches)
 const todayStats = ref({ watchCount: 0, totalWatchTime: 0 })
 const yesterdayStats = ref({ watchCount: 0, totalWatchTime: 0 })
 const weekStats = ref([])
@@ -568,6 +604,7 @@ const closeKeywordsModal = () => {
 
 // 初始化数据
 const initData = () => {
+  isMobileView.value = window.matchMedia('(max-width: 768px)').matches
   // 初始化模拟数据（仅在开发环境）
   if (import.meta.env.DEV) {
     watchStatsService.initMockData()
@@ -627,6 +664,16 @@ onMounted(() => {
   flex-direction: column;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100%; /* 使用100%最小高度，继承父容器 */
+}
+
+.mobile-home-feed {
+  display: none;
+}
+
+.mobile-hero-card,
+.mobile-quick-card {
+  color: inherit;
+  text-decoration: none;
 }
 
 .dashboard-header {
@@ -1145,6 +1192,345 @@ onMounted(() => {
   .status-grid {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+}
+
+/* 弹窗样式 */
+.home-container {
+  width: 100%;
+  max-width: var(--dp-page-max-width);
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.dashboard-header {
+  position: static;
+  padding: 20px 22px;
+  margin: 0 0 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
+  backdrop-filter: none;
+}
+
+.header-content {
+  padding: 0;
+}
+
+.dashboard-title {
+  font-size: 24px;
+}
+
+.quick-stats {
+  gap: 20px;
+}
+
+.dashboard-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.content-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 18px;
+  padding: 0;
+}
+
+.dashboard-card {
+  background: var(--dp-bg-surface);
+  border-color: var(--dp-border-subtle);
+  box-shadow: var(--dp-shadow-sm);
+}
+
+.dashboard-card:hover {
+  box-shadow: var(--dp-shadow-md);
+  transform: none;
+}
+
+.card-header {
+  padding: 14px 16px 12px;
+}
+
+.card-content {
+  padding: 14px 16px 16px;
+}
+
+.watch-stats-card,
+.recommend-card {
+  grid-column: span 2;
+}
+
+.chart {
+  height: 260px;
+}
+
+.recommend-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.recommend-poster {
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+
+@media (max-width: 1200px) {
+  .watch-stats-card,
+  .recommend-card {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 12px 0;
+    margin: 0 -12px;
+  }
+
+  .header-content {
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .dashboard-title {
+    font-size: 20px;
+  }
+
+  .title-icon {
+    font-size: 24px;
+  }
+
+  .quick-stats {
+    width: 100%;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .stat-item {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .dashboard-content {
+    margin: 0 -12px;
+    padding: 12px 0;
+  }
+
+  .content-grid {
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .card-header,
+  .card-content {
+    padding: 12px;
+  }
+
+  .chart {
+    height: 220px;
+  }
+
+  .recommend-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    display: block;
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(22, 93, 255, 0.14), transparent 34%),
+      var(--dp-bg-app);
+  }
+
+  .dashboard-header {
+    display: none;
+  }
+
+  .mobile-home-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .mobile-hero-card {
+    min-height: 152px;
+    padding: 18px;
+    border-radius: 24px;
+    background:
+      linear-gradient(135deg, rgba(22, 93, 255, 0.94), rgba(96, 122, 255, 0.82)),
+      var(--dp-bg-surface);
+    box-shadow: 0 16px 40px rgba(22, 93, 255, 0.22);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .mobile-hero-card::after {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    right: -48px;
+    bottom: -42px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  .mobile-hero-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 78%;
+  }
+
+  .mobile-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.76;
+  }
+
+  .mobile-hero-copy h2 {
+    margin: 8px 0 6px;
+    font-size: 24px;
+    line-height: 1.18;
+  }
+
+  .mobile-hero-copy p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    opacity: 0.86;
+  }
+
+  .mobile-hero-action {
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #165dff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .mobile-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mobile-quick-card {
+    min-width: 0;
+    min-height: 82px;
+    padding: 10px 6px;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .mobile-quick-card.primary {
+    background: var(--dp-bg-hover);
+    color: var(--color-primary-6);
+  }
+
+  .mobile-quick-card svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-primary-6);
+  }
+
+  .mobile-quick-card span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dp-text-primary);
+  }
+
+  .mobile-quick-card small {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+    color: var(--dp-text-tertiary);
+  }
+
+  .dashboard-content {
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .content-grid {
+    padding: 0;
+    gap: 12px;
+  }
+
+  .watch-stats-card,
+  .keywords-card,
+  .system-status-card {
+    display: none;
+  }
+
+  .update-log-card {
+    order: 3;
+  }
+
+  .recommend-card {
+    order: 1;
+  }
+
+  .dashboard-card {
+    border-radius: 18px;
+  }
+
+  .card-header,
+  .card-content {
+    padding: 12px;
+  }
+
+  .recommend-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .recommend-poster {
+    aspect-ratio: 2 / 3;
+  }
+}
+
+@media (max-width: 420px) {
+  .quick-stats {
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    flex: 1 1 calc(33.333% - 8px);
   }
 }
 

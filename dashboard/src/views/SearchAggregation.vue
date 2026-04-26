@@ -4,6 +4,21 @@
 
     <!-- 主要内容区域 -->
     <div class="search-content">
+      <section class="mobile-search-panel">
+        <form class="mobile-search-form" @submit.prevent="performSearch(searchKeyword)">
+          <input
+            v-model="searchKeyword"
+            type="search"
+            placeholder="搜索影视、动漫、综艺"
+            @input="onSearchInput(searchKeyword)"
+          />
+          <button type="submit">搜索</button>
+        </form>
+        <div class="mobile-search-actions">
+          <button type="button" @click="showSearchSettings = true">搜索源设置</button>
+          <button v-if="hasSearched" type="button" @click="clearPageState">清空结果</button>
+        </div>
+      </section>
       <!-- 最近搜索记录（仅在搜索前显示，有记录时） -->
       <div v-if="!hasSearched && recentSearches.length > 0" class="recent-search-floating">
         <div class="recent-search-section">
@@ -661,9 +676,15 @@ export default defineComponent({
     
     // 动态计算滚动区域高度
     const updateScrollAreaHeight = () => {
-      // 计算可用高度：总高度减去头部和其他固定元素
-      const availableHeight = window.innerHeight - 112; // 减去导航栏等固定高度
-      scrollAreaHeight.value = Math.max(availableHeight - 120, 400); // 减去results-header等，最小400px
+      nextTick(() => {
+        const container = scrollbarRef.value?.$el?.closest('.results-content') || document.querySelector('.results-content');
+        const header = document.querySelector('.results-header');
+        const containerHeight = container?.clientHeight || 0;
+        const headerHeight = header?.offsetHeight || 56;
+        if (containerHeight > 0) {
+          scrollAreaHeight.value = Math.max(containerHeight - headerHeight, 260);
+        }
+      });
     };
     
     // 新的视频点击处理方法，支持action类型
@@ -1359,10 +1380,18 @@ export default defineComponent({
 
 <style scoped>
 .search-aggregation {
-  height: 100vh;
+  width: 100%;
+  max-width: var(--dp-page-max-width);
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-1);
+  background: transparent;
+}
+
+.mobile-search-panel {
+  display: none;
 }
 
 /* 头部样式已移至全局Header组件 */
@@ -1370,28 +1399,35 @@ export default defineComponent({
 /* 主要内容区域 */
 .search-content {
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
 /* 搜索首页样式 */
 .search-home {
-  padding: 40px 20px;
-  max-width: 800px;
+  padding: 32px 24px;
+  max-width: 880px;
   margin: 0 auto;
 }
 
 .hot-search-section {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  margin-bottom: 40px;
-  margin-top: 0;
+  padding: 22px;
+  max-width: 880px;
+  margin: 0 auto 24px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .recent-search-section {
-  padding: 20px;
-  max-width: 800px;
+  padding: 22px;
+  max-width: 880px;
   margin: 0 auto 20px auto;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 .recent-search-tags {
   display: flex;
@@ -1462,18 +1498,20 @@ export default defineComponent({
 
 /* 最近搜索记录浮动区域 */
 .recent-search-floating {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  margin-bottom: 8px;
+  padding: 0 20px;
+  max-width: 920px;
+  margin: 0 auto 12px;
 }
 
 /* 搜索建议样式 */
 .search-suggestions {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  margin-bottom: 8px;
+  padding: 22px;
+  max-width: 880px;
+  margin: 0 auto 12px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .suggestions-tags {
@@ -1498,23 +1536,32 @@ export default defineComponent({
 
 /* 搜索结果样式 */
 .search-results {
-  height: calc(100vh - 112px); /* 减去顶部导航(64px)和底部(48px)的高度 */
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
 .results-layout {
   display: flex;
   height: 100%;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 /* 左侧源分组 */
 .sources-sidebar {
-  width: 280px;
-  background: var(--color-bg-2);
-  border-right: 1px solid var(--color-border-2);
+  width: 300px;
+  background: var(--dp-bg-surface-muted);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-lg);
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .sources-header {
@@ -1649,13 +1696,15 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border-2);
-  background: var(--color-bg-1);
+  padding: 14px 16px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-lg);
+  background: var(--dp-bg-surface-muted);
   position: sticky;
   top: 0;
   z-index: 10;
   flex-shrink: 0;
+  margin-bottom: 12px;
 }
 
 .results-header h4 {
@@ -1695,34 +1744,147 @@ export default defineComponent({
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .search-aggregation {
+    background: var(--dp-bg-app);
+  }
+
+  .search-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .mobile-search-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0 12px;
+    flex-shrink: 0;
+  }
+
+  .mobile-search-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62px;
+    gap: 8px;
+  }
+
+  .mobile-search-form input {
+    min-width: 0;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--dp-border-subtle);
+    background: var(--dp-bg-surface);
+    color: var(--dp-text-primary);
+    outline: none;
+  }
+
+  .mobile-search-form button,
+  .mobile-search-actions button {
+    border: none;
+    font-family: inherit;
+    font-weight: 700;
+  }
+
+  .mobile-search-form button {
+    border-radius: 999px;
+    background: var(--dp-primary-readable);
+    color: #fff;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--dp-primary-readable) 24%, transparent);
+  }
+
+  .mobile-search-actions {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .mobile-search-actions button {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    color: var(--dp-text-secondary);
+    font-size: 12px;
+  }
+
+  .search-home,
+  .hot-search-section,
+  .recent-search-section,
+  .recent-search-floating,
+  .search-suggestions {
+    padding: 12px 0;
+    max-width: 100%;
+  }
+
+  .hot-search-section {
+    margin-bottom: 16px;
+  }
+
+  .search-results {
+    flex: 1;
+    min-height: 0;
+  }
+
   .results-layout {
     flex-direction: column;
+    min-height: 0;
+    gap: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
-  
+
   .sources-sidebar {
     width: 100%;
-    height: 200px;
+    height: auto;
+    max-height: 132px;
+    flex-shrink: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-2);
   }
-  
+
+  .sources-header {
+    padding: 10px 12px;
+  }
+
   .sources-list {
     display: flex;
     flex-direction: row;
+    gap: 8px;
     overflow-x: auto;
+    overflow-y: hidden;
     padding: 8px 12px;
+    height: auto;
+    flex: none;
   }
-  
+
   .source-item {
     min-width: 120px;
-    margin-right: 8px;
+    margin-right: 0;
     margin-bottom: 0;
+    padding: 8px 10px;
   }
-  
 
-  
+  .results-content,
+  .results-list {
+    min-height: 0;
+  }
+
+  .results-header {
+    padding: 10px 12px;
+    align-items: flex-start;
+    gap: 6px;
+    flex-direction: column;
+  }
+
   .search-header {
     padding: 0 16px;
   }
-  
+
   .header-left,
   .header-right {
     min-width: 100px;

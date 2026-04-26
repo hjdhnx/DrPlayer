@@ -430,4 +430,99 @@ const getStartTimeDisplay = () => {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+@media (min-width: 769px) {
+  .download-task-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: var(--dp-radius-lg);
+    background: var(--dp-bg-surface-muted);
+    border-color: var(--dp-border-subtle);
+  }
+
+  .download-task-item:hover {
+    border-color: var(--dp-border);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .task-info {
+    min-width: 0;
+    margin-bottom: 0;
+  }
+
+  .task-header {
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .task-title {
+    min-width: 0;
+  }
+
+  .task-title h3 {
+    margin-bottom: 2px;
+    font-size: 14px;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-meta {
+    gap: 8px;
+    font-size: 11px;
+    line-height: 1.2;
+    flex-wrap: wrap;
+  }
+
+  .task-status {
+    flex-shrink: 0;
+  }
+
+  .task-progress {
+    margin-bottom: 6px;
+  }
+
+  .progress-info {
+    margin-bottom: 3px;
+    font-size: 11px;
+  }
+
+  .error-message {
+    margin-bottom: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .task-details {
+    margin-bottom: 0;
+    padding: 8px;
+  }
+
+  .detail-row {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .task-actions {
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .task-actions :deep(.arco-btn) {
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .task-actions :deep(.arco-btn-icon) {
+    font-size: 14px;
+  }
+}
 </style>

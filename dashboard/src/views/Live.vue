@@ -2,7 +2,7 @@
   <div class="live-container">
     <!-- 简化的标题显示 -->
     <div class="simple-header">
-      <span class="navigation-title">Live</span>
+      <span class="navigation-title">直播</span>
       <div class="header-actions">
         <a-button 
           type="text" 
@@ -732,39 +732,51 @@ onMounted(async () => {
 
 <style scoped>
 .live-container {
+  width: 100%;
+  max-width: var(--dp-page-max-width);
   height: 100%;
+  min-height: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: transparent;
 }
 
 .simple-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   width: 100%;
-  padding: 16px 20px;
-  background: var(--color-bg-3);
-  border-bottom: 1px solid var(--color-border-2);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
   box-sizing: border-box;
 }
 
 .navigation-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-1);
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--dp-text-primary);
   white-space: nowrap;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
 }
 
 .live-content {
   flex: 1;
-  padding: 16px;
+  min-height: 0;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -779,52 +791,55 @@ onMounted(async () => {
 
 .live-main {
   height: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(260px, 320px) minmax(0, 1fr);
   gap: 16px;
 }
 
 .groups-panel,
-.channels-panel {
-  width: 280px;
-  background: var(--color-bg-2);
-  border-radius: 8px;
-  border: 1px solid var(--color-border-2);
+.channels-panel,
+.player-panel {
+  background: var(--dp-bg-surface);
+  border-radius: var(--dp-radius-xl);
+  border: 1px solid var(--dp-border-subtle);
+  box-shadow: var(--dp-shadow-sm);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
+}
+
+.groups-panel,
+.channels-panel {
+  width: auto;
 }
 
 .player-panel {
-  flex: 1;
-  background: var(--color-bg-2);
-  border-radius: 8px;
-  border: 1px solid var(--color-border-2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 400px;
+  min-width: 0;
 }
 
 .panel-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--color-border-2);
+  min-height: 54px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--dp-border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-bg-3);
+  background: var(--dp-bg-surface-muted);
 }
 
 .panel-header h3 {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-1);
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 800;
+  color: var(--dp-text-primary);
 }
 
 .group-count,
 .channel-count {
   font-size: 12px;
-  color: var(--color-text-3);
+  color: var(--dp-text-tertiary);
 }
 
 .player-controls {
@@ -835,28 +850,31 @@ onMounted(async () => {
 .groups-list,
 .channels-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 8px;
+  padding: 10px;
 }
 
 .group-item,
 .channel-item {
   padding: 12px;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 4px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  margin-bottom: 6px;
+  border: 1px solid transparent;
 }
 
 .group-item:hover,
 .channel-item:hover {
-  background: var(--color-fill-2);
+  background: var(--dp-bg-hover);
 }
 
 .group-item.active,
 .channel-item.active {
-  background: var(--color-primary-light-1);
-  color: var(--color-primary-6);
+  background: color-mix(in srgb, var(--dp-primary-readable) 12%, var(--dp-bg-surface));
+  border-color: color-mix(in srgb, var(--dp-primary-readable) 28%, var(--dp-border-subtle));
+  color: var(--dp-primary-readable);
 }
 
 .group-info {
@@ -877,10 +895,10 @@ onMounted(async () => {
 }
 
 .channel-logo {
-  flex: 1;
-  height: 45px;
-  min-width: 60px;
-  border-radius: 6px;
+  flex: 0 0 58px;
+  height: 44px;
+  min-width: 58px;
+  border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
@@ -897,7 +915,7 @@ onMounted(async () => {
   right: 0;
   bottom: 0;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .channel-logo img {
@@ -917,14 +935,14 @@ onMounted(async () => {
 }
 
 .channel-info {
-  width: 120px;
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .channel-name {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-1);
+  font-weight: 700;
+  color: var(--dp-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -932,8 +950,8 @@ onMounted(async () => {
 
 .channel-group {
   font-size: 12px;
-  color: var(--color-text-3);
-  margin-top: 2px;
+  color: var(--dp-text-tertiary);
+  margin-top: 3px;
 }
 
 .player-content {
@@ -1030,5 +1048,205 @@ onMounted(async () => {
 .groups-list::-webkit-scrollbar-thumb:hover,
 .channels-list::-webkit-scrollbar-thumb:hover {
   background: var(--color-fill-6);
+}
+
+@media (max-width: 1280px) {
+  .live-main {
+    grid-template-columns: minmax(190px, 220px) minmax(230px, 280px) minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .panel-header {
+    padding: 12px 14px;
+  }
+
+  .group-item,
+  .channel-item {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .live-container {
+    background: var(--dp-bg-app);
+  }
+
+  .simple-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 0 12px;
+    margin-bottom: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .navigation-title {
+    display: none;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .header-actions :deep(.arco-input-wrapper) {
+    width: 100% !important;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+  }
+
+  .live-content {
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .live-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(210px, 32vh) auto minmax(0, 1fr);
+    gap: 10px;
+    height: 100%;
+  }
+
+  .player-panel {
+    grid-row: 1;
+    min-width: 0;
+    border-radius: 18px;
+    background: #000;
+    border: none;
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .player-panel .panel-header {
+    min-height: 42px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.72);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .player-panel .panel-header h3 {
+    color: #fff;
+  }
+
+  .player-controls {
+    gap: 4px;
+  }
+
+  .player-controls :deep(.arco-btn) {
+    color: rgba(255, 255, 255, 0.88);
+    padding: 0 6px;
+    font-size: 12px;
+  }
+
+  .player-content,
+  .player-wrapper,
+  .video-container {
+    min-height: 0;
+  }
+
+  .player-controls-area {
+    background: var(--dp-bg-surface);
+  }
+
+  .groups-panel {
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .groups-panel .panel-header {
+    display: none;
+  }
+
+  .groups-list {
+    display: flex;
+    gap: 8px;
+    padding: 0 0 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .group-item {
+    flex: 0 0 auto;
+    min-width: 82px;
+    margin: 0;
+    padding: 9px 12px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .group-info {
+    gap: 8px;
+  }
+
+  .group-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .group-item.active {
+    background: var(--dp-bg-hover);
+    color: var(--color-primary-6);
+    border-color: var(--color-primary-3);
+  }
+
+  .channels-panel {
+    grid-row: 3;
+    width: 100%;
+    min-width: 0;
+    border-radius: 18px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+  }
+
+  .channels-panel .panel-header {
+    padding: 12px;
+    background: var(--dp-bg-surface);
+  }
+
+  .channels-list {
+    padding: 8px;
+  }
+
+  .channel-item {
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 14px;
+    background: var(--dp-bg-surface-muted);
+  }
+
+  .channel-logo {
+    width: 48px;
+    min-width: 48px;
+    flex: 0 0 48px;
+    height: 42px;
+  }
+
+  .channel-info {
+    width: auto;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .channel-name {
+    font-size: 14px;
+  }
 }
 </style>

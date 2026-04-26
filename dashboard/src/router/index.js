@@ -13,25 +13,31 @@ import ActionDebugTest from '@/views/ActionDebugTest.vue';
 import VideoTest from '@/views/VideoTest.vue';
 import CSPTest from '@/views/CSPTest.vue';
 import SearchAggregation from '@/views/SearchAggregation.vue';
+import { routeMeta } from '@/config/navigation';
+
+const withMeta = (name, extraMeta = {}) => ({
+    ...(routeMeta[name] || {}),
+    ...extraMeta
+});
 
 
 const routes = [
-    {path: '/', component: Home, name: 'Home'},
-    {path: '/video', component: Video, name: 'Video'},
-    {path: '/video/:id', component: VideoDetail, name: 'VideoDetail', props: true},
-    {path: '/live', component: Live, name: 'Live'},
-    {path: '/settings', component: Settings, name: 'Settings'},
-    {path: '/collection', component: Collection, name: 'Collection'},
-    {path: '/book-gallery', component: BookGallery, name: 'BookGallery'},
-    {path: '/local-book-reader/:bookId', component: () => import('@/views/LocalBookReader.vue'), name: 'LocalBookReader', props: true},
-    {path: '/download-manager', component: () => import('@/components/downloader/NovelDownloader.vue'), name: 'DownloadManager'},
-    {path: '/history', component: History, name: 'History'},
-    {path: '/parser', component: Parser, name: 'Parser'},
-    {path: '/action-test', component: ActionTest, name: 'ActionTest'},
-    {path: '/action-debug-test', component: ActionDebugTest, name: 'ActionDebugTest'},
-    {path: '/video-test', component: VideoTest, name: 'VideoTest'},
-    {path: '/csp-test', component: CSPTest, name: 'CSPTest'},
-    {path: '/search', component: SearchAggregation, name: 'SearchAggregation'},
+    {path: '/', component: Home, name: 'Home', meta: withMeta('Home')},
+    {path: '/video', component: Video, name: 'Video', meta: withMeta('Video')},
+    {path: '/video/:id', component: VideoDetail, name: 'VideoDetail', props: true, meta: withMeta('VideoDetail')},
+    {path: '/live', component: Live, name: 'Live', meta: withMeta('Live')},
+    {path: '/settings', component: Settings, name: 'Settings', meta: withMeta('Settings')},
+    {path: '/collection', component: Collection, name: 'Collection', meta: withMeta('Collection')},
+    {path: '/book-gallery', component: BookGallery, name: 'BookGallery', meta: withMeta('BookGallery')},
+    {path: '/local-book-reader/:bookId', component: () => import('@/views/LocalBookReader.vue'), name: 'LocalBookReader', props: true, meta: withMeta('LocalBookReader')},
+    {path: '/download-manager', component: () => import('@/components/downloader/NovelDownloader.vue'), name: 'DownloadManager', meta: withMeta('DownloadManager')},
+    {path: '/history', component: History, name: 'History', meta: withMeta('History')},
+    {path: '/parser', component: Parser, name: 'Parser', meta: withMeta('Parser')},
+    {path: '/action-test', component: ActionTest, name: 'ActionTest', meta: withMeta('ActionTest')},
+    {path: '/action-debug-test', component: ActionDebugTest, name: 'ActionDebugTest', meta: withMeta('ActionDebugTest')},
+    {path: '/video-test', component: VideoTest, name: 'VideoTest', meta: withMeta('VideoTest')},
+    {path: '/csp-test', component: CSPTest, name: 'CSPTest', meta: withMeta('CSPTest')},
+    {path: '/search', component: SearchAggregation, name: 'SearchAggregation', meta: withMeta('SearchAggregation')},
 
     // 404 fallback路由 - 必须放在最后
     {path: '/:pathMatch(.*)*', redirect: '/'}
@@ -62,9 +68,9 @@ const router = createRouter({
 
 // 路由守卫 - 可以在这里添加权限检查等逻辑
 router.beforeEach((to, from, next) => {
-    // 设置页面标题
-    if (to.name) {
-        document.title = `DrPlayer - ${to.name}`;
+    const title = to.meta?.title || to.name;
+    if (title) {
+        document.title = `DrPlayer - ${title}`;
     }
     next();
 });

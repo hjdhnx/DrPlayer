@@ -2,7 +2,10 @@
   <div class="settings-container">
     <!-- 简化的标题显示 -->
     <div class="simple-header">
-      <span class="navigation-title">Settings</span>
+      <div class="settings-page-heading">
+        <span class="navigation-title">设置</span>
+        <span class="navigation-subtitle">配置数据源、播放器与应用偏好</span>
+      </div>
     </div>
 
     <!-- 设置内容 -->
@@ -1765,11 +1768,25 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
+.settings-page-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 .navigation-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-1);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--dp-text-primary);
   white-space: nowrap;
+}
+
+.navigation-subtitle {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--dp-text-tertiary);
 }
 
 .settings-content {
@@ -1885,18 +1902,19 @@ onMounted(async () => {
 
 .config-actions .arco-btn {
   border-radius: 12px;
-  font-weight: 500;
+  font-weight: 600;
   min-width: 80px;
   transition: all 0.3s ease;
 }
 
 .config-actions .arco-btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--dp-primary-readable);
   border: none;
+  color: #fff;
 }
 
 .config-actions .arco-btn-primary:hover {
-  background: linear-gradient(135deg, #5b5bd6 0%, #7c3aed 100%);
+  background: var(--color-primary-5);
   transform: translateY(-1px);
 }
 
@@ -2303,6 +2321,300 @@ onMounted(async () => {
     width: 100%;
     max-width: 100%;
     justify-content: space-between;
+  }
+}
+
+.settings-container {
+  width: 100%;
+  max-width: var(--dp-page-narrow-width);
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.simple-header {
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
+}
+
+.navigation-title {
+  color: var(--dp-text-primary);
+}
+
+.settings-content {
+  min-height: 0;
+  max-height: none;
+  padding: 0 0 28px;
+  gap: 16px;
+}
+
+.settings-card {
+  border-radius: var(--dp-radius-lg);
+  border: 1px solid var(--dp-border-subtle);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
+  backdrop-filter: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-card:hover {
+  transform: none;
+  border-color: var(--dp-border);
+  box-shadow: var(--dp-shadow-md);
+}
+
+.settings-card :deep(.arco-card-header) {
+  padding: 12px 16px;
+  background: var(--dp-bg-surface);
+  border-bottom: 1px solid var(--dp-border-subtle);
+}
+
+.settings-card :deep(.arco-card-header-title) {
+  font-size: 15px;
+  color: var(--dp-text-primary);
+  gap: 8px;
+}
+
+.settings-card :deep(.arco-card-body) {
+  padding: 14px 16px 16px;
+}
+
+.config-card {
+  background: var(--dp-bg-surface);
+}
+
+.card-icon,
+.setting-icon,
+.address-config-icon {
+  color: var(--color-primary-6);
+}
+
+.settings-grid,
+.address-settings-section {
+  gap: 10px;
+}
+
+.setting-item,
+.address-config-item {
+  padding: 12px 14px;
+  background: var(--dp-bg-surface-muted);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-md);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.setting-item:hover,
+.address-config-item:hover {
+  background: var(--dp-bg-hover);
+  border-color: var(--dp-border);
+  transform: none;
+  box-shadow: none;
+}
+
+.setting-item::before {
+  background: var(--color-primary-6);
+}
+
+.setting-info {
+  max-width: none;
+  gap: 12px;
+}
+
+.setting-icon,
+.address-config-icon {
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 auto;
+  padding: 7px;
+  color: var(--dp-primary-readable) !important;
+  background: var(--color-primary-light-1);
+  border-radius: var(--dp-radius-md);
+  box-sizing: content-box;
+}
+
+.setting-title,
+.address-config-title {
+  font-size: 14px;
+  color: var(--dp-text-primary);
+}
+
+.setting-desc,
+.address-config-desc {
+  font-size: 12px;
+  color: var(--dp-text-secondary);
+}
+
+.setting-value {
+  max-width: 42%;
+  gap: 8px;
+}
+
+.value-text {
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--color-primary-6);
+  background: var(--color-primary-light-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arrow-icon {
+  color: var(--dp-text-tertiary);
+}
+
+.address-config-row {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.address-config-info {
+  min-width: 180px;
+  width: 22%;
+  min-width: min(180px, 32%);
+}
+
+.address-config-text {
+  min-width: 0;
+}
+
+.address-config-input-group {
+  min-width: 0;
+  gap: 8px;
+}
+
+.address-config-input {
+  min-width: 0;
+}
+
+.address-config-input :deep(.arco-input),
+.config-input :deep(.arco-input) {
+  border-color: var(--dp-border);
+  background: var(--dp-bg-surface);
+}
+
+.address-config-actions {
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.address-config-actions :deep(.arco-btn-primary),
+.config-actions .arco-btn-primary,
+.setting-value :deep(.arco-switch.arco-switch-checked),
+.address-config-switch :deep(.arco-switch.arco-switch-checked) {
+  background: var(--dp-primary-readable);
+  color: #fff;
+}
+
+.address-config-actions :deep(.arco-btn-primary:hover),
+.config-actions .arco-btn-primary:hover {
+  background: var(--color-primary-5);
+  transform: none;
+  box-shadow: none;
+}
+
+.address-config-actions :deep(.arco-btn-disabled),
+.address-config-actions :deep(.arco-btn-disabled *),
+.config-actions .arco-btn-disabled,
+.config-actions .arco-btn-disabled * {
+  color: #6b7788 !important;
+  background: var(--dp-bg-surface-muted) !important;
+  border-color: var(--dp-border) !important;
+  opacity: 1 !important;
+}
+
+.config-message {
+  padding: 8px 10px;
+  font-size: 12px;
+  background: var(--dp-bg-surface);
+}
+
+@media (max-width: 900px) {
+  .address-config-row {
+    flex-direction: column;
+  }
+
+  .address-config-info {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .address-config-input-group {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .simple-header {
+    padding: 10px 12px;
+    margin-bottom: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .settings-content {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .settings-card :deep(.arco-card-header) {
+    padding: 10px 12px;
+  }
+
+  .settings-card :deep(.arco-card-body) {
+    padding: 12px;
+  }
+
+  .setting-info {
+    max-width: none;
+  }
+
+  .address-config-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .address-config-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .address-config-switch {
+    align-self: flex-start;
+  }
+
+  .address-config-actions,
+  .address-config-actions :deep(.arco-btn),
+  .address-config-actions :deep(.arco-upload),
+  .address-config-actions :deep(.arco-upload-trigger) {
+    width: 100%;
+  }
+
+  .address-config-actions :deep(.arco-btn) {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .setting-item {
+    padding: 12px;
+  }
+
+  .setting-value {
+    max-width: 100%;
+  }
+
+  .value-text {
+    max-width: calc(100% - 24px);
   }
 }
 

@@ -13,11 +13,9 @@
           <h4>选择搜索源</h4>
           <p class="settings-desc">选择要参与聚合搜索的数据源</p>
         </div>
-        <div class="header-right">
-          <div class="search-tip">
-            <icon-info-circle class="tip-icon"/>
-            <span class="tip-text">只有 searchable 属性不为 0 的源才支持搜索功能</span>
-          </div>
+        <div class="search-tip">
+          <icon-info-circle class="tip-icon"/>
+          <span class="tip-text">仅 searchable 不为 0 的源支持搜索</span>
         </div>
       </div>
       
@@ -616,36 +614,150 @@ export default defineComponent({
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .search-settings {
+    padding: 0;
   }
-  
+
+  .settings-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .header-left,
+  .search-tip {
+    min-width: 0;
+  }
+
+  .header-left h4 {
+    font-size: 18px;
+    line-height: 1.25;
+    color: var(--dp-text-primary);
+    white-space: nowrap;
+  }
+
+  .settings-desc,
+  .tip-text {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .search-tip {
+    align-items: flex-start;
+    border-radius: 14px;
+    background: var(--dp-bg-surface-muted);
+    border-color: var(--dp-border-subtle);
+  }
+
+  .section-header {
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+  }
+
   .select-all-container {
     width: 100%;
+    justify-content: space-between;
+    gap: 8px;
   }
-  
+
+  .selected-count {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .header-actions :deep(.arco-btn) {
+    border-radius: 999px;
+    min-width: 0;
+  }
+
   .search-filter-container {
     margin-bottom: 12px;
   }
-  
-  .source-main {
+
+  .sources-list {
+    max-height: min(52vh, 460px);
+    display: flex;
     flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 16px;
+    background: var(--dp-bg-surface-muted);
+    border-color: var(--dp-border-subtle);
+  }
+
+  .source-item {
+    padding: 10px;
+    border: 1px solid var(--dp-border-subtle) !important;
+    border-radius: 14px;
+    background: var(--dp-bg-surface);
+  }
+
+  .source-item :deep(.arco-checkbox) {
+    align-items: flex-start;
+  }
+
+  .source-item :deep(.arco-checkbox-label) {
+    min-width: 0;
+    padding-left: 8px;
+  }
+
+  .source-main {
+    flex-direction: row;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
+  .source-name {
+    min-width: 0;
+    margin-right: 0;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
+
   .source-tags {
-    align-self: flex-end;
+    align-self: flex-start;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 42%;
   }
-  
+
+  .source-meta {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .meta-item {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .modal-footer {
-    flex-direction: column;
-  }
-  
-  .modal-footer .arco-btn {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .modal-footer .arco-btn,
+  .modal-footer :deep(.arco-btn) {
+    width: 100%;
+    min-width: 0;
+    border-radius: 999px;
+    white-space: nowrap;
   }
 }
 </style>

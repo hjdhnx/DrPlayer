@@ -3,7 +3,7 @@
     <!-- 头部 -->
     <div class="collection-header">
       <div class="header-left">
-        <h1 class="page-title">我的收藏</h1>
+        <h1 class="page-title">收藏</h1>
         <a-badge :count="favoriteStore.favoriteCount" class="count-badge" />
       </div>
       <div class="header-actions">
@@ -55,22 +55,16 @@
     <!-- 分类筛选 -->
     <div class="filter-section" v-if="favoriteStore.favoriteCount > 0">
       <div class="filter-tabs">
-        <a-button
-          :type="selectedCategory === 'all' ? 'primary' : 'outline'"
-          @click="selectedCategory = 'all'"
-          size="small"
-        >
-          全部 ({{ favoriteStore.favoriteCount }})
-        </a-button>
-        <a-button
-          v-for="(items, category) in favoriteStore.favoritesByType"
-          :key="category"
-          :type="selectedCategory === category ? 'primary' : 'outline'"
-          @click="selectedCategory = category"
-          size="small"
-        >
-          {{ category }} ({{ items.length }})
-        </a-button>
+        <a-radio-group v-model="selectedCategory" type="button">
+          <a-radio value="all">全部 ({{ favoriteStore.favoriteCount }})</a-radio>
+          <a-radio
+            v-for="(items, category) in favoriteStore.favoritesByType"
+            :key="category"
+            :value="category"
+          >
+            {{ category }} ({{ items.length }})
+          </a-radio>
+        </a-radio-group>
       </div>
     </div>
 
@@ -430,31 +424,41 @@ onMounted(() => {
 
 <style scoped>
 .collection-container {
+  width: 100%;
+  max-width: var(--dp-page-max-width);
   height: 100%;
+  min-height: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-1);
+  background: transparent;
 }
 
 .collection-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
-  background: var(--color-bg-2);
-  border-bottom: 1px solid var(--color-border-2);
+  gap: 24px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .page-title {
   font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-1);
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--dp-text-primary);
   margin: 0;
 }
 
@@ -465,13 +469,18 @@ onMounted(() => {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .filter-section {
-  padding: 16px 24px;
-  background: var(--color-bg-2);
-  border-bottom: 1px solid var(--color-border-2);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--dp-bg-surface);
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .filter-tabs {
@@ -482,7 +491,8 @@ onMounted(() => {
 
 .collection-content {
   flex: 1;
-  padding: 24px;
+  min-height: 0;
+  padding: 0;
   overflow-y: auto;
 }
 
@@ -491,12 +501,16 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  border: 1px solid var(--dp-border-subtle);
+  border-radius: var(--dp-radius-xl);
+  background: var(--dp-bg-surface);
+  box-shadow: var(--dp-shadow-sm);
 }
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 
@@ -508,52 +522,134 @@ onMounted(() => {
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .favorites-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 10px;
   }
 }
 
 @media (max-width: 768px) {
+  .collection-container {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top left, rgba(22, 93, 255, 0.1), transparent 32%),
+      var(--dp-bg-app);
+  }
+
   .collection-header {
     flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .header-actions {
-    flex-direction: column;
     gap: 12px;
+    align-items: stretch;
+    padding: 10px 0 12px;
+    background: transparent;
+    border-bottom: none;
   }
-  
+
+  .header-left {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .page-title {
+    font-size: 0;
+  }
+
+  .page-title::before {
+    content: '收藏';
+    display: block;
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: var(--dp-text-primary);
+  }
+
+  .count-badge {
+    margin-left: 0;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+
   .header-actions .arco-input-wrapper {
     width: 100% !important;
+    height: 42px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
   }
-  
+
+  .header-actions :deep(.arco-btn) {
+    height: 42px;
+    border-radius: 999px;
+  }
+
   .filter-section {
-    padding: 12px 16px;
+    padding: 0 0 12px;
+    background: transparent;
+    border-bottom: none;
   }
-  
+
+  .filter-tabs {
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tabs :deep(.arco-btn) {
+    flex: 0 0 auto;
+    min-width: 74px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--dp-bg-surface);
+    border-color: var(--dp-border-subtle);
+    color: var(--dp-text-secondary);
+    box-shadow: var(--dp-shadow-sm);
+  }
+
+  .filter-tabs :deep(.arco-btn-primary) {
+    background: var(--dp-primary-readable) !important;
+    border-color: var(--dp-primary-readable) !important;
+    color: #fff !important;
+    font-weight: 800;
+  }
+
+  .filter-tabs :deep(.arco-btn-outline:not(.arco-btn-disabled)) {
+    background: var(--dp-bg-surface) !important;
+    border-color: var(--dp-border) !important;
+    color: var(--dp-text-secondary) !important;
+    font-weight: 700;
+  }
+
   .collection-content {
-    padding: 16px;
+    padding: 0 0 12px;
+    min-height: 0;
   }
-  
+
   .favorites-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .empty-state {
+    min-height: 320px;
+    border-radius: 22px;
+    background: var(--dp-bg-surface);
+    border: 1px solid var(--dp-border-subtle);
   }
 }
 
 @media (max-width: 480px) {
-  .collection-header {
-    padding: 16px;
-  }
-  
-  .page-title {
-    font-size: 20px;
-  }
-  
   .favorites-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
