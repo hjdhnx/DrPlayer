@@ -837,7 +837,7 @@ const initArtPlayer = async (url) => {
       controls: [
         {
           position: 'right',
-          html: hasNextEpisode() ? '下一集' : '',
+          html: hasNextEpisode() ? '<span class="player-control-label" data-mobile="下">下一集</span>' : '',
           tooltip: hasNextEpisode() ? '播放下一集' : '',
           style: hasNextEpisode() ? {} : { display: 'none' },
           click: function () {
@@ -846,7 +846,7 @@ const initArtPlayer = async (url) => {
         },
         {
           position: 'right',
-          html: availableQualities.value.length > 1 ? `画质: ${getCurrentQualityLabel.value}` : '',
+          html: availableQualities.value.length > 1 ? `<span class="player-control-label" data-mobile="质">画质: ${getCurrentQualityLabel.value}</span>` : '',
           style: availableQualities.value.length > 1 ? {} : { display: 'none' },
           click: function () {
             toggleQualityLayer()
@@ -854,7 +854,7 @@ const initArtPlayer = async (url) => {
         },
         {
           position: 'right',
-          html: props.episodes.length > 1 ? '选集' : '',
+          html: props.episodes.length > 1 ? '<span class="player-control-label" data-mobile="集">选集</span>' : '',
           tooltip: props.episodes.length > 1 ? '选择集数' : '',
           style: props.episodes.length > 1 ? {} : { display: 'none' },
           click: function () {
@@ -863,7 +863,7 @@ const initArtPlayer = async (url) => {
         },
         {
           position: 'right',
-          html: '关闭',
+          html: '<span class="player-control-label" data-mobile="关">关闭</span>',
           tooltip: '关闭播放器',
           click: function () {
             closePlayer()
@@ -1163,7 +1163,7 @@ const updateQualityControlText = () => {
         for (let i = 0; i < buttons.length; i++) {
           const button = buttons[i]
           if (button.innerHTML.includes('画质')) {
-            const newText = `画质: ${getCurrentQualityLabel.value}`
+            const newText = `<span class="player-control-label" data-mobile="质">画质: ${getCurrentQualityLabel.value}</span>`
             button.innerHTML = newText
             console.log('更新控制栏画质文本:', newText)
             return
@@ -2138,6 +2138,52 @@ onUnmounted(() => {
 
 :deep(.art-control:hover) {
   color: #23ade5;
+}
+
+:deep(.player-control-label) {
+  display: inline-flex;
+  align-items: center;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  :deep(.art-bottom) {
+    padding: 0 4px;
+  }
+
+  :deep(.art-controls),
+  :deep(.art-controls-left),
+  :deep(.art-controls-right) {
+    min-width: 0;
+  }
+
+  :deep(.art-controls-right) {
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  :deep(.art-controls-right .art-control) {
+    flex: 0 0 34px;
+    width: 34px;
+    min-width: 34px;
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  :deep(.art-controls-right .art-control .player-control-label) {
+    width: 22px;
+    justify-content: center;
+    font-size: 0;
+  }
+
+  :deep(.art-controls-right .art-control .player-control-label::before) {
+    content: attr(data-mobile);
+    font-size: 12px;
+    font-weight: 600;
+  }
 }
 
 /* ArtPlayer selector 弹层位置调整 */

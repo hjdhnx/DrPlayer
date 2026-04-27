@@ -86,7 +86,7 @@
               :title="`${parser.name} (${parser.type === '1' ? 'JSON' : '嗅探'})`"
               :disabled="parser.type === '0' && !snifferEnabled"
             >
-              解析:{{ parser.name }}
+              解析 · {{ parser.name }}
               <span v-if="parser.type === '0' && !snifferEnabled" style="color: #ff4d4f; font-size: 10px;">
                 (需嗅探器)
               </span>
@@ -110,14 +110,14 @@
             class="compact-select"
             size="small"
           >
-            <a-option value="disabled" title="关闭代理播放功能">代理播放:关闭</a-option>
+            <a-option value="disabled" title="关闭代理播放功能">代理 · 关闭</a-option>
             <a-option 
               v-for="option in proxyOptions" 
               :key="option.value" 
               :value="option.value"
               :title="`${option.label}\n完整链接: ${option.url || option.value}`"
             >
-              代理播放:{{ option.label }}
+              代理 · {{ option.label }}
             </a-option>
           </a-select>
         </div>
@@ -145,7 +145,7 @@
               :value="quality.name"
               :title="`切换到${quality.name}画质`"
             >
-              画质:{{ quality.name }}
+              画质 · {{ quality.name }}
             </a-option>
           </a-select>
         </div>
@@ -690,49 +690,95 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .player-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 8px;
+    padding: 8px 2px;
+    margin-bottom: 6px;
   }
-  
+
   .player-header h3 {
-    margin-right: 0;
-    font-size: 15px;
-  }
-  
-  .compact-button-group {
-    flex-wrap: wrap;
     width: 100%;
-    justify-content: center;
+    margin-right: 0;
+    font-size: 14px;
+    line-height: 1.4;
   }
-  
+
+  .player-controls {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .compact-button-group {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px;
+    border-radius: 10px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .compact-button-group::-webkit-scrollbar {
+    display: none;
+  }
+
   .compact-btn {
-    flex: 1;
-    min-width: 80px;
+    flex: 0 0 auto;
+    min-width: 42px;
+    min-height: 32px;
     justify-content: center;
+    border-radius: 8px;
+    scroll-snap-align: start;
   }
-  
+
   .btn-text {
     display: none;
   }
-  
+
   .selector-btn {
-    flex: 2;
+    flex: 0 0 auto;
+    min-width: 136px;
   }
-  
+
   .compact-select {
-    min-width: 100px;
+    width: 136px;
+    min-width: 136px;
+  }
+
+  .compact-select :deep(.arco-select-view) {
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+  }
+
+  .compact-select :deep(.arco-select-view-value) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 480px) {
-  .compact-btn {
-    padding: 4px 6px;
-    min-height: 26px;
+  .compact-button-group {
+    margin: 0 -2px;
   }
-  
+
+  .compact-btn {
+    padding: 4px 8px;
+    min-height: 32px;
+  }
+
   .btn-icon {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
+  }
+
+  .selector-btn,
+  .compact-select {
+    min-width: 142px;
+    width: 142px;
   }
 }
 </style>
