@@ -1,13 +1,13 @@
 <template>
   <div class="action-footer">
-    <a-space wrap>
-      <a-button v-if="showCancel" @click="emit('cancel')">
+    <a-space wrap size="small">
+      <a-button v-if="showCancel" size="small" @click="emit('cancel')">
         {{ cancelText }}
       </a-button>
-      <a-button v-if="showReset" @click="emit('reset')">
+      <a-button v-if="showReset" size="small" @click="emit('reset')">
         {{ resetText }}
       </a-button>
-      <a-button v-if="showOk" type="primary" :disabled="disabled" @click="emit('ok')">
+      <a-button v-if="showOk" type="primary" size="small" :disabled="disabled" @click="emit('ok')">
         {{ okText }}
       </a-button>
     </a-space>

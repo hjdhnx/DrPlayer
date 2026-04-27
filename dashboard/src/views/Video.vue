@@ -150,6 +150,8 @@ const pageStateStore = usePageStateStore();
 const route = useRoute();
 const router = useRouter();
 
+const getSingleQueryValue = (value) => Array.isArray(value) ? value[0] : value;
+
 // 时间格式化函数
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -163,7 +165,7 @@ const formatDate = (date) => {
 
 const currentDateTime = ref(formatDate(new Date())); // 初始化时就设置当前时间
 const mobileSearchKeyword = ref('');
-const currentActiveKey = ref(route.query.activeKey || ""); // 当前选中的分类key，优先使用URL参数
+const currentActiveKey = ref(getSingleQueryValue(route.query.activeKey) || ""); // 当前选中的分类key，优先使用URL参数
 const videoListRef = ref(null); // VideoList组件引用
 const breadcrumbRef = ref(null);
 const form = reactive({
@@ -960,9 +962,10 @@ const handleActionExecuted = (event) => {
 
 // 监听路由查询参数变化，确保activeKey与URL同步
 watch(() => route.query.activeKey, (newActiveKey) => {
-  if (newActiveKey && newActiveKey !== currentActiveKey.value) {
-    console.log('[DEBUG] URL activeKey changed:', newActiveKey, 'current:', currentActiveKey.value);
-    currentActiveKey.value = newActiveKey;
+  const normalizedActiveKey = getSingleQueryValue(newActiveKey);
+  if (normalizedActiveKey && normalizedActiveKey !== currentActiveKey.value) {
+    console.log('[DEBUG] URL activeKey changed:', normalizedActiveKey, 'current:', currentActiveKey.value);
+    currentActiveKey.value = normalizedActiveKey;
   }
 }, { immediate: true });
 
@@ -1006,6 +1009,11 @@ onMounted(async () => {
       }
     }
   
+  const routeActiveKey = getSingleQueryValue(route.query.activeKey);
+  if (routeActiveKey) {
+    currentActiveKey.value = routeActiveKey;
+  }
+
   // 尝试恢复页面状态
   const savedState = pageStateStore.getPageState('video');
   const isStateExpired = pageStateStore.isStateExpired('video');
@@ -1093,7 +1101,7 @@ onMounted(async () => {
     delete newQuery._returnToActiveKey;
     delete newQuery.folderState; // 同时清除folder状态参数
     router.replace({ query: newQuery });
-  } else if (savedState && savedState.activeKey && !isStateExpired) {
+  } else if (!routeActiveKey && savedState && savedState.activeKey && !isStateExpired) {
     // 如果有保存的状态且未过期，只恢复同一数据源的状态
     const canRestoreSavedState = savedState.siteKey && savedState.siteKey === currentSiteKey();
     if (canRestoreSavedState) {

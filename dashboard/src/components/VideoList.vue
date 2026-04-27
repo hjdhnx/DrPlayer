@@ -812,6 +812,12 @@ const getClassListHash = (classList) => {
   return JSON.stringify(classList.class.map(c => c.type_id || c.id || ''));
 };
 
+const isValidActiveKey = (key, classList = props.classList) => {
+  if (!key) return false;
+  if (key === "recommendTuijian404") return hasRecommendVideos.value;
+  return classList?.class?.some(item => String(item.type_id) === String(key));
+};
+
 watch(() => props.classList, (newClassList, oldClassList) => {
   // 防止递归更新
   if (isClassListUpdating) {
@@ -862,12 +868,17 @@ watch(() => props.classList, (newClassList, oldClassList) => {
       return;
     }
     
-    const newActiveKey = getDefaultActiveKey();
-    
+    const requestedActiveKey = props.sourceRoute?.query?.activeKey || props.returnToActiveKey;
+    const newActiveKey = isValidActiveKey(requestedActiveKey, newClassList)
+      ? requestedActiveKey
+      : getDefaultActiveKey();
+
     if (activeKey.value !== newActiveKey) {
       activeKey.value = newActiveKey;
       getListData(newActiveKey);
-      emit('activeKeyChange', newActiveKey);
+      if (!requestedActiveKey) {
+        emit('activeKeyChange', newActiveKey);
+      }
     }
   } catch (error) {
     console.error('classList watch处理失败:', error);
@@ -889,14 +900,12 @@ watch(() => props.sourceRoute?.query?.activeKey, (newActiveKey) => {
   if (newActiveKey && newActiveKey !== activeKey.value) {
     console.log('[DEBUG] sourceRoute activeKey changed:', newActiveKey, 'current:', activeKey.value);
     activeKey.value = newActiveKey;
-    
+
     // 如果当前分类没有数据，则重新加载
     if (!listData[newActiveKey] || listData[newActiveKey].length === 0) {
       console.log('[DEBUG] 重新加载分类数据:', newActiveKey);
       getListData(newActiveKey);
     }
-    
-    emit('activeKeyChange', newActiveKey);
   }
 }, { immediate: true });
 

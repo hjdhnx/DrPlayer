@@ -46,46 +46,63 @@
             </a-space>
           </template>
 
-          <a-space v-if="quickSelectOptions.length > 0" wrap class="quick-select-options">
-            <a-tag
-              v-for="option in quickSelectOptions"
-              :key="option.value"
-              color="arcoblue"
-              checkable
-              @click="selectQuickOption(option)"
-            >
-              {{ option.name }}
-            </a-tag>
-          </a-space>
+          <div class="input-field-stack">
+            <div v-if="quickSelectOptions.length > 0" class="quick-select-options">
+              <a-tag
+                v-for="option in quickSelectOptions"
+                :key="option.value"
+                color="arcoblue"
+                checkable
+                :checked="isQuickOptionSelected(option)"
+                @click="selectQuickOption(option)"
+              >
+                {{ option.name }}
+              </a-tag>
+            </div>
 
-          <div v-if="!isMultiLine" class="input-inline-row">
             <a-input
+              v-if="!isMultiLine"
               ref="inputRef"
               v-model="inputValue"
+              class="input-with-editor"
               :type="inputType"
               :placeholder="config.tip || '请输入内容...'"
               :status="hasError ? 'error' : undefined"
               allow-clear
               @keyup.enter="handleSubmit"
               @input="handleInput"
-            />
-            <a-button class="input-inline-action" @click="openTextEditor">大文本</a-button>
+            >
+              <template #suffix>
+                <a-button
+                  type="text"
+                  size="mini"
+                  class="input-editor-icon-button"
+                  title="打开大文本编辑器"
+                  @click.stop="openTextEditor"
+                >
+                  <template #icon>
+                    <IconEdit />
+                  </template>
+                </a-button>
+              </template>
+            </a-input>
+
+            <template v-else>
+              <a-textarea
+                ref="inputRef"
+                v-model="inputValue"
+                :placeholder="config.tip || '请输入内容...'"
+                :auto-size="{ minRows: Number(config.multiLine) || 4, maxRows: 10 }"
+                :status="hasError ? 'error' : undefined"
+                allow-clear
+                @input="handleInput"
+              />
+
+              <a-button size="small" class="text-editor-button" @click="openTextEditor">
+                打开大文本编辑器
+              </a-button>
+            </template>
           </div>
-
-          <a-textarea
-            v-else
-            ref="inputRef"
-            v-model="inputValue"
-            :placeholder="config.tip || '请输入内容...'"
-            :auto-size="{ minRows: Number(config.multiLine) || 4, maxRows: 10 }"
-            :status="hasError ? 'error' : undefined"
-            allow-clear
-            @input="handleInput"
-          />
-
-          <a-button v-if="isMultiLine" size="small" class="text-editor-button" @click="openTextEditor">
-            打开大文本编辑器
-          </a-button>
         </a-form-item>
       </a-form>
 
@@ -119,14 +136,16 @@
   <ActionShell
     :visible="showTextEditor"
     title="大文本编辑器"
-    :width="800"
+    :width="720"
+    custom-class="action-text-editor-modal"
     @close="closeTextEditor"
   >
     <a-textarea
       ref="textEditorRef"
       v-model="editorText"
+      class="action-text-editor-textarea"
       placeholder="请输入文本内容..."
-      :auto-size="{ minRows: 10, maxRows: 16 }"
+      :auto-size="{ minRows: 9, maxRows: 13 }"
     />
 
     <template #footer>
@@ -143,6 +162,7 @@
 
 <script>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { IconEdit } from '@arco-design/web-vue/es/icon'
 import ActionShell from './shared/ActionShell.vue'
 import ActionMessage from './shared/ActionMessage.vue'
 import ActionMedia from './shared/ActionMedia.vue'
@@ -167,7 +187,8 @@ export default {
     ActionMessage,
     ActionMedia,
     ActionTimeout,
-    ActionFooter
+    ActionFooter,
+    IconEdit
   },
   props: {
     config: {
@@ -751,10 +772,14 @@ export default {
       validateInput(inputValue.value)
     }
 
+    const isQuickOptionSelected = (option) => {
+      return String(inputValue.value) === String(option.value)
+    }
+
     const selectQuickOption = (option) => {
       inputValue.value = option.value
       validateInput(option.value)
-      
+
       // 如果只允许快速选择，直接提交
       if (props.config.onlyQuickSelect) {
         nextTick(() => {
@@ -911,6 +936,7 @@ export default {
       handleReset,
       handleImageClick,
       selectQuickOption,
+      isQuickOptionSelected,
       // 大文本编辑器相关
       textEditorRef,
       showTextEditor,
@@ -928,25 +954,40 @@ export default {
   width: 100%;
 }
 
-.quick-select-options {
-  margin-bottom: 12px;
+.input-field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
-.input-inline-row {
+.quick-select-options {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
   width: 100%;
-  margin-top: 4px;
 }
 
-.input-inline-row :deep(.arco-input-wrapper) {
-  flex: 1;
-  min-width: 0;
+.input-with-editor {
+  width: 100%;
 }
 
-.input-inline-action {
-  flex-shrink: 0;
+.input-editor-icon-button {
+  color: var(--color-text-2);
+}
+
+.input-editor-icon-button:hover {
+  color: rgb(var(--primary-6));
+  background: var(--color-fill-2);
+}
+
+.action-text-editor-textarea {
+  width: 100%;
+}
+
+.action-text-editor-textarea :deep(textarea) {
+  line-height: 1.55;
 }
 
 .input-extra {

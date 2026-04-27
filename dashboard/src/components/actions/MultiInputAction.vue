@@ -21,7 +21,7 @@
       />
 
       <a-form layout="vertical" class="multi-input-form">
-        <a-space direction="vertical" fill size="small">
+        <a-space direction="vertical" fill size="mini" class="multi-input-list">
           <a-card
             v-for="(input, index) in inputItems"
             :key="input.id || index"
@@ -42,7 +42,7 @@
                 </a-button>
               </template>
 
-              <a-space direction="vertical" fill size="small">
+              <a-space direction="vertical" fill size="mini" class="multi-input-field-stack">
                 <a-space
                   v-if="input.selectData && hasNonSpecialOptions(input.selectData) && !input.multiSelect"
                   wrap
@@ -82,7 +82,21 @@
                     allow-clear
                     @input="value => handleInputChange(index, value)"
                     @blur="validateInput(index)"
-                  />
+                  >
+                    <template v-if="!getSpecialInputType(input) && !(input.inputType === 0 && input.selectData)" #suffix>
+                      <a-button
+                        type="text"
+                        size="mini"
+                        class="multi-input-editor-icon-button"
+                        title="打开大文本编辑器"
+                        @click.stop="openTextEditor(index)"
+                      >
+                        <template #icon>
+                          <IconEdit />
+                        </template>
+                      </a-button>
+                    </template>
+                  </a-input>
                   <a-button
                     v-if="getSpecialInputType(input)"
                     class="multi-input-inline-action"
@@ -96,9 +110,6 @@
                     @click="openSelectOptions(index)"
                   >
                     选项
-                  </a-button>
-                  <a-button class="multi-input-inline-action" v-else @click="openTextEditor(index)">
-                    大文本
                   </a-button>
                 </div>
 
@@ -184,14 +195,16 @@
   <ActionShell
     :visible="showTextEditor"
     title="大文本编辑器"
-    :width="800"
+    :width="720"
+    custom-class="action-text-editor-modal"
     @close="closeTextEditor"
   >
     <a-textarea
       ref="textEditorRef"
       v-model="editorText"
+      class="action-text-editor-textarea"
       placeholder="请输入文本内容..."
-      :auto-size="{ minRows: 12, maxRows: 18 }"
+      :auto-size="{ minRows: 9, maxRows: 13 }"
       allow-clear
     />
 
@@ -299,6 +312,7 @@
 
 <script>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { IconEdit } from '@arco-design/web-vue/es/icon'
 import ActionShell from './shared/ActionShell.vue'
 import ActionMessage from './shared/ActionMessage.vue'
 import ActionMedia from './shared/ActionMedia.vue'
@@ -322,7 +336,8 @@ export default {
     ActionMessage,
     ActionMedia,
     ActionTimeout,
-    ActionFooter
+    ActionFooter,
+    IconEdit
   },
   props: {
     config: {
@@ -1236,13 +1251,24 @@ export default {
 }
 
 .multi-input-form {
-  max-height: 60vh;
+  max-height: 64vh;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 2px;
+}
+
+.multi-input-list,
+.multi-input-field-stack,
+.multi-input-list :deep(.arco-space-item),
+.multi-input-field-stack :deep(.arco-space-item) {
+  width: 100%;
 }
 
 .multi-input-card :deep(.arco-card-body) {
-  padding-bottom: 4px;
+  padding: 8px 10px;
+}
+
+.multi-input-card :deep(.arco-form-item) {
+  margin-bottom: 0;
 }
 
 .multi-input-count {
@@ -1253,18 +1279,35 @@ export default {
 .multi-input-inline-row {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  margin-top: 4px;
 }
 
 .multi-input-inline-row :deep(.arco-input-wrapper) {
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
 }
 
 .multi-input-inline-action {
   flex-shrink: 0;
+}
+
+.multi-input-editor-icon-button {
+  color: var(--color-text-2);
+}
+
+.multi-input-editor-icon-button:hover {
+  color: rgb(var(--primary-6));
+  background: var(--color-fill-2);
+}
+
+.action-text-editor-textarea {
+  width: 100%;
+}
+
+.action-text-editor-textarea :deep(textarea) {
+  line-height: 1.55;
 }
 
 .help-content {
