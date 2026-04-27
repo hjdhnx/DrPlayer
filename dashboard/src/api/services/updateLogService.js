@@ -6,124 +6,115 @@
 // 更新日志数据
 const UPDATE_LOGS = [
   {
-    id: 'v2.1.0',
-    version: 'v2.1.0',
-    date: '2024-01-15',
-    title: '主页看板功能上线',
-    type: 'feature',
-    description: '全新的数据看板界面，提供观看统计、更新日志和推荐功能',
-    changes: [
-      '新增观看统计图表，支持今日/昨日对比',
-      '新增更新日志时间线展示',
-      '新增猜你喜欢推荐模块',
-      '优化主页布局，支持固定头部滚动内容',
-      '集成ECharts图表库'
-    ],
-    author: 'DrPlayer Team',
-    importance: 'major'
-  },
-  {
-    id: 'v2.0.5',
-    version: 'v2.0.5',
-    date: '2024-01-12',
-    title: '视频详情页优化',
+    id: 'v1.0.5-20260427-mobile-video',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-28',
+    title: '移动端点播操作区整理',
     type: 'improvement',
-    description: '优化视频详情页的用户体验和界面交互',
+    description: '根据移动端点播页的实际使用反馈，调整顶部操作入口并压缩当前片源区域高度',
     changes: [
-      '修复下拉选择框滚动跟随问题',
-      '优化选择框文本显示宽度',
-      '改进选择框定位策略',
-      '增强响应式布局适配'
+      '将移动端点播刷新入口移动到顶部 header，放在搜索按钮左侧',
+      '移除当前片源区域里与 header 搜索重复的聚合按钮',
+      '当前片源区域仅保留推送和动作入口，减少移动端首屏高度占用',
+      '验证移动端 390px 宽度下无横向溢出，刷新按钮可触发原有重载逻辑'
     ],
-    author: 'UI Team',
-    importance: 'minor'
-  },
-  {
-    id: 'v2.0.4',
-    version: 'v2.0.4',
-    date: '2024-01-10',
-    title: '播放器功能增强',
-    type: 'feature',
-    description: '播放器新增多项实用功能，提升观看体验',
-    changes: [
-      '新增播放速度调节功能',
-      '支持自定义快进/快退时间',
-      '新增画质切换选项',
-      '优化全屏播放体验',
-      '修复音量控制问题'
-    ],
-    author: 'Player Team',
+    author: 'Claude Code',
     importance: 'major'
   },
   {
-    id: 'v2.0.3',
-    version: 'v2.0.3',
-    date: '2024-01-08',
-    title: '性能优化',
-    type: 'optimization',
-    description: '全面优化系统性能，提升加载速度',
+    id: 'v1.0.5-20260427-downloader',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-28',
+    title: '下载器弹窗与章节选择优化',
+    type: 'improvement',
+    description: '修复下载器新建任务弹窗在移动端和长章节列表下的滚动体验问题',
     changes: [
-      '优化视频列表加载性能',
-      '减少首屏加载时间',
-      '优化图片懒加载策略',
-      '压缩静态资源大小',
-      '改进缓存策略'
+      '调整新建下载任务弹窗结构，避免最外层 modal 出现滚动条',
+      '将弹窗主滚动收敛到内容区域，减少多层滚动条干扰',
+      '章节列表默认折叠，章节很多时可以更快滚动到下载设置',
+      '保留章节全选、全不选、反选、范围选择和单章勾选能力',
+      '小说简介较长时支持展开与收起，避免详情区域撑高弹窗'
     ],
-    author: 'Performance Team',
-    importance: 'minor'
+    author: 'Claude Code',
+    importance: 'major'
   },
   {
-    id: 'v2.0.2',
-    version: 'v2.0.2',
-    date: '2024-01-05',
-    title: '安全性更新',
-    type: 'security',
-    description: '重要安全更新，修复多个安全漏洞',
-    changes: [
-      '修复XSS安全漏洞',
-      '加强用户输入验证',
-      '更新依赖包到安全版本',
-      '改进API接口安全性',
-      '增强数据传输加密'
-    ],
-    author: 'Security Team',
-    importance: 'critical'
-  },
-  {
-    id: 'v2.0.1',
-    version: 'v2.0.1',
-    date: '2024-01-03',
-    title: 'Bug修复',
+    id: 'v1.0.5-20260427-about-version',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-28',
+    title: '关于弹窗版本号修正',
     type: 'bugfix',
-    description: '修复用户反馈的多个问题',
+    description: '修正设置页关于弹窗里的版本展示，避免继续显示旧的占位版本',
     changes: [
-      '修复视频无法播放的问题',
-      '解决搜索功能异常',
-      '修复移动端适配问题',
-      '解决内存泄漏问题',
-      '修复数据同步异常'
+      '关于弹窗版本号显示为 v1.0.5 20260427',
+      '版本来源继续读取应用构建版本，缺省值同步为当前版本',
+      '兼容版本字符串已带 v 前缀的情况，避免显示重复前缀'
     ],
-    author: 'Bug Fix Team',
+    author: 'Claude Code',
     importance: 'minor'
   },
   {
-    id: 'v2.0.0',
-    version: 'v2.0.0',
-    date: '2024-01-01',
-    title: 'DrPlayer 2.0 正式发布',
-    type: 'release',
-    description: '全新的DrPlayer 2.0版本正式发布，带来全新的用户体验',
+    id: 'v1.0.5-20260427-reader',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-27',
+    title: '小说阅读器移动端与章节体验改造',
+    type: 'feature',
+    description: '围绕小说阅读器的章节切换、设置弹窗和移动端布局做了一轮连续体验修复',
     changes: [
-      '全新的UI设计语言',
-      '重构的播放器内核',
-      '支持更多视频格式',
-      '新增用户个人中心',
-      '支持多设备同步',
-      '新增离线下载功能',
-      '优化搜索算法',
-      '支持弹幕功能'
+      '章节目录从弹窗式交互改为更接近阅读网站的左侧贴边导航',
+      '移动端章节入口改为阅读器内侧滑目录，选章后可立即回到正文预览',
+      '修复阅读器头部关闭、章节、设置等按钮在小屏幕下溢出或间距过近的问题',
+      '阅读设置弹窗高度控制在半屏以内，并修复内部滚动无法到底导致保存按钮不可见的问题',
+      '手动上一章、下一章按钮改为滚动到正文底部后出现，不再固定占用阅读区域'
     ],
-    author: 'DrPlayer Team',
+    author: 'Claude Code',
+    importance: 'major'
+  },
+  {
+    id: 'v1.0.5-20260427-settings',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-27',
+    title: '设置页表单样式整理',
+    type: 'improvement',
+    description: '根据设置页输入框观感反馈，调整链接输入和移动端表单呈现',
+    changes: [
+      '设置页输入框内部圆角改为更简洁的满宽样式',
+      '移除输入框前置链接图标，减少视觉噪音',
+      '收紧输入框内部 padding，使内容区域更贴近满宽展示',
+      '继续保留原有设置项、保存逻辑和校验行为'
+    ],
+    author: 'Claude Code',
+    importance: 'minor'
+  },
+  {
+    id: 'v1.0.5-20260427-mobile-ui',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-26',
+    title: '移动端页面响应式问题修复',
+    type: 'bugfix',
+    description: '集中处理多个页面在手机尺寸下的布局溢出、按钮拥挤和弹窗滚动问题',
+    changes: [
+      '修复部分移动端弹窗内容过高时底部操作不可达的问题',
+      '调整多个移动端 header 和操作按钮的间距，降低误触概率',
+      '优化阅读、下载、点播等页面的小屏布局，避免横向溢出',
+      '使用 Playwright 在移动端视口进行实际页面验证'
+    ],
+    author: 'Claude Code',
+    importance: 'major'
+  },
+  {
+    id: 'v1.0.5-20260426-danmaku',
+    version: 'v1.0.5 20260427',
+    date: '2026-04-26',
+    title: '弹幕与本地服务能力补充',
+    type: 'feature',
+    description: '补充近期真实提交中的弹幕插件和本地 WebSocket 相关能力说明',
+    changes: [
+      '支持弹幕插件能力，并继续完善 web:// 弹幕接入',
+      '将百度相关 WebSocket 能力调整为本地服务链路',
+      '已知 web:// 弹幕关闭后再开启仍有待继续优化'
+    ],
+    author: 'DrPlayer Maintainers',
     importance: 'major'
   }
 ]
