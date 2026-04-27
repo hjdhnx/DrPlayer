@@ -982,6 +982,18 @@ onMounted(async () => {
   overflow: hidden;
 }
 
+.player-controls-area {
+  flex-shrink: 0;
+  background: var(--dp-bg-surface);
+}
+
+.live-proxy-control {
+  display: flex;
+  align-items: center;
+  padding: 0 8px 8px;
+  min-width: 0;
+}
+
 
 
 .video-container {
@@ -1154,6 +1166,17 @@ onMounted(async () => {
 
   .player-controls-area {
     background: var(--dp-bg-surface);
+  }
+
+  .live-proxy-control {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 6px 8px;
+    scrollbar-width: none;
+  }
+
+  .live-proxy-control::-webkit-scrollbar {
+    display: none;
   }
 
   .groups-panel {

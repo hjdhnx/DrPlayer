@@ -2,168 +2,174 @@
   <a-modal
     :visible="visible"
     title="漫画阅读设置"
-    :width="480"
+    width="min(500px, calc(100vw - 24px))"
     :footer="false"
     @cancel="handleClose"
     unmount-on-close
+    modal-class="comic-settings-dialog"
+    align-center
   >
-    <div class="comic-settings">
-      <!-- 显示设置 -->
-      <div class="setting-section">
-        <h3 class="section-title">显示设置</h3>
-        
-        <!-- 图片宽度 -->
-        <div class="setting-item">
-          <label class="setting-label">图片宽度</label>
-          <div class="setting-control">
-            <a-slider
-              v-model="localSettings.imageWidth"
-              :min="300"
-              :max="1200"
-              :step="50"
-              :show-tooltip="true"
-              :format-tooltip="(value) => `${value}px`"
-              @change="handleSettingChange"
-            />
-            <span class="setting-value">{{ localSettings.imageWidth }}px</span>
+    <div class="dialog-container">
+      <div class="settings-content">
+        <div class="setting-section">
+          <div class="section-title">
+            <span>显示设置</span>
           </div>
-        </div>
 
-        <!-- 图片间距 -->
-        <div class="setting-item">
-          <label class="setting-label">图片间距</label>
-          <div class="setting-control">
-            <a-slider
-              v-model="localSettings.imageGap"
-              :min="0"
-              :max="50"
-              :step="5"
-              :show-tooltip="true"
-              :format-tooltip="(value) => `${value}px`"
-              @change="handleSettingChange"
-            />
-            <span class="setting-value">{{ localSettings.imageGap }}px</span>
-          </div>
-        </div>
-
-        <!-- 页面边距 -->
-        <div class="setting-item">
-          <label class="setting-label">页面边距</label>
-          <div class="setting-control">
-            <a-slider
-              v-model="localSettings.pagePadding"
-              :min="10"
-              :max="100"
-              :step="10"
-              :show-tooltip="true"
-              :format-tooltip="(value) => `${value}px`"
-              @change="handleSettingChange"
-            />
-            <span class="setting-value">{{ localSettings.pagePadding }}px</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 阅读模式 -->
-      <div class="setting-section">
-        <h3 class="section-title">阅读模式</h3>
-        
-        <!-- 阅读方向 -->
-        <div class="setting-item">
-          <label class="setting-label">阅读方向</label>
-          <a-radio-group 
-            v-model="localSettings.readingDirection" 
-            @change="handleSettingChange"
-          >
-            <a-radio value="vertical">垂直滚动</a-radio>
-            <a-radio value="horizontal">水平翻页</a-radio>
-          </a-radio-group>
-        </div>
-
-        <!-- 图片适应方式 -->
-        <div class="setting-item">
-          <label class="setting-label">图片适应</label>
-          <a-select 
-            v-model="localSettings.imageFit" 
-            @change="handleSettingChange"
-            :style="{ width: '200px' }"
-          >
-            <a-option value="width">适应宽度</a-option>
-            <a-option value="height">适应高度</a-option>
-            <a-option value="contain">完整显示</a-option>
-            <a-option value="cover">填充显示</a-option>
-          </a-select>
-        </div>
-
-        <!-- 预加载页数 -->
-        <div class="setting-item">
-          <label class="setting-label">预加载页数</label>
-          <div class="setting-control">
-            <a-slider
-              v-model="localSettings.preloadPages"
-              :min="1"
-              :max="10"
-              :step="1"
-              :show-tooltip="true"
-              :format-tooltip="(value) => `${value}页`"
-              @change="handleSettingChange"
-            />
-            <span class="setting-value">{{ localSettings.preloadPages }}页</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 主题设置 -->
-      <div class="setting-section">
-        <h3 class="section-title">主题设置</h3>
-        
-        <div class="theme-options">
-          <div
-            v-for="theme in themes"
-            :key="theme.key"
-            :class="[
-              'theme-option',
-              { 'active': localSettings.theme === theme.key }
-            ]"
-            @click="selectTheme(theme.key)"
-          >
-            <div class="theme-preview" :style="theme.style">
-              <div class="preview-text">Aa</div>
+          <div class="setting-item">
+            <label class="setting-label">图片宽度</label>
+            <div class="setting-control">
+              <a-slider
+                v-model="localSettings.imageWidth"
+                :min="300"
+                :max="1200"
+                :step="50"
+                :show-tooltip="true"
+                :format-tooltip="(value) => `${value}px`"
+                class="setting-slider"
+                @change="handleSettingChange"
+              />
+              <span class="setting-value">{{ localSettings.imageWidth }}px</span>
             </div>
-            <div class="theme-name">{{ theme.name }}</div>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">图片间距</label>
+            <div class="setting-control">
+              <a-slider
+                v-model="localSettings.imageGap"
+                :min="0"
+                :max="50"
+                :step="5"
+                :show-tooltip="true"
+                :format-tooltip="(value) => `${value}px`"
+                class="setting-slider"
+                @change="handleSettingChange"
+              />
+              <span class="setting-value">{{ localSettings.imageGap }}px</span>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">页面边距</label>
+            <div class="setting-control">
+              <a-slider
+                v-model="localSettings.pagePadding"
+                :min="10"
+                :max="100"
+                :step="10"
+                :show-tooltip="true"
+                :format-tooltip="(value) => `${value}px`"
+                class="setting-slider"
+                @change="handleSettingChange"
+              />
+              <span class="setting-value">{{ localSettings.pagePadding }}px</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-section">
+          <div class="section-title">
+            <span>阅读模式</span>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">阅读方向</label>
+            <a-radio-group
+              v-model="localSettings.readingDirection"
+              class="reading-direction-group"
+              @change="handleSettingChange"
+            >
+              <a-radio value="vertical">垂直滚动</a-radio>
+              <a-radio value="horizontal">水平翻页</a-radio>
+            </a-radio-group>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">图片适应</label>
+            <a-select
+              v-model="localSettings.imageFit"
+              class="image-fit-select"
+              @change="handleSettingChange"
+            >
+              <a-option value="width">适应宽度</a-option>
+              <a-option value="height">适应高度</a-option>
+              <a-option value="contain">完整显示</a-option>
+              <a-option value="cover">填充显示</a-option>
+            </a-select>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">预加载页数</label>
+            <div class="setting-control">
+              <a-slider
+                v-model="localSettings.preloadPages"
+                :min="1"
+                :max="10"
+                :step="1"
+                :show-tooltip="true"
+                :format-tooltip="(value) => `${value}页`"
+                class="setting-slider"
+                @change="handleSettingChange"
+              />
+              <span class="setting-value">{{ localSettings.preloadPages }}页</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-section">
+          <div class="section-title">
+            <span>主题设置</span>
+          </div>
+
+          <div class="theme-options">
+            <div
+              v-for="theme in themes"
+              :key="theme.key"
+              :class="[
+                'theme-option',
+                { active: localSettings.theme === theme.key }
+              ]"
+              @click="selectTheme(theme.key)"
+            >
+              <div class="theme-preview" :style="theme.style">
+                <div class="preview-text">Aa</div>
+              </div>
+              <div class="theme-name">{{ theme.name }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-section" v-if="localSettings.theme === 'custom'">
+          <div class="section-title">
+            <span>自定义颜色</span>
+          </div>
+
+          <div class="color-settings">
+            <div class="color-item">
+              <label class="color-label">背景颜色</label>
+              <input
+                type="color"
+                v-model="localSettings.backgroundColor"
+                class="color-picker"
+                @change="handleSettingChange"
+              />
+            </div>
+            <div class="color-item">
+              <label class="color-label">文字颜色</label>
+              <input
+                type="color"
+                v-model="localSettings.textColor"
+                class="color-picker"
+                @change="handleSettingChange"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 自定义颜色 -->
-      <div class="setting-section" v-if="localSettings.theme === 'custom'">
-        <h3 class="section-title">自定义颜色</h3>
-        
-        <div class="color-settings">
-          <div class="color-item">
-            <label class="color-label">背景颜色</label>
-            <input
-              type="color"
-              v-model="localSettings.backgroundColor"
-              class="color-picker"
-              @change="handleSettingChange"
-            />
-          </div>
-          <div class="color-item">
-            <label class="color-label">文字颜色</label>
-            <input
-              type="color"
-              v-model="localSettings.textColor"
-              class="color-picker"
-              @change="handleSettingChange"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- 操作按钮 -->
-      <div class="setting-actions">
-        <a-button @click="resetSettings" type="outline">
+      <div class="dialog-footer">
+        <a-button @click="resetSettings" class="reset-btn">
           重置默认
         </a-button>
         <a-button @click="handleClose" type="primary">
@@ -177,7 +183,6 @@
 <script setup>
 import { ref, watch } from 'vue'
 
-// Props
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -189,10 +194,8 @@ const props = defineProps({
   }
 })
 
-// Emits
 const emit = defineEmits(['close', 'settings-change'])
 
-// 默认设置
 const defaultSettings = {
   imageWidth: 800,
   imageGap: 10,
@@ -205,10 +208,8 @@ const defaultSettings = {
   theme: 'dark'
 }
 
-// 本地设置
 const localSettings = ref({ ...defaultSettings, ...props.settings })
 
-// 主题选项
 const themes = [
   {
     key: 'light',
@@ -284,12 +285,10 @@ const themes = [
   }
 ]
 
-// 监听props变化
 watch(() => props.settings, (newSettings) => {
   localSettings.value = { ...defaultSettings, ...newSettings }
 }, { deep: true })
 
-// 事件处理
 const handleClose = () => {
   emit('close')
 }
@@ -300,14 +299,13 @@ const handleSettingChange = () => {
 
 const selectTheme = (themeKey) => {
   localSettings.value.theme = themeKey
-  
-  // 根据主题设置默认颜色
+
   const theme = themes.find(t => t.key === themeKey)
   if (theme && themeKey !== 'custom') {
     localSettings.value.backgroundColor = theme.style.backgroundColor
     localSettings.value.textColor = theme.style.color
   }
-  
+
   handleSettingChange()
 }
 
@@ -318,32 +316,82 @@ const resetSettings = () => {
 </script>
 
 <style scoped>
-.comic-settings {
-  padding: 20px 0;
+:global(.arco-modal-wrapper-align-center:has(.comic-settings-dialog)) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px;
+  overflow: hidden;
+}
+
+:global(.comic-settings-dialog) {
+  height: min(52vh, 460px);
+  max-height: calc(100vh - 96px);
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0 !important;
+}
+
+:global(.comic-settings-dialog .arco-modal-header) {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-border-2);
+  padding: 12px 20px;
+}
+
+:global(.comic-settings-dialog .arco-modal-body) {
+  height: 0;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .setting-section {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .setting-section:last-of-type {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .section-title {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 16px;
   color: var(--color-text-1);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--color-border-2);
-  padding-bottom: 8px;
 }
 
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 12px;
   min-height: 32px;
 }
 
@@ -353,7 +401,7 @@ const resetSettings = () => {
 
 .setting-label {
   font-size: 14px;
-  color: var(--color-text-1);
+  color: var(--color-text-2);
   min-width: 80px;
   flex-shrink: 0;
 }
@@ -361,43 +409,56 @@ const resetSettings = () => {
 .setting-control {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
   max-width: 280px;
+  min-width: 0;
 }
 
-.setting-control :deep(.arco-slider) {
+.setting-slider {
   flex: 1;
+  min-width: 0;
 }
 
 .setting-value {
   font-size: 12px;
   color: var(--color-text-2);
-  min-width: 50px;
+  min-width: 44px;
   text-align: right;
+}
+
+.reading-direction-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 10px;
+}
+
+.image-fit-select {
+  width: 200px;
 }
 
 .theme-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
 }
 
 .theme-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px;
+  gap: 6px;
+  padding: 10px;
   border: 2px solid var(--color-border-2);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .theme-option:hover {
   border-color: var(--color-border-3);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .theme-option.active {
@@ -406,14 +467,14 @@ const resetSettings = () => {
 }
 
 .theme-preview {
-  width: 60px;
-  height: 40px;
+  width: 50px;
+  height: 32px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .preview-text {
@@ -421,66 +482,158 @@ const resetSettings = () => {
 }
 
 .theme-name {
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
   color: var(--color-text-2);
   text-align: center;
 }
 
 .color-settings {
   display: flex;
-  gap: 20px;
+  gap: 16px;
 }
 
 .color-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .color-label {
-  font-size: 14px;
+  font-size: 11px;
   color: var(--color-text-2);
 }
 
 .color-picker {
-  width: 60px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
   cursor: pointer;
   outline: none;
 }
 
-.setting-actions {
+.dialog-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 12px;
-  margin-top: 32px;
-  padding-top: 20px;
+  padding: 12px 20px;
   border-top: 1px solid var(--color-border-2);
+  background: var(--color-bg-1);
+  flex: 0 0 auto;
 }
 
-/* 响应式设计 */
-@media (max-width: 480px) {
+.reset-btn {
+  color: var(--color-text-3);
+}
+
+@media (max-width: 768px) {
+  :global(.arco-modal-wrapper-align-center:has(.comic-settings-dialog)) {
+    padding: 12px;
+  }
+
+  :global(.comic-settings-dialog) {
+    width: calc(100vw - 24px) !important;
+    height: min(48vh, calc(100dvh - 220px)) !important;
+    max-height: min(48vh, calc(100dvh - 220px)) !important;
+    margin: 0 !important;
+  }
+
+  :global(.comic-settings-dialog .arco-modal-header) {
+    padding: 12px 14px !important;
+  }
+
+  :global(.comic-settings-dialog .arco-modal-body) {
+    height: 0;
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .settings-content {
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  .setting-section {
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    font-size: 14px;
+  }
+
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
-  
-  .setting-control {
+
+  .setting-label {
+    min-width: 0;
+  }
+
+  .setting-control,
+  .image-fit-select {
     width: 100%;
     max-width: none;
   }
-  
+
+  .reading-direction-group {
+    justify-content: flex-start;
+  }
+
   .theme-options {
-    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
-  
+
   .theme-option {
-    flex: 1;
-    min-width: 50px;
+    padding: 6px;
+    gap: 4px;
   }
+
+  .theme-preview {
+    width: 42px;
+    height: 26px;
+  }
+
+  .color-settings {
+    justify-content: center;
+  }
+
+  .dialog-footer {
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .dialog-footer :deep(.arco-btn) {
+    min-width: 0;
+    padding: 0 12px;
+  }
+}
+
+.settings-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: var(--color-fill-1);
+  border-radius: 3px;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: var(--color-fill-3);
+  border-radius: 3px;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fill-4);
 }
 </style>

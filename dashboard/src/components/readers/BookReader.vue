@@ -18,7 +18,7 @@
 
     <div class="reader-main-layout">
       <div
-        v-if="showChapterPanel"
+        v-if="showChapterPanel && isMobileViewport()"
         class="chapter-sidebar-mask"
         @click="showChapterPanel = false"
       ></div>
@@ -39,22 +39,34 @@
           />
         </div>
 
-        <div class="chapter-sidebar-list" ref="chapterPanelListRef">
-          <button
-            v-for="chapter in filteredChapters"
-            :key="chapter.index"
-            type="button"
-            class="chapter-sidebar-item"
-            :class="{
-              active: chapter.index === currentChapterIndex,
-              read: chapter.index < currentChapterIndex
+        <div
+          class="chapter-sidebar-list"
+          ref="chapterPanelListRef"
+          @scroll="handleChapterListScroll"
+        >
+          <div
+            class="chapter-sidebar-spacer"
+            :style="{
+              paddingTop: `${virtualTopPadding}px`,
+              paddingBottom: `${virtualBottomPadding}px`
             }"
-            @click="handlePanelChapterSelect(chapter.index)"
           >
-            <span class="chapter-sidebar-number">{{ chapter.index + 1 }}</span>
-            <span class="chapter-sidebar-item-title" :title="chapter.name">{{ chapter.name }}</span>
-            <span class="chapter-sidebar-current" v-if="chapter.index === currentChapterIndex">当前</span>
-          </button>
+            <button
+              v-for="chapter in virtualChapters"
+              :key="chapter.index"
+              type="button"
+              class="chapter-sidebar-item"
+              :class="{
+                active: chapter.index === currentChapterIndex,
+                read: chapter.index < currentChapterIndex
+              }"
+              @click="handlePanelChapterSelect(chapter.index)"
+            >
+              <span class="chapter-sidebar-number">{{ chapter.index + 1 }}</span>
+              <span class="chapter-sidebar-item-title" :title="chapter.name">{{ chapter.name }}</span>
+              <span class="chapter-sidebar-current" v-if="chapter.index === currentChapterIndex">当前</span>
+            </button>
+          </div>
         </div>
 
         <div v-if="filteredChapters.length === 0" class="chapter-sidebar-empty">
@@ -199,16 +211,20 @@ const loading = ref(false)
 const error = ref('')
 const chapterContent = ref(null)
 const showSettingsDialog = ref(false)
-const showChapterPanel = ref(false)
+const showChapterPanel = ref(!isMobileViewport())
 const chapterSearchKeyword = ref('')
 const chapterPanelListRef = ref(null)
 const readerContentRef = ref(null)
+const chapterListScrollTop = ref(0)
+const chapterListViewportHeight = ref(0)
 const bottomSwipeProgress = ref(0)
 const touchStartY = ref(0)
 const touchLastY = ref(0)
 const bottomSwipeDistance = ref(0)
 const bottomSwipeTriggered = ref(false)
 const lastAutoNextAt = ref(0)
+const CHAPTER_ITEM_HEIGHT = 38
+const CHAPTER_LIST_BUFFER = 12
 const AUTO_NEXT_COOLDOWN = 2000
 
 // 阅读设置
@@ -277,6 +293,30 @@ const filteredChapters = computed(() => {
       if (!keyword) return true
       return chapter.name.toLowerCase().includes(keyword) || String(chapter.index + 1).includes(keyword)
     })
+})
+
+const virtualStartIndex = computed(() => {
+  if (filteredChapters.value.length === 0) return 0
+  return Math.max(0, Math.floor(chapterListScrollTop.value / CHAPTER_ITEM_HEIGHT) - CHAPTER_LIST_BUFFER)
+})
+
+const virtualVisibleCount = computed(() => {
+  const viewportRows = Math.ceil((chapterListViewportHeight.value || 360) / CHAPTER_ITEM_HEIGHT)
+  return viewportRows + CHAPTER_LIST_BUFFER * 2
+})
+
+const virtualEndIndex = computed(() => {
+  return Math.min(filteredChapters.value.length, virtualStartIndex.value + virtualVisibleCount.value)
+})
+
+const virtualChapters = computed(() => {
+  return filteredChapters.value.slice(virtualStartIndex.value, virtualEndIndex.value)
+})
+
+const virtualTopPadding = computed(() => virtualStartIndex.value * CHAPTER_ITEM_HEIGHT)
+
+const virtualBottomPadding = computed(() => {
+  return Math.max(0, (filteredChapters.value.length - virtualEndIndex.value) * CHAPTER_ITEM_HEIGHT)
 })
 
 const canAutoNextChapter = computed(() => props.currentChapterIndex < props.chapters.length - 1)
@@ -382,13 +422,55 @@ const handleChapterSelected = (index) => {
   emit('chapter-selected', index)
 }
 
-const isMobileViewport = () => window.matchMedia('(max-width: 768px)').matches
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 768px)').matches
+}
 
-const scrollActiveChapterIntoView = async () => {
+const updateChapterListViewport = async () => {
+  await nextTick()
+  if (chapterPanelListRef.value) {
+    chapterListViewportHeight.value = chapterPanelListRef.value.clientHeight
+    chapterListScrollTop.value = chapterPanelListRef.value.scrollTop
+  }
+}
+
+const handleChapterListScroll = () => {
+  if (chapterPanelListRef.value) {
+    chapterListScrollTop.value = chapterPanelListRef.value.scrollTop
+    chapterListViewportHeight.value = chapterPanelListRef.value.clientHeight
+  }
+}
+
+const findFilteredChapterPosition = (chapterIndex) => {
+  return filteredChapters.value.findIndex(chapter => chapter.index === chapterIndex)
+}
+
+const scrollChapterPositionIntoView = async (position, block = 'center') => {
   await nextTick()
   const list = chapterPanelListRef.value
-  const active = list?.querySelector('.chapter-sidebar-item.active')
-  active?.scrollIntoView({ block: 'center' })
+  if (!list || position < 0) return
+
+  const itemTop = position * CHAPTER_ITEM_HEIGHT
+  const itemBottom = itemTop + CHAPTER_ITEM_HEIGHT
+  const viewportHeight = list.clientHeight
+  let nextScrollTop = list.scrollTop
+
+  if (block === 'center') {
+    nextScrollTop = itemTop - viewportHeight / 2 + CHAPTER_ITEM_HEIGHT / 2
+  } else if (itemTop < list.scrollTop) {
+    nextScrollTop = itemTop
+  } else if (itemBottom > list.scrollTop + viewportHeight) {
+    nextScrollTop = itemBottom - viewportHeight
+  }
+
+  list.scrollTop = Math.max(0, nextScrollTop)
+  chapterListScrollTop.value = list.scrollTop
+  chapterListViewportHeight.value = viewportHeight
+}
+
+const scrollActiveChapterIntoView = async () => {
+  await updateChapterListViewport()
+  await scrollChapterPositionIntoView(findFilteredChapterPosition(props.currentChapterIndex), 'center')
 }
 
 const scrollReaderToTop = async () => {
@@ -464,14 +546,10 @@ const handleReaderWheel = (event) => {
 }
 
 const handleToggleChapterPanel = async () => {
-  if (isMobileViewport()) {
-    showChapterPanel.value = !showChapterPanel.value
-    if (showChapterPanel.value) {
-      await scrollActiveChapterIntoView()
-    }
-    return
+  showChapterPanel.value = !showChapterPanel.value
+  if (showChapterPanel.value) {
+    await scrollActiveChapterIntoView()
   }
-  await scrollActiveChapterIntoView()
 }
 
 const handlePanelChapterSelect = (index) => {
@@ -495,6 +573,15 @@ const handleSettingsChange = (newSettings) => {
   emit('settings-change', readingSettings.value)
 }
 
+watch(() => chapterSearchKeyword.value, async () => {
+  chapterListScrollTop.value = 0
+  await nextTick()
+  if (chapterPanelListRef.value) {
+    chapterPanelListRef.value.scrollTop = 0
+    updateChapterListViewport()
+  }
+})
+
 // 监听章节变化
 watch(() => props.currentChapterIndex, (newIndex) => {
   if (props.visible && newIndex >= 0) {
@@ -507,6 +594,7 @@ watch(() => props.currentChapterIndex, (newIndex) => {
 // 监听可见性变化
 watch(() => props.visible, (visible) => {
   if (visible && props.currentChapterIndex >= 0) {
+    showChapterPanel.value = !isMobileViewport()
     loadChapterContent(props.currentChapterIndex)
     scrollActiveChapterIntoView()
   } else {
@@ -578,15 +666,24 @@ onUnmounted(() => {
 }
 
 .chapter-sidebar {
-  width: 320px;
-  flex: 0 0 320px;
+  width: 0;
+  flex: 0 0 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--color-border-2);
+  border-right: 0;
   background: var(--color-bg-1);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+  overflow: hidden;
   z-index: 2;
+  transition: width 0.2s ease, flex-basis 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chapter-sidebar.open {
+  width: 320px;
+  flex-basis: 320px;
+  border-right: 1px solid var(--color-border-2);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.04);
 }
 
 .chapter-sidebar-header {
@@ -870,6 +967,7 @@ onUnmounted(() => {
   }
 
   .chapter-sidebar-list {
+    height: calc(100dvh - 172px);
     padding: 6px;
   }
 

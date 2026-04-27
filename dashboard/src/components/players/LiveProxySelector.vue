@@ -12,14 +12,14 @@
       size="small"
       placeholder="选择代理播放地址"
     >
-      <a-option value="disabled" title="关闭代理播放功能">代理播放:关闭</a-option>
+      <a-option value="disabled" title="关闭代理播放功能">代理 · 关闭</a-option>
       <a-option 
         v-for="option in proxyOptions" 
         :key="option.value" 
         :value="option.value"
         :title="`${option.label}\n完整链接: ${option.url || option.value}`"
       >
-        代理播放:{{ option.label }}
+        代理 · {{ option.label }}
       </a-option>
     </a-select>
   </div>
@@ -174,47 +174,51 @@ defineExpose({
 
 <style scoped>
 .live-proxy-selector {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: 4px;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   background: transparent;
   border: none;
   font-size: 12px;
   font-weight: 500;
-  color: #495057;
-  min-height: 28px;
+  color: var(--color-text-2);
   position: relative;
 }
 
 .live-proxy-selector:hover {
-  background: #e9ecef;
-  color: #212529;
-  transform: translateY(-1px);
+  background: var(--color-fill-2);
+  color: var(--color-text-1);
 }
 
 .selector-icon {
   width: 14px;
   height: 14px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 .proxy-select {
+  width: 142px;
+  min-width: 142px;
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
-  min-width: 120px;
 }
 
 .proxy-select :deep(.arco-select-view) {
+  height: 32px;
   border: none !important;
   background: transparent !important;
-  padding: 0;
-  font-size: 11px;
+  padding: 0 8px 0 0;
+  font-size: 12px;
   font-weight: 500;
+  border-radius: 8px;
 }
 
 .proxy-select :deep(.arco-select-view-suffix) {
@@ -223,5 +227,24 @@ defineExpose({
 
 .proxy-select :deep(.arco-select-view-value) {
   color: currentColor;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+@media (max-width: 768px) {
+  .live-proxy-selector {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 32px;
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  .proxy-select {
+    width: 142px;
+    min-width: 142px;
+  }
+}
+
 </style>

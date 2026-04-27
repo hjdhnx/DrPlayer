@@ -739,15 +739,18 @@ onUnmounted(() => {
 .book-gallery-content {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   padding: 2px 4px 28px;
 }
 
 .empty-state {
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
   border: 1px solid var(--dp-border-subtle);
   border-radius: var(--dp-radius-xl);
   background: var(--dp-bg-surface);
@@ -976,17 +979,17 @@ onUnmounted(() => {
   }
 
   .book-gallery-content {
-    padding: 0 0 12px;
+    padding: 0;
     min-height: 0;
   }
 
   .books-grid {
+    padding-bottom: 12px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
 
   .empty-state {
-    min-height: 320px;
     border-radius: 22px;
     background: var(--dp-bg-surface);
     border: 1px solid var(--dp-border-subtle);

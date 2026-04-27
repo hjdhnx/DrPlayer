@@ -6,22 +6,11 @@
         <template #icon>
           <icon-close />
         </template>
-        关闭阅读器
+        关闭
       </a-button>
     </div>
 
-    <div class="header-center">
-      <!-- 漫画和章节信息 -->
-      <div class="book-info">
-        <div class="book-title" :title="comicTitle">{{ comicTitle }}</div>
-        <div class="chapter-info" v-if="chapterName">
-          <span class="chapter-name" :title="chapterName">{{ chapterName }}</span>
-          <span class="chapter-progress" v-if="chapters.length > 0">
-            ({{ currentChapterIndex + 1 }}/{{ chapters.length }})
-          </span>
-        </div>
-      </div>
-    </div>
+    <div class="header-center"></div>
 
     <div class="header-right">
       <!-- 章节导航 -->
@@ -52,36 +41,12 @@
       </div>
 
       <!-- 章节列表按钮 -->
-      <a-dropdown @select="handleChapterSelect" trigger="click" position="bottom">
-        <a-button type="text" class="chapter-list-btn" title="章节列表">
-          <template #icon>
-            <icon-list />
-          </template>
-          章节
-        </a-button>
-        <template #content>
-          <div class="chapter-dropdown">
-            <div class="chapter-dropdown-header">
-              <span>章节列表</span>
-              <span class="total-count">(共{{ chapters.length }}章)</span>
-            </div>
-            <div class="chapter-dropdown-content">
-              <a-doption 
-                v-for="(chapter, index) in chapters" 
-                :key="index"
-                :value="index"
-                :class="{ 'current-chapter': index === currentChapterIndex }"
-              >
-                <div class="chapter-option">
-                  <span class="chapter-number">{{ index + 1 }}.</span>
-                  <span class="chapter-title" :title="chapter.name">{{ chapter.name }}</span>
-                  <icon-check v-if="index === currentChapterIndex" class="current-icon" />
-                </div>
-              </a-doption>
-            </div>
-          </div>
+      <a-button type="text" @click="handleChapterListClick" class="chapter-list-btn" title="章节列表">
+        <template #icon>
+          <icon-list />
         </template>
-      </a-dropdown>
+        章节
+      </a-button>
 
       <!-- 阅读设置按钮 -->
       <a-button type="text" @click="handleSettings" class="settings-btn" title="阅读设置">
@@ -104,15 +69,14 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { 
-  IconClose, 
-  IconLeft, 
-  IconRight, 
-  IconList, 
-  IconSettings, 
-  IconFullscreen, 
-  IconFullscreenExit,
-  IconCheck
+import {
+  IconClose,
+  IconLeft,
+  IconRight,
+  IconList,
+  IconSettings,
+  IconFullscreen,
+  IconFullscreenExit
 } from '@arco-design/web-vue/es/icon'
 
 // Props
@@ -148,7 +112,7 @@ const emit = defineEmits([
   'close',
   'next-chapter',
   'prev-chapter',
-  'chapter-selected',
+  'chapter-list',
   'settings-change',
   'toggle-fullscreen'
 ])
@@ -169,8 +133,8 @@ const handleNextChapter = () => {
   emit('next-chapter')
 }
 
-const handleChapterSelect = (index) => {
-  emit('chapter-selected', index)
+const handleChapterListClick = () => {
+  emit('chapter-list')
 }
 
 const handleSettings = () => {
@@ -299,100 +263,10 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
-/* 章节下拉菜单样式 */
-.chapter-dropdown {
-  width: 320px;
-  max-height: 400px;
-  background: var(--color-bg-2);
-  border: 1px solid var(--color-border-2);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.chapter-dropdown-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--color-bg-3);
-  border-bottom: 1px solid var(--color-border-2);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-1);
-}
-
-.total-count {
-  font-size: 12px;
-  color: var(--color-text-3);
-  font-weight: normal;
-}
-
-.chapter-dropdown-content {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar-thumb {
-  background: var(--color-border-3);
-  border-radius: 3px;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-2);
-}
-
-.chapter-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  transition: background-color 0.2s ease;
-}
-
-.chapter-option:hover {
-  background: var(--color-fill-2);
-}
-
-.current-chapter .chapter-option {
-  background: var(--color-primary-light-1);
-  color: var(--color-primary-6);
-}
-
-.chapter-number {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--color-text-3);
-  width: 30px;
-}
-
-.chapter-title {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-}
-
-.current-icon {
-  flex-shrink: 0;
-  color: var(--color-primary-6);
-  font-size: 14px;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .reader-header {
-    padding: 8px 12px;
+    padding: 8px 10px 8px 4px;
   }
   
   .book-info {
@@ -414,13 +288,14 @@ onUnmounted(() => {
   .header-right {
     gap: 4px;
   }
-  
-  .chapter-dropdown {
-    width: 280px;
-  }
 }
 
 @media (max-width: 480px) {
+  .close-btn {
+    padding-left: 4px;
+    padding-right: 6px;
+  }
+
   .close-btn span {
     display: none;
   }
@@ -474,35 +349,5 @@ onUnmounted(() => {
 
 .settings-btn:hover {
   background: var(--color-fill-2);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .header-content {
-    padding: 0 10px;
-  }
-  
-  .title-info {
-    display: none;
-  }
-  
-  .header-center :deep(.arco-btn-group .arco-btn) {
-    padding: 0 8px;
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .comic-reader-header {
-    height: 50px;
-  }
-  
-  .header-center :deep(.arco-btn-group .arco-btn span) {
-    display: none;
-  }
-  
-  .header-center :deep(.arco-btn-group .arco-btn .arco-icon) {
-    margin: 0;
-  }
 }
 </style>
