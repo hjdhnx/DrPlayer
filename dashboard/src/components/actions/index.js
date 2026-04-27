@@ -2,7 +2,6 @@
 
 // 导入所有组件
 import ActionRenderer from './ActionRenderer.vue'
-import ActionDialog from './ActionDialog.vue'
 import InputAction from './InputAction.vue'
 import MultiInputAction from './MultiInputAction.vue'
 import MenuAction from './MenuAction.vue'
@@ -36,7 +35,6 @@ import './styles.css'
 // 组件列表
 const components = {
   ActionRenderer,
-  ActionDialog,
   InputAction,
   MultiInputAction,
   MenuAction,
@@ -76,7 +74,6 @@ export default {
 // 单独导出组件
 export {
   ActionRenderer,
-  ActionDialog,
   InputAction,
   MultiInputAction,
   MenuAction,

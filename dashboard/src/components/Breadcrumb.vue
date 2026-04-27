@@ -94,6 +94,7 @@
     v-model:visible="showGlobalActionDialog"
     :sites="sites"
     @action-executed="handleActionExecuted"
+    @special-action="handleSpecialAction"
   />
 </template>
 
@@ -124,7 +125,8 @@ const emit = defineEmits([
   "minimize",
   "maximize", 
   "closeWindow",
-  "actionExecuted"
+  "actionExecuted",
+  "special-action"
 ]);
 
 const searchValue = ref('')
@@ -201,10 +203,16 @@ const handleActionExecuted = (event) => {
   }
 };
 
+
+const handleSpecialAction = (actionType, actionData) => {
+  emit('special-action', actionType, actionData);
+};
+
 defineExpose({
   openPushModal: handlePush,
   openGlobalActionDialog: handleGlobalAction
 });
+
 
 // 确认推送
 const confirmPush = () => {

@@ -193,7 +193,11 @@
           <ActionRenderer
             v-if="showActionRenderer"
             :action-data="currentActionData"
+            :module="currentActionSource?.key || ''"
+            :extend="currentActionSource?.ext || ''"
+            :api-url="currentActionSource?.api || ''"
             @close="handleActionClose"
+            @special-action="handleSpecialAction"
           />
         </div>
       </div>
@@ -291,6 +295,7 @@ export default defineComponent({
     // ActionRenderer相关
     const showActionRenderer = ref(false);
     const currentActionData = ref(null);
+    const currentActionSource = ref(null);
     
     // 所有热门搜索标签
     const allHotSearchTags = [
@@ -699,6 +704,7 @@ export default defineComponent({
             
             // 传递解析后的action配置给ActionRenderer
             currentActionData.value = actionConfig;
+            currentActionSource.value = searchSources.value.find(s => s.key === activeSource.value) || null;
             showActionRenderer.value = true;
             return;
           } catch (error) {
@@ -806,6 +812,22 @@ export default defineComponent({
      const handleActionClose = () => {
        showActionRenderer.value = false;
        currentActionData.value = null;
+       currentActionSource.value = null;
+     };
+
+     const handleSpecialAction = (actionType, actionData) => {
+       handleActionClose();
+
+       if (actionType === 'refresh-list') {
+         if (activeSource.value && searchKeyword.value) {
+           retrySearch(activeSource.value);
+         }
+         return;
+       }
+
+       if (actionType === 'detail' && actionData?.vod_id) {
+         handleVideoClick(actionData);
+       }
      };
     
     const getSourceName = (sourceKey) => {
@@ -1348,6 +1370,7 @@ export default defineComponent({
       suggestions,
       showActionRenderer,
       currentActionData,
+      currentActionSource,
       searchStats,
       searchTotalTime,
       performSearch,
@@ -1364,6 +1387,7 @@ export default defineComponent({
       handleScroll,
       handleLoadMore,
       handleActionClose,
+      handleSpecialAction,
       randomizeHotSearchTags,
       clearPageState,
       // 最近搜索

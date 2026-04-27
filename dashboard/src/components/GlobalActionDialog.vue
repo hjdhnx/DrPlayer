@@ -115,10 +115,12 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Message } from '@arco-design/web-vue'
-import { Actions } from '@/components/actions'
 import ActionRenderer from '@/components/actions/ActionRenderer.vue'
-import { executeAction } from '@/api/modules/module.js'
-import { getActionTimeout } from '@/api/config'
+import { callActionEndpoint } from '@/components/actions/utils/actionTransport.js'
+import {
+  createMessageAction,
+  normalizeActionConfig
+} from '@/components/actions/utils/actionConfig.js'
 
 const props = defineProps({
   visible: {
@@ -247,52 +249,48 @@ const getEmptyStateHint = () => {
   return '请确保站源配置中包含动作信息'
 }
 
+const parseActionString = (value) => {
+  try {
+    return JSON.parse(value)
+  } catch (error) {
+    return JSON.parse(value.replace(/'/g, '"'))
+  }
+}
+
+const extractActionFromResult = (result, action) => {
+  if (typeof result === 'string') {
+    try {
+      const parsedResult = parseActionString(result)
+      return parsedResult.action || parsedResult
+    } catch (error) {
+      return createMessageAction({
+        title: action.name || '动作结果',
+        msg: result,
+        actionIdPrefix: 'global_msgbox'
+      })
+    }
+  }
+
+  if (result && typeof result === 'object') {
+    return result.action || result
+  }
+
+  throw new Error('T4接口返回了无效的数据格式')
+}
+
 // T4接口调用方法
 const callT4Action = async (action, siteKey, apiUrl, extend) => {
-  if (!siteKey && !apiUrl) {
-    console.warn('未提供siteKey或apiUrl，无法调用T4接口')
-    return null
-  }
-
-  const actionData = {
-    action: action
-  }
-
-  // 添加扩展参数
-  if (extend && extend.ext) {
-    actionData.extend = extend.ext
-  }
-
-  // 添加API URL到actionData中
-  if (apiUrl) {
-    actionData.apiUrl = apiUrl
-  }
-
-  console.log('GlobalActionDialog调用T4接口:', {
-    siteKey,
-    actionData,
-    apiUrl
+  const result = await callActionEndpoint({
+    module: siteKey,
+    apiUrl,
+    extend,
+    action
   })
 
-  let result = null
-  if (siteKey) {
-    console.log('调用模块:', siteKey)
-    result = await executeAction(siteKey, actionData)
-  } else if (apiUrl) {
-    // 直接调用API
-    console.log('直接调用API:', apiUrl)
-    const axios = (await import('axios')).default
-    const response = await axios.post(apiUrl, actionData, {
-      timeout: getActionTimeout(),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json;charset=UTF-8',
-      }
-    })
-    result = response.data
+  if (!result) {
+    throw new Error('T4接口调用失败或返回空结果')
   }
 
-  console.log('T4接口返回结果:', result)
   return result
 }
 
@@ -310,70 +308,18 @@ const handleActionClick = async (action) => {
     let actionConfig
     if (typeof action.action === 'string') {
       try {
-        // 尝试解析JSON字符串
-        actionConfig = JSON.parse(action.action.replace(/'/g, '"'))
+        actionConfig = parseActionString(action.action)
       } catch (parseError) {
-        // 如果不是JSON，则调用T4接口获取动作配置
-        console.log('纯字符串动作，调用T4接口:', action.action)
-        
         try {
           const t4Result = await callT4Action(action.action, action.siteKey, action.siteApi, action.siteExt)
-          
-          if (t4Result) {
-            // 检查T4接口返回的结果
-            if (typeof t4Result === 'string') {
-              try {
-                // 尝试解析T4返回的JSON字符串
-                const parsedResult = JSON.parse(t4Result)
-                // 如果解析结果包含action字段，则使用action字段作为动作配置
-                let extractedAction = parsedResult.action || parsedResult
-                
-                // 检查action字段是否也是JSON字符串，如果是则进行二次解析
-                if (typeof extractedAction === 'string') {
-                  try {
-                    extractedAction = JSON.parse(extractedAction)
-                  } catch (secondParseError) {
-                    console.warn('action字段不是有效的JSON字符串:', extractedAction)
-                  }
-                }
-                
-                actionConfig = extractedAction
-              } catch (jsonParseError) {
-                // 如果T4返回的不是JSON，则显示为消息框
-                actionConfig = {
-                  type: 'msgbox',
-                  title: action.name || '动作结果',
-                  msg: t4Result
-                }
-              }
-            } else if (typeof t4Result === 'object' && t4Result !== null) {
-              // T4返回的是对象，检查是否包含action字段
-              let extractedAction = t4Result.action || t4Result
-              
-              // 检查action字段是否也是JSON字符串，如果是则进行二次解析
-              if (typeof extractedAction === 'string') {
-                try {
-                  extractedAction = JSON.parse(extractedAction)
-                } catch (secondParseError) {
-                  console.warn('action字段不是有效的JSON字符串:', extractedAction)
-                }
-              }
-              
-              actionConfig = extractedAction
-            } else {
-              throw new Error('T4接口返回了无效的数据格式')
-            }
-          } else {
-            throw new Error('T4接口调用失败或返回空结果')
-          }
+          actionConfig = extractActionFromResult(t4Result, action)
         } catch (t4Error) {
           console.error('T4接口调用失败:', t4Error)
-          // T4接口调用失败时，显示错误信息
-          actionConfig = {
-            type: 'msgbox',
+          actionConfig = createMessageAction({
             title: '动作执行失败',
-            msg: `调用T4接口失败: ${t4Error.message}`
-          }
+            msg: `调用T4接口失败: ${t4Error.message}`,
+            actionIdPrefix: 'global_error'
+          })
         }
       }
     } else if (typeof action.action === 'object' && action.action !== null) {
@@ -381,6 +327,11 @@ const handleActionClick = async (action) => {
     } else {
       throw new Error('无效的动作配置')
     }
+
+    actionConfig = normalizeActionConfig(actionConfig, {
+      ensureActionId: true,
+      actionIdPrefix: 'global'
+    })
 
     // 添加站源信息到配置中
     actionConfig.siteKey = action.siteKey
