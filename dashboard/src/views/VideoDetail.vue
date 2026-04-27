@@ -116,6 +116,8 @@
       <BookReader 
         v-if="showBookReader && parsedNovelContent"
         :book-detail="videoDetail"
+        :book-title="videoDetail?.vod_name"
+        :chapter-name="currentEpisodeName"
         :chapter-content="parsedNovelContent"
         :chapters="currentRouteEpisodes"
         :current-chapter-index="currentEpisode"
@@ -160,6 +162,34 @@
               <a-tag v-if="videoDetail.type_name" color="blue">{{ videoDetail.type_name }}</a-tag>
               <a-tag v-if="videoDetail.vod_year" color="green">{{ videoDetail.vod_year }}</a-tag>
               <a-tag v-if="videoDetail.vod_area" color="orange">{{ videoDetail.vod_area }}</a-tag>
+            </div>
+            <div class="mobile-detail-actions" v-if="originalVideoInfo.id">
+              <a-button
+                :type="isCurrentFavorited ? 'primary' : 'outline'"
+                size="small"
+                @click="toggleFavorite"
+                class="mobile-favorite-btn"
+                :loading="favoriteLoading"
+              >
+                <template #icon>
+                  <icon-heart-fill v-if="isCurrentFavorited" />
+                  <icon-heart v-else />
+                </template>
+                {{ isCurrentFavorited ? '取消收藏' : '收藏' }}
+              </a-button>
+              <a-button
+                v-if="hasPushOverride"
+                type="outline"
+                status="warning"
+                size="small"
+                @click="clearPushOverride"
+                class="mobile-clear-push-btn"
+              >
+                <template #icon>
+                  <icon-refresh />
+                </template>
+                恢复原始数据
+              </a-button>
             </div>
             <div class="video-info-grid">
               <div v-if="videoDetail.vod_director" class="info-item">
@@ -1192,9 +1222,16 @@ const handleReaderClose = () => {
 }
 
 // 处理阅读器章节切换事件
+const handleReaderChapterIndexChange = (chapterIndex) => {
+  if (chapterIndex >= 0 && chapterIndex < currentRouteEpisodes.value.length) {
+    currentEpisode.value = chapterIndex
+    updateHistoryRecord()
+  }
+}
+
 const handleChapterChange = (chapterIndex) => {
   console.log('切换到章节:', chapterIndex)
-  selectEpisode(chapterIndex)
+  handleReaderChapterIndexChange(chapterIndex)
 }
 
 // 处理下一章事件
@@ -1202,7 +1239,7 @@ const handleNextChapter = () => {
   if (currentEpisode.value < currentRouteEpisodes.value.length - 1) {
     const nextIndex = currentEpisode.value + 1
     console.log('切换到下一章:', nextIndex)
-    selectEpisode(nextIndex)
+    handleReaderChapterIndexChange(nextIndex)
   }
 }
 
@@ -1211,14 +1248,14 @@ const handlePrevChapter = () => {
   if (currentEpisode.value > 0) {
     const prevIndex = currentEpisode.value - 1
     console.log('切换到上一章:', prevIndex)
-    selectEpisode(prevIndex)
+    handleReaderChapterIndexChange(prevIndex)
   }
 }
 
 // 处理章节选择事件
 const handleChapterSelected = (chapterIndex) => {
   console.log('选择章节:', chapterIndex)
-  selectEpisode(chapterIndex)
+  handleReaderChapterIndexChange(chapterIndex)
 }
 
 // 处理播放器类型变更
@@ -2562,6 +2599,10 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
+.mobile-detail-actions {
+  display: none;
+}
+
 .video-info-grid {
   display: flex;
   flex-direction: column;
@@ -2956,7 +2997,6 @@ onUnmounted(() => {
   }
   
   .episodes-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 8px;
   }
   
@@ -3030,7 +3070,7 @@ onUnmounted(() => {
   }
   
   .episodes-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
   }
 
   /* 小屏幕播放器适配 */
@@ -3125,7 +3165,24 @@ onUnmounted(() => {
 
   .video-tags {
     gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .mobile-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-bottom: 10px;
+  }
+
+  .mobile-favorite-btn,
+  .mobile-clear-push-btn {
+    border-radius: 999px;
+  }
+
+  .mobile-detail-actions :deep(.arco-btn) {
+    min-width: 0;
+    padding: 0 10px;
   }
 
   .video-info-grid {
@@ -3223,7 +3280,6 @@ onUnmounted(() => {
   }
 
   .episodes-grid {
-    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
     gap: 8px;
   }
 

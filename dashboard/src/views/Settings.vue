@@ -33,11 +33,7 @@
                     placeholder="请输入点播配置地址"
                     size="medium"
                     class="address-config-input"
-                >
-                  <template #prefix>
-                    <icon-link/>
-                  </template>
-                </a-input>
+                />
                 <div class="address-config-actions">
                   <AddressHistory
                       ref="vodConfigHistory"
@@ -103,11 +99,7 @@
                     placeholder="请输入直播配置地址"
                     size="medium"
                     class="address-config-input"
-                >
-                  <template #prefix>
-                    <icon-link/>
-                  </template>
-                </a-input>
+                />
                 <div class="address-config-actions">
                   <AddressHistory
                       ref="liveConfigHistory"
@@ -175,11 +167,7 @@
                     size="medium"
                     class="address-config-input"
                     :disabled="!addressSettings.proxyAccessEnabled"
-                >
-                  <template #prefix>
-                    <icon-link/>
-                  </template>
-                </a-input>
+                />
                 <div class="address-config-actions">
                   <AddressHistory
                       ref="proxyAccessHistory"
@@ -238,11 +226,7 @@
                     size="medium"
                     class="address-config-input"
                     :disabled="!addressSettings.proxyPlayEnabled"
-                >
-                  <template #prefix>
-                    <icon-link/>
-                  </template>
-                </a-input>
+                />
                 <div class="address-config-actions">
                   <a-button
                       type="text"
@@ -322,11 +306,7 @@
                     size="medium"
                     class="address-config-input"
                     :disabled="!addressSettings.proxySniffEnabled"
-                >
-                  <template #prefix>
-                    <icon-link/>
-                  </template>
-                </a-input>
+                />
                 <div class="address-config-actions">
                   <a-button
                       type="text"
@@ -852,11 +832,7 @@
                     size="medium"
                     class="address-config-input"
                     @blur="saveDebugSettings"
-                >
-                  <template #prefix>
-                    <icon-link/>
-                  </template>
-                </a-input>
+                />
                 <div class="address-config-actions">
                   <a-button
                       type="outline"
@@ -2208,11 +2184,35 @@ onMounted(async () => {
   min-width: 200px;
 }
 
-.address-config-input :deep(.arco-input) {
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
+.address-config-input,
+.config-input,
+.address-config-input :deep(.arco-input-wrapper),
+.address-config-input :deep(.arco-input-number),
+.config-input :deep(.arco-input-wrapper) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  border-radius: 0 !important;
+}
+
+.address-config-input :deep(.arco-input),
+.address-config-input :deep(.arco-input-number-input),
+.config-input :deep(.arco-input) {
+  width: 100%;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box;
+}
+
+.address-config-input :deep(.arco-input-wrapper),
+.address-config-input :deep(.arco-input-number),
+.config-input :deep(.arco-input-wrapper),
+.address-config-input.arco-input-wrapper,
+.address-config-input.arco-input-number,
+.config-input.arco-input-wrapper {
+  border: 1px solid var(--dp-border) !important;
+  background: var(--dp-bg-surface) !important;
 }
 
 .address-config-input :deep(.arco-input:focus) {
@@ -2620,6 +2620,7 @@ onMounted(async () => {
 @media (max-width: 900px) {
   .address-config-row {
     flex-direction: column;
+    gap: 8px;
   }
 
   .address-config-info {
@@ -2641,53 +2642,203 @@ onMounted(async () => {
     box-shadow: none;
   }
 
+  .settings-container {
+    max-width: none;
+  }
+
+  :global(.content-wrapper.mobile-content:has(.settings-container)) {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
   .settings-content {
-    padding: 12px;
-    gap: 12px;
+    padding: 6px 4px 20px;
+    gap: 8px;
+    scrollbar-width: none;
+  }
+
+  .settings-content::-webkit-scrollbar {
+    width: 0;
+    display: none;
+  }
+
+  .settings-card {
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 12px;
   }
 
   .settings-card :deep(.arco-card-header) {
-    padding: 10px 12px;
+    padding: 9px 10px;
   }
 
   .settings-card :deep(.arco-card-body) {
-    padding: 12px;
+    padding: 6px;
   }
 
   .setting-info {
     max-width: none;
   }
 
+  .settings-grid,
+  .address-settings-section {
+    gap: 8px;
+  }
+
+  .setting-item,
+  .address-config-item {
+    padding: 7px;
+    border-radius: 8px;
+  }
+
+  .address-config-info {
+    gap: 8px;
+  }
+
+  .address-config-icon {
+    width: 14px !important;
+    height: 14px !important;
+    padding: 6px;
+  }
+
+  .address-config-desc {
+    display: none;
+  }
+
+  .address-config-input-group {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .address-config-input-group > .address-config-switch {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .address-config-input-group > .address-config-input,
+  .address-config-input-group > .address-config-switch + .address-config-input {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
   .address-config-actions {
-    justify-content: flex-start;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .address-config-input-group > .address-config-switch + .address-config-input + .address-config-actions {
+    grid-column: 2;
+  }
+
+  .address-config-actions :deep(.arco-btn) {
+    min-width: 36px;
+    height: 32px;
+  }
+
+  .address-config-actions :deep(.arco-btn-primary) {
+    flex: 1;
+    max-width: none;
   }
 }
 
 @media (max-width: 560px) {
   .address-config-input-group {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px;
   }
 
-  .address-config-switch {
-    align-self: flex-start;
+  .address-config-input-group > .address-config-switch {
+    grid-column: 1;
+    grid-row: 2;
   }
 
-  .address-config-actions,
-  .address-config-actions :deep(.arco-btn),
-  .address-config-actions :deep(.arco-upload),
-  .address-config-actions :deep(.arco-upload-trigger) {
+  .address-config-input-group > .address-config-input,
+  .address-config-input-group > .address-config-switch + .address-config-input {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .address-config-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-end;
+    gap: 8px;
     width: 100%;
   }
 
+  .address-config-input-group > .address-config-switch + .address-config-input + .address-config-actions {
+    grid-column: 2;
+  }
+
+  .address-config-actions :deep(.arco-upload),
+  .address-config-actions :deep(.arco-upload-trigger) {
+    width: auto;
+  }
+
   .address-config-actions :deep(.arco-btn) {
+    width: auto;
+    min-width: 36px;
+    max-width: none;
+    height: 32px;
+    padding: 0 10px;
     justify-content: center;
+    overflow: hidden;
+  }
+
+  .address-config-actions :deep(.arco-btn .arco-btn-icon) {
+    margin-right: 0;
+  }
+
+  .address-config-actions :deep(.arco-btn:not(.arco-btn-primary)) {
+    flex: 0 0 36px;
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .address-config-actions :deep(.arco-btn:not(.arco-btn-primary) .arco-icon) {
+    font-size: 14px;
+  }
+
+  .address-config-actions :deep(.arco-btn:not(.arco-btn-primary) span:not(.arco-btn-icon)) {
+    display: none;
+  }
+
+  .address-config-actions :deep(.arco-btn-primary) {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 96px;
+    margin-top: 0;
+  }
+
+  .address-config-actions :deep(.arco-btn-primary .arco-btn-icon) {
+    margin-right: 6px;
+  }
+
+  .address-config-actions :deep(.arco-btn-primary .arco-icon + span),
+  .address-config-actions :deep(.arco-btn-primary .arco-btn-icon + span) {
+    display: inline;
   }
 }
 
 @media (max-width: 480px) {
   .setting-item {
-    padding: 12px;
+    padding: 9px;
   }
 
   .setting-value {

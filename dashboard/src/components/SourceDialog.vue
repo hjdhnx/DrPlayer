@@ -413,16 +413,20 @@ watch(filteredSites, () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-top: 16px;
 }
 
 .footer-left {
   display: flex;
+  flex: 0 0 auto;
 }
 
 .footer-right {
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
+  min-width: 0;
 }
 
 /* 移动端响应式设计 */
@@ -460,14 +464,24 @@ watch(filteredSites, () => {
   }
   
   .dialog-footer {
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
     margin-top: 12px;
   }
-  
+
+  .footer-left,
   .footer-right {
-    width: 100%;
+    width: auto;
+  }
+
+  .footer-right {
+    flex: 1 1 auto;
     justify-content: flex-end;
+  }
+
+  .dialog-footer :deep(.arco-btn) {
+    padding: 0 8px;
   }
   
   .search-section {
@@ -482,9 +496,9 @@ watch(filteredSites, () => {
 
 @media (max-width: 480px) {
   .button-container {
-    /* 手机端：4列，最大化利用空间 */
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
+    /* 手机端：最多 3 列，避免源名被压到只剩一两个字 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
   }
   
   .source-button {
@@ -523,15 +537,27 @@ watch(filteredSites, () => {
 
 @media (max-width: 360px) {
   .button-container {
-    /* 小屏手机：5列，最紧凑布局 */
-    grid-template-columns: repeat(5, 1fr);
-    gap: 3px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
   }
   
   .source-button {
     min-height: 32px;
     max-height: 44px;
     padding: 2px 3px;
+  }
+
+  .dialog-footer {
+    gap: 4px;
+  }
+
+  .footer-right {
+    gap: 4px;
+  }
+
+  .dialog-footer :deep(.arco-btn) {
+    padding: 0 6px;
+    font-size: 12px;
   }
   
   .source-name {

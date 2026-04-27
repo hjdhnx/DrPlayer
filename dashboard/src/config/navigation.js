@@ -41,7 +41,7 @@ export const mobileMoreGroups = [
 ]
 
 export const routeMeta = {
-  Home: { title: 'DrPlayer', icon: 'icon-zhuye', mobilePrimary: true, showBottomNav: true, showTopBar: true },
+  Home: { title: '首页', icon: 'icon-zhuye', mobilePrimary: true, showBottomNav: true, showTopBar: true },
   Video: { title: '点播', icon: 'icon-dianbo', mobilePrimary: true, showBottomNav: true, showTopBar: true },
   VideoDetail: { title: '详情', icon: 'icon-dianbo', showBottomNav: false, showTopBar: true, immersive: true },
   Live: { title: '直播', icon: 'icon-shipinzhibo', mobilePrimary: true, showBottomNav: true, showTopBar: true },

@@ -4,6 +4,7 @@
     title="数据备份还原"
     width="min(520px, calc(100vw - 24px))"
     :footer="false"
+    modal-class="backup-restore-dialog"
     @cancel="handleCancel"
   >
     <div class="backup-restore-container">
@@ -393,6 +394,27 @@ onMounted(() => {
 })
 </script>
 
+<style>
+.backup-restore-dialog .arco-modal-body {
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .backup-restore-dialog {
+    width: calc(100vw - 24px) !important;
+  }
+
+  .backup-restore-dialog .arco-modal-header {
+    padding: 12px 14px;
+  }
+
+  .backup-restore-dialog .arco-modal-body {
+    max-height: min(72vh, calc(100vh - 150px));
+    padding: 10px 12px;
+  }
+}
+</style>
+
 <style scoped>
 .backup-restore-container {
   padding: 4px 0; /* 进一步减少容器内边距 */
@@ -599,6 +621,10 @@ onMounted(() => {
 
 .backup-restore-container {
   min-width: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
 }
 
 .stats-section,
@@ -679,19 +705,51 @@ onMounted(() => {
 @media (max-width: 560px) {
   .stats-section,
   .operation-section {
-    padding: 10px;
+    padding: 8px;
+    margin-bottom: 8px;
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
   }
 
-  .section-title {
+  .stat-item {
+    padding: 6px 2px;
+  }
+
+  .stat-value {
     font-size: 15px;
   }
 
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .operation-content {
+    padding: 8px;
+  }
+
   .operation-desc {
+    margin-bottom: 8px;
     font-size: 12px;
+  }
+
+  .warning-section {
+    margin-top: 8px;
+  }
+
+  .warning-section :deep(.arco-alert-content) {
+    font-size: 12px;
+  }
+
+  .warning-list {
+    padding-left: 14px;
   }
 }
 </style>

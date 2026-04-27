@@ -6,7 +6,7 @@
         <template #icon>
           <icon-close />
         </template>
-        关闭阅读器
+        关闭
       </a-button>
     </div>
 
@@ -51,37 +51,12 @@
         </a-button>
       </div>
 
-      <!-- 章节列表按钮 -->
-      <a-dropdown @select="handleChapterSelect" trigger="click" position="bottom">
-        <a-button type="text" class="chapter-list-btn" title="章节列表">
-          <template #icon>
-            <icon-list />
-          </template>
-          章节
-        </a-button>
-        <template #content>
-          <div class="chapter-dropdown">
-            <div class="chapter-dropdown-header">
-              <span>章节列表</span>
-              <span class="total-count">(共{{ chapters.length }}章)</span>
-            </div>
-            <div class="chapter-dropdown-content">
-              <a-doption 
-                v-for="(chapter, index) in chapters" 
-                :key="index"
-                :value="index"
-                :class="{ 'current-chapter': index === currentChapterIndex }"
-              >
-                <div class="chapter-option">
-                  <span class="chapter-number">{{ index + 1 }}.</span>
-                  <span class="chapter-title" :title="chapter.name">{{ chapter.name }}</span>
-                  <icon-check v-if="index === currentChapterIndex" class="current-icon" />
-                </div>
-              </a-doption>
-            </div>
-          </div>
+      <a-button type="text" @click="handleChapterListClick" class="chapter-list-btn" title="章节列表">
+        <template #icon>
+          <icon-list />
         </template>
-      </a-dropdown>
+        章节
+      </a-button>
 
       <!-- 阅读设置按钮 -->
       <a-button type="text" @click="handleSettingsClick" class="settings-btn" title="阅读设置">
@@ -110,9 +85,8 @@ import {
   IconRight, 
   IconList, 
   IconSettings, 
-  IconFullscreen, 
-  IconFullscreenExit,
-  IconCheck
+  IconFullscreen,
+  IconFullscreenExit
 } from '@arco-design/web-vue/es/icon'
 
 // Props
@@ -149,6 +123,7 @@ const emit = defineEmits([
   'next-chapter',
   'prev-chapter',
   'chapter-selected',
+  'chapter-list',
   'settings-change'
 ])
 
@@ -170,6 +145,10 @@ const handlePrevChapter = () => {
 
 const handleChapterSelect = (index) => {
   emit('chapter-selected', index)
+}
+
+const handleChapterListClick = () => {
+  emit('chapter-list')
 }
 
 const handleSettingsClick = () => {
@@ -223,6 +202,7 @@ onUnmounted(() => {
 
 .header-left {
   flex: 0 0 auto;
+  min-width: 0;
 }
 
 .close-btn {
@@ -277,6 +257,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .chapter-nav {
@@ -304,149 +285,100 @@ onUnmounted(() => {
   color: var(--color-text-4);
 }
 
-/* 章节下拉菜单样式 - 使用更强的选择器覆盖Arco Design默认样式 */
-:deep(.arco-dropdown-content) {
-  max-height: calc(100vh - 120px) !important;
-  padding: 0 !important;
-}
-
-.chapter-dropdown {
-  width: 300px;
-  max-height: calc(100vh - 120px);
-  display: flex;
-  flex-direction: column;
-}
-
-.chapter-dropdown-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--color-border-2);
-  font-weight: 500;
-  color: var(--color-text-1);
-  flex-shrink: 0;
-  background: var(--color-bg-1);
-}
-
-.total-count {
-  font-size: 12px;
-  color: var(--color-text-3);
-  font-weight: normal;
-}
-
-.chapter-dropdown-content {
-  flex: 1;
-  max-height: calc(100vh - 180px);
-  overflow-y: auto;
-  /* 优化滚动条样式 */
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-3) transparent;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar-thumb {
-  background: var(--color-border-3);
-  border-radius: 3px;
-}
-
-.chapter-dropdown-content::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-2);
-}
-
-.chapter-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  transition: background-color 0.2s ease;
-}
-
-.chapter-option:hover {
-  background: var(--color-fill-2);
-}
-
-.current-chapter .chapter-option {
-  background: var(--color-primary-light-1);
-  color: var(--color-primary-6);
-}
-
-.chapter-number {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--color-text-3);
-  width: 30px;
-}
-
-.chapter-title {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-}
-
-.current-icon {
-  flex-shrink: 0;
-  color: var(--color-primary-6);
-  font-size: 14px;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .reader-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
     padding: 8px 12px;
   }
-  
-  .book-info {
-    max-width: 250px;
+
+  .close-btn {
+    width: auto;
+    min-width: 36px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  
+
+  .close-btn span {
+    display: inline;
+    font-size: 12px;
+  }
+
+  .book-info {
+    max-width: none;
+    min-width: 0;
+  }
+
   .book-title {
     font-size: 14px;
   }
-  
+
   .chapter-info {
+    min-width: 0;
     font-size: 11px;
   }
-  
-  .chapter-name {
-    max-width: 150px;
-  }
-  
-  .header-right {
-    gap: 4px;
-  }
-  
-  .chapter-dropdown {
-    width: 280px;
-  }
-}
 
-@media (max-width: 480px) {
-  .close-btn span {
-    display: none;
+  .chapter-name {
+    max-width: none;
   }
-  
+
+  .header-right {
+    gap: 5px;
+  }
+
+  .chapter-nav {
+    gap: 3px;
+  }
+
+  .nav-btn,
+  .chapter-list-btn,
+  .settings-btn,
+  .fullscreen-btn {
+    width: 32px;
+    padding: 0;
+  }
+
   .chapter-list-btn span,
   .settings-btn span {
     display: none;
   }
-  
-  .book-info {
-    max-width: 180px;
+}
+
+@media (max-width: 480px) {
+  .reader-header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 7px 10px;
   }
-  
-  .chapter-name {
-    max-width: 120px;
+
+  .header-right {
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .chapter-nav {
+    gap: 2px;
+  }
+
+  .nav-btn,
+  .chapter-list-btn,
+  .settings-btn,
+  .fullscreen-btn {
+    width: 29px;
+    min-width: 29px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  .book-title {
+    font-size: 13px;
+  }
+
+  .chapter-info {
+    font-size: 10px;
   }
 }
 </style>

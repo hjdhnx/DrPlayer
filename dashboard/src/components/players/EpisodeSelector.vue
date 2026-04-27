@@ -415,10 +415,6 @@ watch(episodeDisplayStrategy, () => {
 }
 
 @media (max-width: 480px) {
-  .episodes-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-  
   .route-btn {
     min-width: 80px;
     height: 32px;

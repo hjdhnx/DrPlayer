@@ -615,17 +615,17 @@ watch(() => props.visible, (newVisible) => {
   }
 
   .global-action-dialog :deep(.arco-modal-body) {
-    max-height: calc(100vh - 148px);
+    max-height: min(72vh, calc(100vh - 150px));
     overflow: hidden;
   }
 
   .search-section {
-    padding: 14px;
+    padding: 10px 12px 8px;
   }
 
   .search-filters {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
   .action-search,
@@ -636,12 +636,12 @@ watch(() => props.visible, (newVisible) => {
   }
 
   .action-list-container {
-    min-height: 220px;
-    max-height: calc(100vh - 320px);
+    min-height: 120px;
+    max-height: min(34vh, calc(100vh - 430px));
   }
 
   .action-item {
-    padding: 12px 14px;
+    padding: 10px 12px;
   }
 
   .action-main {
@@ -668,10 +668,16 @@ watch(() => props.visible, (newVisible) => {
   }
 
   .action-stats {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 12px 14px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    padding: 8px 12px 10px;
+    flex-shrink: 0;
+  }
+
+  .stats-item {
+    font-size: 12px;
   }
 }
 

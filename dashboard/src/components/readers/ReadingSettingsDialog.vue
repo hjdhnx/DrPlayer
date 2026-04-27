@@ -2,10 +2,11 @@
   <a-modal
     v-model:visible="dialogVisible"
     title="阅读设置"
-    width="500px"
+    width="min(500px, calc(100vw - 24px))"
     :footer="false"
     @cancel="handleClose"
-    class="reading-settings-dialog"
+    modal-class="reading-settings-dialog"
+    align-center
   >
     <div class="dialog-container">
       <!-- 滚动内容区域 -->
@@ -361,36 +362,51 @@ watch(dialogVisible, (visible) => {
 
 <style scoped>
 /* 重写模态框样式，确保头部和底部固定 */
-.reading-settings-dialog :deep(.arco-modal) {
-  height: 50vh;
-  max-height: 480px;
-  display: flex;
-  flex-direction: column;
+:global(.arco-modal-wrapper-align-center:has(.reading-settings-dialog)) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px;
+  overflow: hidden;
 }
 
-.reading-settings-dialog :deep(.arco-modal-header) {
+:global(.reading-settings-dialog) {
+  height: min(46vh, 420px);
+  max-height: calc(100vh - 96px);
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0 !important;
+}
+
+:global(.reading-settings-dialog .arco-modal-header) {
   flex-shrink: 0;
   border-bottom: 1px solid var(--color-border-2);
   padding: 12px 20px;
 }
 
-.reading-settings-dialog :deep(.arco-modal-body) {
-  padding: 0;
-  flex: 1;
+:global(.reading-settings-dialog .arco-modal-body) {
+  height: 0;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none !important;
+  padding: 0 !important;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 .dialog-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
 .settings-content {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 16px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -547,7 +563,7 @@ watch(dialogVisible, (visible) => {
   padding: 12px 20px;
   border-top: 1px solid var(--color-border-2);
   background: var(--color-bg-1);
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 .action-buttons {
@@ -561,38 +577,102 @@ watch(dialogVisible, (visible) => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .settings-content {
+  :global(.arco-modal-wrapper-align-center:has(.reading-settings-dialog)) {
     padding: 12px;
   }
-  
+
+  :global(.reading-settings-dialog) {
+    width: calc(100vw - 24px) !important;
+    height: min(46vh, calc(100vh - 220px)) !important;
+    max-height: min(46vh, calc(100vh - 220px)) !important;
+    margin: 0 !important;
+  }
+
+  :global(.reading-settings-dialog .arco-modal-header) {
+    padding: 12px 14px !important;
+  }
+
+  :global(.reading-settings-dialog .arco-modal-body) {
+    height: 0;
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .dialog-container {
+    min-height: 0;
+  }
+
+  .settings-content {
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  .setting-section {
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    font-size: 14px;
+  }
+
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
+    margin-bottom: 8px;
   }
-  
+
   .line-height-slider,
   .max-width-slider,
   .font-family-select {
     width: 100%;
   }
-  
+
   .theme-options {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
-  
+
+  .theme-option {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .theme-preview {
+    width: 42px;
+    height: 26px;
+  }
+
   .color-settings {
     justify-content: center;
   }
-  
-  .dialog-footer {
-    flex-direction: column;
-    gap: 10px;
+
+  .preview-area {
+    padding: 10px;
   }
-  
+
+  .preview-title {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+
+  .dialog-footer {
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+
   .action-buttons {
-    width: 100%;
-    justify-content: center;
+    gap: 8px;
+  }
+
+  .dialog-footer :deep(.arco-btn) {
+    min-width: 0;
+    padding: 0 12px;
   }
 }
 

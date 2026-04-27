@@ -7,8 +7,8 @@
       left: buttonPosition.x + 'px', 
       top: buttonPosition.y + 'px' 
     }"
-    @click="openWindow"
-    @mousedown="startDragButton"
+    @click="handleButtonClick"
+    @pointerdown="startDragButton"
     :title="buttonTitle"
   >
     <icon-computer class="button-icon" />
@@ -23,14 +23,16 @@
       top: windowPosition.y + 'px',
       width: windowSize.width + 'px',
       height: windowSize.height + 'px',
-      zIndex: zIndex
+      zIndex: zIndex,
+      '--floating-window-width': windowSize.width + 'px',
+      '--floating-window-height': windowSize.height + 'px'
     }"
-    @mousedown="bringToFront"
+    @pointerdown="bringToFront"
   >
     <!-- 窗口标题栏 -->
     <div 
       class="window-header"
-      @mousedown="startDragWindow"
+      @pointerdown="startDragWindow"
     >
       <div class="window-title">
         <icon-computer class="title-icon" />
@@ -68,7 +70,7 @@
     <!-- 调整大小的拖拽点 -->
     <div 
       class="resize-handle resize-se"
-      @mousedown="startResize"
+      @pointerdown="startResize"
     ></div>
   </div>
 </template>
@@ -203,10 +205,21 @@ const dragState = reactive({
   startTop: 0,
   startWidth: 0,
   startHeight: 0,
+  moved: false,
+  suppressClick: false,
+  pointerId: null,
   dragType: '' // 'button', 'window', 'resize'
 })
 
 // 打开窗口
+const handleButtonClick = () => {
+  if (dragState.suppressClick) {
+    dragState.suppressClick = false
+    return
+  }
+  openWindow()
+}
+
 const openWindow = () => {
   // 如果窗口已经打开，则关闭它
   if (isWindowOpen.value) {
@@ -256,87 +269,135 @@ const bringToFront = () => {
   zIndex.value = Date.now()
 }
 
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
+
+const clampButtonPosition = () => {
+  const buttonSize = window.innerWidth <= 768 ? 36 : 40
+  buttonPosition.x = clamp(buttonPosition.x, 0, Math.max(0, window.innerWidth - buttonSize))
+  buttonPosition.y = clamp(buttonPosition.y, 0, Math.max(0, window.innerHeight - buttonSize))
+}
+
+const clampWindowGeometry = () => {
+  const margin = window.innerWidth <= 768 ? 8 : 0
+  const minWidth = Math.min(300, window.innerWidth - margin * 2)
+  const minHeight = Math.min(200, window.innerHeight - margin * 2)
+  const maxWidth = Math.max(minWidth, window.innerWidth - margin * 2)
+  const maxHeight = Math.max(minHeight, window.innerHeight - margin * 2)
+
+  windowSize.width = clamp(windowSize.width, minWidth, maxWidth)
+  windowSize.height = clamp(windowSize.height, minHeight, maxHeight)
+  windowPosition.x = clamp(windowPosition.x, margin, Math.max(margin, window.innerWidth - windowSize.width - margin))
+  windowPosition.y = clamp(windowPosition.y, margin, Math.max(margin, window.innerHeight - windowSize.height - margin))
+}
+
+const handleViewportResize = () => {
+  clampButtonPosition()
+  clampWindowGeometry()
+}
+
 // 开始拖拽按钮
 const startDragButton = (e) => {
-  if (e.button !== 0) return // 只响应左键
-  
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+
   dragState.isDragging = true
+  dragState.moved = false
+  dragState.pointerId = e.pointerId
   dragState.dragType = 'button'
   dragState.startX = e.clientX
   dragState.startY = e.clientY
   dragState.startLeft = buttonPosition.x
   dragState.startTop = buttonPosition.y
-  
+
+  e.currentTarget?.setPointerCapture?.(e.pointerId)
   e.preventDefault()
   e.stopPropagation()
 }
 
 // 开始拖拽窗口
 const startDragWindow = (e) => {
-  if (e.button !== 0) return // 只响应左键
-  
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+
   dragState.isDragging = true
+  dragState.moved = false
+  dragState.pointerId = e.pointerId
   dragState.dragType = 'window'
   dragState.startX = e.clientX
   dragState.startY = e.clientY
   dragState.startLeft = windowPosition.x
   dragState.startTop = windowPosition.y
-  
+
+  e.currentTarget?.setPointerCapture?.(e.pointerId)
   e.preventDefault()
   e.stopPropagation()
 }
 
 // 开始调整大小
 const startResize = (e) => {
-  if (e.button !== 0) return // 只响应左键
-  
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+
   dragState.isResizing = true
+  dragState.moved = false
+  dragState.pointerId = e.pointerId
   dragState.dragType = 'resize'
   dragState.startX = e.clientX
   dragState.startY = e.clientY
   dragState.startWidth = windowSize.width
   dragState.startHeight = windowSize.height
-  
+
+  e.currentTarget?.setPointerCapture?.(e.pointerId)
   e.preventDefault()
   e.stopPropagation()
 }
 
-// 鼠标移动处理
-const handleMouseMove = (e) => {
+// 指针移动处理
+const handlePointerMove = (e) => {
   if (!dragState.isDragging && !dragState.isResizing) return
-  
+  if (dragState.pointerId !== null && e.pointerId !== dragState.pointerId) return
+
   const deltaX = e.clientX - dragState.startX
   const deltaY = e.clientY - dragState.startY
-  
+  if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+    dragState.moved = true
+  }
+
   if (dragState.dragType === 'button') {
-    buttonPosition.x = Math.max(0, Math.min(window.innerWidth - 50, dragState.startLeft + deltaX))
-    buttonPosition.y = Math.max(0, Math.min(window.innerHeight - 50, dragState.startTop + deltaY))
+    const buttonSize = window.innerWidth <= 768 ? 36 : 40
+    buttonPosition.x = clamp(dragState.startLeft + deltaX, 0, Math.max(0, window.innerWidth - buttonSize))
+    buttonPosition.y = clamp(dragState.startTop + deltaY, 0, Math.max(0, window.innerHeight - buttonSize))
   } else if (dragState.dragType === 'window') {
-    windowPosition.x = Math.max(0, Math.min(window.innerWidth - 200, dragState.startLeft + deltaX))
-    windowPosition.y = Math.max(0, Math.min(window.innerHeight - 100, dragState.startTop + deltaY))
+    const margin = window.innerWidth <= 768 ? 8 : 0
+    windowPosition.x = clamp(dragState.startLeft + deltaX, margin, Math.max(margin, window.innerWidth - windowSize.width - margin))
+    windowPosition.y = clamp(dragState.startTop + deltaY, margin, Math.max(margin, window.innerHeight - windowSize.height - margin))
   } else if (dragState.dragType === 'resize') {
-    const newWidth = Math.max(300, dragState.startWidth + deltaX)
-    const newHeight = Math.max(200, dragState.startHeight + deltaY)
-    
-    // 确保窗口不会超出屏幕
-    windowSize.width = Math.min(newWidth, window.innerWidth - windowPosition.x)
-    windowSize.height = Math.min(newHeight, window.innerHeight - windowPosition.y)
+    const margin = window.innerWidth <= 768 ? 8 : 0
+    const minWidth = Math.min(300, window.innerWidth - margin * 2)
+    const minHeight = Math.min(200, window.innerHeight - margin * 2)
+    const maxWidth = Math.max(minWidth, window.innerWidth - windowPosition.x - margin)
+    const maxHeight = Math.max(minHeight, window.innerHeight - windowPosition.y - margin)
+
+    windowSize.width = clamp(dragState.startWidth + deltaX, minWidth, maxWidth)
+    windowSize.height = clamp(dragState.startHeight + deltaY, minHeight, maxHeight)
   }
 }
 
-// 鼠标释放处理
-const handleMouseUp = () => {
+// 指针释放处理
+const handlePointerUp = () => {
+  if (!dragState.isDragging && !dragState.isResizing) return
+
   // 根据拖拽类型保存对应的位置
   if (dragState.dragType === 'button') {
     saveButtonPosition()
+    dragState.suppressClick = dragState.moved
   } else if (dragState.dragType === 'window') {
     saveWindowPosition()
   } else if (dragState.dragType === 'resize') {
     saveWindowSize()
   }
-  
+
   dragState.isDragging = false
   dragState.isResizing = false
+  dragState.moved = false
+  dragState.pointerId = null
   dragState.dragType = ''
 }
 
@@ -409,8 +470,9 @@ watch(currentDebugUrl, (newUrl, oldUrl) => {
 
 // 生命周期
 onMounted(() => {
-  document.addEventListener('mousemove', handleMouseMove)
-  document.addEventListener('mouseup', handleMouseUp)
+  document.addEventListener('pointermove', handlePointerMove)
+  document.addEventListener('pointerup', handlePointerUp)
+  document.addEventListener('pointercancel', handlePointerUp)
   
   // 添加 localStorage 监听器（跨标签页）
   window.addEventListener('storage', handleStorageChange)
@@ -420,7 +482,9 @@ onMounted(() => {
   
   // 加载保存的位置
   loadSavedPositions()
-  
+  handleViewportResize()
+  window.addEventListener('resize', handleViewportResize)
+
   // 加载调试设置
   loadDebugSettings()
   
@@ -431,12 +495,14 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseup', handleMouseUp)
+  document.removeEventListener('pointermove', handlePointerMove)
+  document.removeEventListener('pointerup', handlePointerUp)
+  document.removeEventListener('pointercancel', handlePointerUp)
   
   // 移除 localStorage 监听器
   window.removeEventListener('storage', handleStorageChange)
-  
+  window.removeEventListener('resize', handleViewportResize)
+
   // 移除自定义事件监听器
   window.removeEventListener('debugSettingsChanged', handleDebugSettingsChange)
   
@@ -465,15 +531,19 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
   z-index: 999;
   user-select: none;
+  touch-action: none;
+}
+
+.floating-button:active {
+  cursor: grabbing;
 }
 
 .floating-button:hover {
-  transform: scale(1.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -491,6 +561,7 @@ defineExpose({
   overflow: hidden;
   user-select: none;
   border: 1px solid #e0e0e0;
+  touch-action: none;
 }
 
 /* 窗口标题栏 */
@@ -560,6 +631,7 @@ defineExpose({
 .resize-handle {
   position: absolute;
   background: transparent;
+  touch-action: none;
 }
 
 .resize-se {
@@ -591,10 +663,8 @@ defineExpose({
 /* 响应式设计 */
 @media (max-width: 768px) {
   .floating-window {
-    width: 90vw !important;
-    height: 70vh !important;
-    left: 5vw !important;
-    top: 15vh !important;
+    width: min(var(--floating-window-width), calc(100vw - 16px)) !important;
+    height: min(var(--floating-window-height), calc(100vh - 16px)) !important;
   }
   
   .floating-button {
