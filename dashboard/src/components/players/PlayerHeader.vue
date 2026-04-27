@@ -1,5 +1,5 @@
 <template>
-  <div class="player-header">
+  <div class="player-header" :class="{ 'live-mode': isLiveMode }">
     <h3>正在播放: {{ episodeName }}</h3>
     <div class="player-controls">
       <div class="compact-button-group">
@@ -122,6 +122,8 @@
           </a-select>
         </div>
 
+        <slot name="live-controls"></slot>
+
         <!-- 画质选择器 -->
         <div 
           v-if="qualities && qualities.length > 1" 
@@ -187,7 +189,6 @@
           <span class="btn-text">片头片尾</span>
         </div>
         
-        <!-- 关闭按钮 -->
         <div class="compact-btn close-btn" @click="$emit('close')">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
@@ -565,6 +566,14 @@ onUnmounted(() => {
   padding: 0 4px;
 }
 
+.player-header.live-mode {
+  margin-bottom: 0;
+  padding: 8px 10px;
+  gap: 12px;
+  background: var(--dp-bg-surface);
+  border-bottom: 1px solid var(--dp-border-subtle);
+}
+
 .player-header h3 {
   margin: 0;
   font-size: 16px;
@@ -686,7 +695,28 @@ onUnmounted(() => {
   color: currentColor;
 }
 
-/* 响应式设计 */
+.live-mode .compact-button-group {
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--dp-bg-surface-muted);
+}
+
+.live-mode .compact-btn {
+  min-height: 32px;
+  border-radius: 8px;
+}
+
+.live-mode .close-btn {
+  margin-left: 2px;
+}
+
+.live-mode .compact-select :deep(.arco-select-view) {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
 @media (max-width: 768px) {
   .player-header {
     flex-direction: column;
@@ -701,6 +731,57 @@ onUnmounted(() => {
     margin-right: 0;
     font-size: 14px;
     line-height: 1.4;
+  }
+
+  .player-header.live-mode {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    margin-bottom: 0;
+  }
+
+  .player-header.live-mode h3 {
+    width: auto;
+    min-width: 52px;
+    flex: 0 1 92px;
+    margin-right: 0;
+    font-size: 13px;
+    line-height: 32px;
+  }
+
+  .live-mode .player-controls {
+    width: auto;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .live-mode .compact-button-group {
+    width: auto;
+    max-width: calc(100vw - 132px);
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .live-mode .compact-btn {
+    min-width: 36px;
+  }
+
+  .live-mode .selector-btn {
+    min-width: 112px;
+  }
+
+  .live-mode .compact-select {
+    width: 112px;
+    min-width: 112px;
+  }
+
+  .live-mode .close-btn {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--dp-bg-surface-muted);
   }
 
   .player-controls {

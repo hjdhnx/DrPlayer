@@ -169,15 +169,15 @@
                   @quality-change="handleQualityChange"
                   @toggle-debug="handleToggleDebug"
                   @close="handleClosePlayer"
-                />
-                
-                <!-- 独立的直播代理选择器 -->
-                <div class="live-proxy-control">
-                  <LiveProxySelector
-                    ref="liveProxySelector"
-                    @change="handleLiveProxyChange"
-                  />
-                </div>
+                >
+                  <template #live-controls>
+                    <LiveProxySelector
+                      ref="liveProxySelector"
+                      class="header-live-proxy"
+                      @change="handleLiveProxyChange"
+                    />
+                  </template>
+                </PlayerHeader>
               </div>
               
               <!-- 默认播放器 -->
@@ -987,15 +987,6 @@ onMounted(async () => {
   background: var(--dp-bg-surface);
 }
 
-.live-proxy-control {
-  display: flex;
-  align-items: center;
-  padding: 0 8px 8px;
-  min-width: 0;
-}
-
-
-
 .video-container {
   flex: 1;
   position: relative;
@@ -1166,17 +1157,6 @@ onMounted(async () => {
 
   .player-controls-area {
     background: var(--dp-bg-surface);
-  }
-
-  .live-proxy-control {
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0 6px 8px;
-    scrollbar-width: none;
-  }
-
-  .live-proxy-control::-webkit-scrollbar {
-    display: none;
   }
 
   .groups-panel {

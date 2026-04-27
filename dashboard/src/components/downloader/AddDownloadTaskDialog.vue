@@ -2,7 +2,9 @@
   <a-modal
     :visible="visible"
     title="新建下载任务"
-    width="800px"
+    width="min(800px, calc(100vw - 24px))"
+    modal-class="add-download-task-dialog"
+    align-center
     :mask-closable="false"
     @cancel="handleCancel"
     @ok="handleConfirm"
@@ -19,7 +21,20 @@
           <div class="novel-details">
             <h3>{{ novelDetail.vod_name }}</h3>
             <p class="novel-author">作者: {{ novelDetail.vod_actor || '未知' }}</p>
-            <p class="novel-desc">{{ novelDetail.vod_content || '暂无简介' }}</p>
+            <div class="novel-desc-block">
+              <p class="novel-desc" :class="{ expanded: descExpanded }">
+                {{ novelDetail.vod_content || '暂无简介' }}
+              </p>
+              <a-button
+                v-if="hasLongDescription"
+                type="text"
+                size="mini"
+                class="desc-toggle"
+                @click="descExpanded = !descExpanded"
+              >
+                {{ descExpanded ? '收起简介' : '展开全部简介' }}
+              </a-button>
+            </div>
             <div class="novel-meta">
               <span>来源: {{ sourceName }}</span>
               <span>总章节: {{ totalChapters }}</span>
@@ -64,11 +79,16 @@
             </div>
           </div>
           
-          <div class="selected-info">
-            已选择 {{ selectedChapters.length }} / {{ totalChapters }} 章
+          <div class="chapter-summary">
+            <div class="selected-info">
+              已选择 {{ selectedChapters.length }} / {{ totalChapters }} 章
+            </div>
+            <a-button size="small" type="text" @click="chapterListExpanded = !chapterListExpanded">
+              {{ chapterListExpanded ? '收起章节列表' : '展开章节列表' }}
+            </a-button>
           </div>
 
-          <div class="chapter-list">
+          <div v-show="chapterListExpanded" class="chapter-list">
             <div class="chapter-grid">
               <div 
                 v-for="(chapter, index) in chapters" 
@@ -192,6 +212,9 @@ const loading = ref(false)
 const selectedChapters = ref([])
 const rangeStart = ref(1)
 const rangeEnd = ref(1)
+const descExpanded = ref(false)
+const chapterListExpanded = ref(false)
+
 
 const downloadSettings = ref({
   filename: '',
@@ -202,6 +225,11 @@ const downloadSettings = ref({
 
 // 计算属性
 const totalChapters = computed(() => props.chapters.length)
+
+const hasLongDescription = computed(() => {
+  const content = props.novelDetail?.vod_content || ''
+  return content.length > 120
+})
 
 const canConfirm = computed(() => {
   return props.novelDetail && selectedChapters.value.length > 0
@@ -215,6 +243,8 @@ watch(() => props.visible, (visible) => {
 })
 
 watch(() => props.novelDetail, (detail) => {
+  descExpanded.value = false
+  chapterListExpanded.value = false
   if (detail) {
     downloadSettings.value.filename = detail.vod_name + '.txt'
     rangeEnd.value = totalChapters.value
@@ -226,6 +256,8 @@ const resetForm = () => {
   selectedChapters.value = []
   rangeStart.value = 1
   rangeEnd.value = totalChapters.value
+  descExpanded.value = false
+  chapterListExpanded.value = false
   downloadSettings.value = {
     filename: props.novelDetail?.vod_name + '.txt' || '',
     concurrency: 3,
@@ -303,9 +335,46 @@ const handleConfirm = async () => {
 </script>
 
 <style scoped>
+:global(.arco-modal-wrapper-align-center:has(.add-download-task-dialog)) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px;
+  overflow: hidden;
+}
+
+:global(.add-download-task-dialog) {
+  height: min(760px, calc(100dvh - 24px));
+  max-height: calc(100dvh - 24px);
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0 !important;
+}
+
+:global(.add-download-task-dialog .arco-modal-header),
+:global(.add-download-task-dialog .arco-modal-footer) {
+  flex: 0 0 auto;
+}
+
+:global(.add-download-task-dialog .arco-modal-body) {
+  height: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+
 .add-task-form {
-  max-height: 600px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding: 16px 20px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .form-section {
@@ -352,13 +421,45 @@ const handleConfirm = async () => {
   color: var(--color-text-3);
 }
 
+.novel-desc-block {
+  margin: 0 0 12px;
+}
+
 .novel-desc {
-  margin: 0 0 12px 0;
+  margin: 0;
   font-size: 12px;
   color: var(--color-text-2);
-  line-height: 1.5;
-  max-height: 60px;
+  line-height: 1.6;
+  max-height: 58px;
   overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.novel-desc.expanded {
+  max-height: min(28vh, 220px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.novel-desc.expanded::-webkit-scrollbar {
+  width: 5px;
+}
+
+.novel-desc.expanded::-webkit-scrollbar-track {
+  background: var(--color-fill-2);
+  border-radius: 999px;
+}
+
+.novel-desc.expanded::-webkit-scrollbar-thumb {
+  background: var(--color-fill-4);
+  border-radius: 999px;
+}
+
+.desc-toggle {
+  margin-top: 6px;
+  padding: 0;
+  height: 22px;
 }
 
 .novel-meta {
@@ -395,16 +496,22 @@ const handleConfirm = async () => {
   font-size: 12px;
 }
 
-.selected-info {
+.chapter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
+}
+
+.selected-info {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-primary-6);
 }
 
 .chapter-list {
-  max-height: 300px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .chapter-grid {
@@ -469,5 +576,78 @@ const handleConfirm = async () => {
 .setting-tip {
   font-size: 12px;
   color: var(--color-text-3);
+}
+
+@media (max-width: 768px) {
+  :global(.arco-modal-wrapper-align-center:has(.add-download-task-dialog)) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  :global(.add-download-task-dialog) {
+    width: calc(100vw - 24px) !important;
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .add-task-form {
+    padding: 14px;
+  }
+
+  .form-section {
+    margin-bottom: 18px;
+  }
+
+  .novel-info {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .novel-cover img {
+    width: 68px;
+    height: 102px;
+  }
+
+  .novel-details {
+    min-width: 0;
+  }
+
+  .novel-details h3 {
+    font-size: 15px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .novel-desc.expanded {
+    max-height: min(32vh, 240px);
+  }
+
+  .novel-meta {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+
+  .chapter-summary,
+  .selection-controls,
+  .range-selector,
+  .setting-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .range-selector :deep(.arco-input-wrapper),
+  .setting-row :deep(.arco-input-wrapper),
+  .setting-row :deep(.arco-input-number) {
+    width: 100% !important;
+  }
+
+  .chapter-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

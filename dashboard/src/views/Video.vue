@@ -27,8 +27,6 @@
         <strong>{{ form.now_site_title || '选择片源' }}</strong>
       </button>
       <div class="mobile-video-actions">
-        <button class="mobile-tool-btn" type="button" @click="refreshPage">刷新</button>
-        <button class="mobile-tool-btn" type="button" @click="router.push({ name: 'SearchAggregation' })">聚合</button>
         <button class="mobile-tool-btn" type="button" @click="openMobilePush">推送</button>
         <button class="mobile-tool-btn" type="button" @click="openMobileGlobalAction">动作</button>
       </div>
@@ -1276,7 +1274,7 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 10px 0 12px;
+    padding: 8px 0 10px;
     background: var(--dp-bg-app);
   }
 
@@ -1289,8 +1287,9 @@ onBeforeUnmount(() => {
 
   .mobile-video-actions {
     display: grid;
-    grid-template-columns: repeat(2, 52px);
+    grid-template-columns: repeat(2, 46px);
     gap: 6px;
+    align-content: center;
   }
 
   .mobile-source-chip,
@@ -1303,7 +1302,7 @@ onBeforeUnmount(() => {
 
   .mobile-source-chip {
     min-width: 0;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-radius: 16px;
     background: var(--dp-bg-surface);
     border: 1px solid var(--dp-border-subtle);
@@ -1329,9 +1328,9 @@ onBeforeUnmount(() => {
   }
 
   .mobile-tool-btn {
-    min-width: 52px;
-    min-height: 30px;
-    padding: 0 8px;
+    min-width: 46px;
+    min-height: 28px;
+    padding: 0 6px;
     border-radius: 16px;
     background: var(--dp-bg-surface);
     border: 1px solid var(--dp-border-subtle);

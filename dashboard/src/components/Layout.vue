@@ -4,12 +4,13 @@
     :class="{
       'is-mobile': isMobile,
       'mobile-more-open': mobileMoreOpen,
+      'video-refresh-visible': showVideoRefresh,
       'is-immersive': isImmersivePage
     }"
   >
     <div class="fixed-header">
       <Header v-if="!isMobile" />
-      <div v-else class="mobile-top-bar" :class="{ 'home-theme-visible': showHomeThemeToggle }">
+      <div v-else class="mobile-top-bar" :class="{ 'home-theme-visible': showHomeThemeToggle, 'video-refresh-visible': showVideoRefresh }">
         <button v-if="showMobileBack" class="mobile-icon-btn" type="button" title="返回" @click="goBack">
           <span class="mobile-back-icon">‹</span>
         </button>
@@ -24,6 +25,9 @@
 
         <button v-if="showHomeThemeToggle" class="mobile-icon-btn mobile-theme-toggle" type="button" :title="themeToggleTitle" @click="toggleTheme">
           <span class="mobile-theme-text">{{ resolvedTheme === THEME_MODE.DARK ? '浅' : '深' }}</span>
+        </button>
+        <button v-if="showVideoRefresh" class="mobile-icon-btn mobile-refresh-btn" type="button" title="刷新点播" @click="refreshVideoPage">
+          <span class="mobile-refresh-icon">↻</span>
         </button>
         <button class="mobile-search-pill" type="button" title="搜索" @click="goSearch">
           <svg class="mobile-action-icon"><use href="#icon-sousuo"></use></svg>
@@ -207,6 +211,7 @@ export default defineComponent({
     const showMobileBottomNav = computed(() => route.meta?.showBottomNav !== false && !isImmersivePage.value);
     const showMobileBack = computed(() => isImmersivePage.value || route.name === 'SearchAggregation');
     const showHomeThemeToggle = computed(() => route.name === 'Home');
+    const showVideoRefresh = computed(() => route.name === 'Video');
     const mobileTitle = computed(() => route.meta?.title || 'DrPlayer');
     const mobileSubtitle = computed(() => {
       if (route.name === 'Home') return '影视、直播、阅读与工具';
@@ -260,6 +265,10 @@ export default defineComponent({
     };
 
     const isRouteActive = (routeName) => route.name === routeName;
+
+    const refreshVideoPage = () => {
+      window.dispatchEvent(new CustomEvent('reloadSource', { detail: { source: 'mobile-header' } }));
+    };
 
     const goBack = () => {
       if (window.history.length > 1) {
@@ -319,6 +328,7 @@ export default defineComponent({
       isImmersivePage,
       showMobileBottomNav,
       showMobileBack,
+      showVideoRefresh,
       showHomeThemeToggle,
       mobileTitle,
       mobileSubtitle,
@@ -333,6 +343,7 @@ export default defineComponent({
       themeToggleTitle,
       THEME_MODE,
       toggleTheme,
+      refreshVideoPage,
       onClickMenuItem,
       onSiderCollapse,
       closeMobileMore,
@@ -563,7 +574,8 @@ export default defineComponent({
   background: var(--dp-bg-shell);
 }
 
-.mobile-top-bar.home-theme-visible {
+.mobile-top-bar.home-theme-visible,
+.mobile-top-bar.video-refresh-visible {
   grid-template-columns: 40px minmax(0, 1fr) 36px minmax(84px, auto) 40px;
 }
 
@@ -600,6 +612,17 @@ export default defineComponent({
   font-weight: 800;
   font-family: inherit;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.mobile-refresh-btn {
+  border: 1px solid var(--dp-border-subtle);
+  color: var(--dp-primary-readable);
+  font-weight: 800;
+}
+
+.mobile-refresh-icon {
+  font-size: 19px;
+  line-height: 1;
 }
 
 .mobile-theme-toggle {

@@ -176,11 +176,12 @@ defineExpose({
 .live-proxy-selector {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  width: 100%;
+  gap: 4px;
+  flex: 0 0 auto;
+  width: auto;
   min-width: 0;
   min-height: 32px;
-  padding: 4px 8px;
+  padding: 0 8px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
@@ -188,7 +189,7 @@ defineExpose({
   border: none;
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-text-2);
+  color: var(--dp-text-secondary);
   position: relative;
 }
 
@@ -204,8 +205,8 @@ defineExpose({
 }
 
 .proxy-select {
-  width: 142px;
-  min-width: 142px;
+  width: 128px;
+  min-width: 128px;
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -237,13 +238,28 @@ defineExpose({
     flex: 0 0 auto;
     width: auto;
     min-height: 32px;
-    padding: 4px;
-    border-radius: 10px;
+    padding: 0 6px;
+    border-radius: 8px;
   }
 
   .proxy-select {
-    width: 142px;
-    min-width: 142px;
+    width: 112px;
+    min-width: 112px;
+  }
+}
+
+@media (max-width: 390px) {
+  .selector-icon {
+    display: none;
+  }
+
+  .live-proxy-selector {
+    padding: 0 4px;
+  }
+
+  .proxy-select {
+    width: 98px;
+    min-width: 98px;
   }
 }
 

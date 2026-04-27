@@ -25,7 +25,7 @@
           <h1 class="about-title">DrPlayer</h1>
           <p class="about-subtitle">新一代智能视频播放器</p>
           <div class="about-version">
-            <span class="version-badge">v{{ appVersion }}</span>
+            <span class="version-badge">{{ displayVersion }}</span>
           </div>
         </div>
       </div>
@@ -180,9 +180,11 @@ defineProps({
 defineEmits(['update:visible'])
 
 // 获取应用版本号
-const appVersion = computed(() => {
-  // 从 Vite 全局变量中获取版本号
-  return __APP_VERSION__ || '1.0.0'
+const appVersion = computed(() => __APP_VERSION__ || '1.0.5 20260427')
+
+const displayVersion = computed(() => {
+  const version = appVersion.value || '1.0.5 20260427'
+  return version.startsWith('v') ? version : `v${version}`
 })
 </script>
 
