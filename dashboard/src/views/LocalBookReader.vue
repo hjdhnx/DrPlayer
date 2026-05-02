@@ -718,9 +718,38 @@ const saveReadingSettings = () => {
   }
 }
 
+const SCROLL_STEP = 300
+
 // 键盘快捷键
 const handleKeydown = (event) => {
+  const target = event.target
+  const isInputFocused = target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+
   switch (event.key) {
+    case 'ArrowUp':
+      if (isInputFocused) return
+      event.preventDefault()
+      if (contentRef.value) {
+        contentRef.value.scrollBy({ top: -SCROLL_STEP, behavior: 'smooth' })
+      }
+      break
+    case 'ArrowDown':
+      if (isInputFocused) return
+      event.preventDefault()
+      if (contentRef.value) {
+        contentRef.value.scrollBy({ top: SCROLL_STEP, behavior: 'smooth' })
+      }
+      break
+    case 'ArrowLeft':
+      if (isInputFocused) return
+      event.preventDefault()
+      handlePrevChapter()
+      break
+    case 'ArrowRight':
+      if (isInputFocused) return
+      event.preventDefault()
+      handleNextChapter()
+      break
     case 'Escape':
       event.preventDefault()
       if (showChapterPanel.value) {
