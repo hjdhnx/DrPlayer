@@ -13,10 +13,71 @@
       @next-chapter="handleNextChapter"
       @prev-chapter="handlePrevChapter"
       @chapter-selected="handleChapterSelected"
+      @chapter-list="handleToggleChapterPanel"
     />
 
-    <!-- 阅读内容区域 -->
-    <div class="reader-content" :style="readerStyles" @scroll="handleScroll" ref="contentRef">
+    <div class="reader-main-layout">
+      <!-- 章节侧边栏遮罩（移动端） -->
+      <div
+        v-if="showChapterPanel && isMobileViewport()"
+        class="chapter-sidebar-mask"
+        @click="showChapterPanel = false"
+      ></div>
+
+      <!-- 章节侧边栏 -->
+      <aside class="chapter-sidebar" :class="{ open: showChapterPanel }">
+        <div class="chapter-sidebar-header">
+          <div class="chapter-sidebar-heading">
+            <div class="chapter-sidebar-title">章节目录</div>
+            <button type="button" class="chapter-sidebar-close" @click="showChapterPanel = false">×</button>
+          </div>
+          <div class="chapter-sidebar-book" :title="bookTitle">{{ bookTitle || '当前小说' }}</div>
+          <div class="chapter-sidebar-count">共 {{ chapters.length }} 章，当前第 {{ currentChapterIndex + 1 }} 章</div>
+          <a-input-search
+            v-model="chapterSearchKeyword"
+            allow-clear
+            placeholder="搜索章节名或序号"
+            class="chapter-sidebar-search"
+          />
+        </div>
+
+        <div
+          class="chapter-sidebar-list"
+          ref="chapterPanelListRef"
+          @scroll="handleChapterListScroll"
+        >
+          <div
+            class="chapter-sidebar-spacer"
+            :style="{
+              paddingTop: `${virtualTopPadding}px`,
+              paddingBottom: `${virtualBottomPadding}px`
+            }"
+          >
+            <button
+              v-for="chapter in virtualChapters"
+              :key="chapter.index"
+              type="button"
+              class="chapter-sidebar-item"
+              :class="{
+                active: chapter.index === currentChapterIndex,
+                read: chapter.index < currentChapterIndex
+              }"
+              @click="handlePanelChapterSelect(chapter.index)"
+            >
+              <span class="chapter-sidebar-number">{{ chapter.index + 1 }}</span>
+              <span class="chapter-sidebar-item-title" :title="chapter.name">{{ chapter.name }}</span>
+              <span class="chapter-sidebar-current" v-if="chapter.index === currentChapterIndex">当前</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="filteredChapters.length === 0" class="chapter-sidebar-empty">
+          <a-empty description="未找到匹配章节" />
+        </div>
+      </aside>
+
+      <!-- 阅读内容区域 -->
+      <div class="reader-content" :style="readerStyles" @scroll="handleScroll" ref="contentRef">
       <!-- 加载状态 -->
       <div v-if="loading" class="loading-container">
         <a-spin :size="40" />
@@ -85,6 +146,7 @@
         <a-empty description="暂无章节内容" />
       </div>
     </div>
+    </div>
 
     <!-- 阅读进度条 -->
     <div class="progress-bar" v-if="readingSettings.showProgress">
@@ -144,6 +206,15 @@ const bookAuthor = ref('')
 const chapters = ref([])
 const currentChapterIndex = ref(0)
 const currentChapter = ref(null)
+const showChapterPanel = ref(false)
+const chapterSearchKeyword = ref('')
+const chapterPanelListRef = ref(null)
+
+// 虚拟滚动参数
+const CHAPTER_ITEM_HEIGHT = 38
+const CHAPTER_LIST_BUFFER = 12
+const chapterListScrollTop = ref(0)
+const chapterListViewportHeight = ref(0)
 
 // 阅读状态
 const currentPosition = ref(0)
@@ -224,11 +295,52 @@ const textStyles = computed(() => ({
 
 const formattedChapterContent = computed(() => {
   if (!currentChapter.value?.content) return []
-  
+
   return currentChapter.value.content
     .split('\n')
     .filter(line => line.trim())
     .map(line => line.trim())
+})
+
+// 章节侧边栏：筛选和虚拟滚动
+const isMobileViewport = () => window.matchMedia('(max-width: 768px)').matches
+
+const filteredChapters = computed(() => {
+  const keyword = chapterSearchKeyword.value.trim().toLowerCase()
+  return chapters.value
+    .map((chapter, index) => ({
+      ...chapter,
+      index,
+      name: chapter.name || chapter.title || `第${index + 1}章`
+    }))
+    .filter(chapter => {
+      if (!keyword) return true
+      return chapter.name.toLowerCase().includes(keyword) || String(chapter.index + 1).includes(keyword)
+    })
+})
+
+const virtualStartIndex = computed(() => {
+  if (filteredChapters.value.length === 0) return 0
+  return Math.max(0, Math.floor(chapterListScrollTop.value / CHAPTER_ITEM_HEIGHT) - CHAPTER_LIST_BUFFER)
+})
+
+const virtualVisibleCount = computed(() => {
+  const viewportRows = Math.ceil((chapterListViewportHeight.value || 360) / CHAPTER_ITEM_HEIGHT)
+  return viewportRows + CHAPTER_LIST_BUFFER * 2
+})
+
+const virtualEndIndex = computed(() => {
+  return Math.min(filteredChapters.value.length, virtualStartIndex.value + virtualVisibleCount.value)
+})
+
+const virtualChapters = computed(() => {
+  return filteredChapters.value.slice(virtualStartIndex.value, virtualEndIndex.value)
+})
+
+const virtualTopPadding = computed(() => virtualStartIndex.value * CHAPTER_ITEM_HEIGHT)
+
+const virtualBottomPadding = computed(() => {
+  return Math.max(0, (filteredChapters.value.length - virtualEndIndex.value) * CHAPTER_ITEM_HEIGHT)
 })
 
 const formatReadingTime = computed(() => {
@@ -262,6 +374,9 @@ const loadBook = async () => {
     
     // 智能断章
     await parseBookChapters()
+
+    // 显示章节侧边栏（桌面端默认展开）
+    showChapterPanel.value = !isMobileViewport()
     
     // 加载阅读进度
     if (book.readingProgress) {
@@ -366,16 +481,79 @@ const handleChapterSelected = (chapterIndex) => {
   if (chapterIndex >= 0 && chapterIndex < chapters.value.length) {
     currentChapterIndex.value = chapterIndex
     currentChapter.value = chapters.value[chapterIndex]
-    
+
     // 重置滚动位置
     nextTick(() => {
       if (contentRef.value) {
         contentRef.value.scrollTop = 0
       }
     })
-    
+
     saveReadingProgress()
   }
+}
+
+// 章节侧边栏方法
+const handleToggleChapterPanel = async () => {
+  showChapterPanel.value = !showChapterPanel.value
+  if (showChapterPanel.value) {
+    await scrollActiveChapterIntoView()
+  }
+}
+
+const handlePanelChapterSelect = (index) => {
+  if (isMobileViewport()) {
+    showChapterPanel.value = false
+  }
+  chapterSearchKeyword.value = ''
+  handleChapterSelected(index)
+}
+
+const handleChapterListScroll = () => {
+  if (chapterPanelListRef.value) {
+    chapterListScrollTop.value = chapterPanelListRef.value.scrollTop
+    chapterListViewportHeight.value = chapterPanelListRef.value.clientHeight
+  }
+}
+
+const updateChapterListViewport = async () => {
+  await nextTick()
+  if (chapterPanelListRef.value) {
+    chapterListViewportHeight.value = chapterPanelListRef.value.clientHeight
+    chapterListScrollTop.value = chapterPanelListRef.value.scrollTop
+  }
+}
+
+const findFilteredChapterPosition = (chapterIndex) => {
+  return filteredChapters.value.findIndex(chapter => chapter.index === chapterIndex)
+}
+
+const scrollChapterPositionIntoView = async (position, block = 'center') => {
+  await nextTick()
+  const list = chapterPanelListRef.value
+  if (!list || position < 0) return
+
+  const itemTop = position * CHAPTER_ITEM_HEIGHT
+  const itemBottom = itemTop + CHAPTER_ITEM_HEIGHT
+  const viewportHeight = list.clientHeight
+  let nextScrollTop = list.scrollTop
+
+  if (block === 'center') {
+    nextScrollTop = itemTop - viewportHeight / 2 + CHAPTER_ITEM_HEIGHT / 2
+  } else if (itemTop < list.scrollTop) {
+    nextScrollTop = itemTop
+  } else if (itemBottom > list.scrollTop + viewportHeight) {
+    nextScrollTop = itemBottom - viewportHeight
+  }
+
+  list.scrollTop = Math.max(0, nextScrollTop)
+  chapterListScrollTop.value = list.scrollTop
+  chapterListViewportHeight.value = viewportHeight
+}
+
+const scrollActiveChapterIntoView = async () => {
+  await updateChapterListViewport()
+  await scrollChapterPositionIntoView(findFilteredChapterPosition(currentChapterIndex.value), 'center')
 }
 
 const retryLoad = () => {
@@ -545,6 +723,10 @@ const handleKeydown = (event) => {
   switch (event.key) {
     case 'Escape':
       event.preventDefault()
+      if (showChapterPanel.value) {
+        showChapterPanel.value = false
+        return
+      }
       handleClose()
       break
     case 'F11':
@@ -591,6 +773,16 @@ watch(() => route.params.bookId, (newBookId) => {
   }
 })
 
+// 监听章节搜索关键词变化
+watch(() => chapterSearchKeyword.value, async () => {
+  chapterListScrollTop.value = 0
+  await nextTick()
+  if (chapterPanelListRef.value) {
+    chapterPanelListRef.value.scrollTop = 0
+    updateChapterListViewport()
+  }
+})
+
 // 组件挂载
 onMounted(() => {
   loadReadingSettings()
@@ -624,8 +816,165 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
+.reader-main-layout {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.chapter-sidebar {
+  width: 0;
+  flex: 0 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 0;
+  background: var(--color-bg-1);
+  box-shadow: none;
+  overflow: hidden;
+  z-index: 2;
+  transition: width 0.2s ease, flex-basis 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chapter-sidebar.open {
+  width: 320px;
+  flex-basis: 320px;
+  border-right: 1px solid var(--color-border-2);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.04);
+}
+
+.chapter-sidebar-header {
+  flex-shrink: 0;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--color-border-2);
+  background: var(--color-bg-2);
+}
+
+.chapter-sidebar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chapter-sidebar-title {
+  color: var(--color-text-1);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chapter-sidebar-close {
+  display: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-2);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chapter-sidebar-book {
+  color: var(--color-text-1);
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-sidebar-count {
+  margin: 2px 0 10px;
+  color: var(--color-text-3);
+  font-size: 12px;
+}
+
+.chapter-sidebar-search {
+  width: 100%;
+}
+
+.chapter-sidebar-list {
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.chapter-sidebar-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-1);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.chapter-sidebar-item:hover {
+  background: var(--color-fill-2);
+}
+
+.chapter-sidebar-item.active {
+  background: var(--color-primary-light-1);
+  color: var(--color-text-1);
+  font-weight: 600;
+}
+
+.chapter-sidebar-item.read:not(.active) {
+  color: var(--color-text-2);
+}
+
+.chapter-sidebar-number {
+  color: var(--color-text-3);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.chapter-sidebar-item.active .chapter-sidebar-number {
+  color: var(--color-text-3);
+}
+
+.chapter-sidebar-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.chapter-sidebar-current {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--color-fill-3);
+  color: var(--color-text-1);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.chapter-sidebar-empty {
+  padding: 24px 12px;
+}
+
+.chapter-sidebar-mask {
+  display: none;
+}
+
 .reader-content {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   transition: all 0.3s ease;
 }
@@ -780,7 +1129,63 @@ onUnmounted(() => {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  .reader-main-layout {
+    display: block;
+  }
+
+  .chapter-sidebar-mask {
+    position: absolute;
+    inset: 0;
+    display: block;
+    background: rgba(0, 0, 0, 0.42);
+    opacity: 1;
+    z-index: 5;
+  }
+
+  .chapter-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(82vw, 320px);
+    max-width: calc(100vw - 52px);
+    transform: translateX(-104%);
+    transition: transform 0.24s ease;
+    box-shadow: 6px 0 22px rgba(0, 0, 0, 0.18);
+    z-index: 6;
+  }
+
+  .reader-main-layout .chapter-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .chapter-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chapter-sidebar-header {
+    padding: 12px;
+  }
+
+  .chapter-sidebar-list {
+    height: calc(100dvh - 172px);
+    padding: 6px;
+  }
+
+  .chapter-sidebar-item {
+    min-height: 36px;
+    padding: 6px 8px;
+    border-radius: 7px;
+  }
+
+  .chapter-sidebar-item-title {
+    font-size: 13px;
+  }
+
   .reader-content {
+    height: 100%;
     -webkit-overflow-scrolling: touch;
   }
 

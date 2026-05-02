@@ -43,7 +43,11 @@ const CHAPTER_PATTERNS = [
   /^〖.*〗$/,
   /^《.*》$/,
   /^「.*」$/,
-  /^『.*』$/
+  /^『.*』$/,
+
+  // 卷/篇/集 模式
+  /^第[零一二三四五六七八九十百千万\d]+[卷篇集幕]/,
+  /^卷[零一二三四五六七八九十百千万\d]+/,
 ]
 
 /**
@@ -94,35 +98,41 @@ function isChapterTitle(line) {
  */
 export function parseChapters(content, options = {}) {
   const {
-    minChapterLength = 500, // 最小章节长度
+    minChapterLength = 200, // 最小章节长度（降低阈值以支持短章节）
     maxChapters = 1000,     // 最大章节数
     autoDetect = true       // 是否自动检测章节
   } = options
-  
+
   if (!content || typeof content !== 'string') {
     return []
   }
-  
-  const lines = content.split(/\r?\n/)
+
+  // 预处理：清理下载内容中的分隔线
+  let cleanContent = content.replace(/\n-{3,}\n/g, '\n')
+
+  const lines = cleanContent.split(/\r?\n/)
   const chapters = []
   let currentChapter = null
   let chapterIndex = 0
-  
+
   // 如果没有检测到章节标题，创建一个默认章节
   let hasChapterTitles = false
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
-    
+
+    // 跳过纯分隔线（--- 或 ***）
+    if (/^[-=_*~#]{3,}$/.test(line)) continue
+
     if (autoDetect && isChapterTitle(line)) {
       hasChapterTitles = true
-      
-      // 保存上一章节
-      if (currentChapter && currentChapter.content.trim().length >= minChapterLength) {
+
+      // 保存上一章节（即使内容较短也保存，避免丢失内容）
+      if (currentChapter && currentChapter.content.trim().length > 0) {
         chapters.push(currentChapter)
         chapterIndex++
       }
-      
+
       // 创建新章节
       currentChapter = {
         id: chapterIndex,
@@ -143,36 +153,58 @@ export function parseChapters(content, options = {}) {
           endLine: i
         }
       }
-      
+
       if (currentChapter.content) {
         currentChapter.content += '\n'
       }
       currentChapter.content += line
       currentChapter.endLine = i
     }
-    
+
     // 限制章节数量
     if (chapters.length >= maxChapters) {
       break
     }
   }
-  
+
   // 添加最后一个章节
-  if (currentChapter && currentChapter.content.trim().length >= minChapterLength) {
+  if (currentChapter && currentChapter.content.trim().length > 0) {
     chapters.push(currentChapter)
   }
-  
+
+  // 如果明确检测到章节标题，保留所有有内容的章节（不过滤短章节）
+  // 仅在没有标题时才按长度过滤
+  let filteredChapters
+  if (hasChapterTitles) {
+    filteredChapters = chapters.filter(ch => ch.content.trim().length > 0)
+  } else {
+    filteredChapters = chapters.filter(ch => ch.content.trim().length >= minChapterLength)
+  }
+  if (filteredChapters.length === 0 && chapters.length > 0) {
+    filteredChapters = chapters
+  }
+
+  // 如果第一章节内容很短（<100字符，通常是小说标题），合并到下一章节
+  if (filteredChapters.length >= 2 && filteredChapters[0].content.trim().length < 100 && hasChapterTitles) {
+    filteredChapters[1] = {
+      ...filteredChapters[1],
+      content: filteredChapters[0].content + '\n\n' + filteredChapters[1].content
+    }
+    filteredChapters = filteredChapters.slice(1)
+  }
+
   // 如果没有检测到章节标题，按长度自动分章
-  if (!hasChapterTitles && content.length > minChapterLength) {
-    return autoSplitChapters(content, options)
+  if (!hasChapterTitles && cleanContent.length > minChapterLength) {
+    return autoSplitChapters(cleanContent, options)
   }
-  
+
   // 如果章节太少，尝试更宽松的检测
-  if (chapters.length < 2 && content.length > minChapterLength * 2) {
-    return autoSplitChapters(content, options)
+  if (filteredChapters.length < 2 && cleanContent.length > minChapterLength * 2) {
+    return autoSplitChapters(cleanContent, options)
   }
-  
-  return chapters
+
+  // 重新编号章节ID
+  return filteredChapters.map((ch, idx) => ({ ...ch, id: idx }))
 }
 
 /**
@@ -184,7 +216,7 @@ export function parseChapters(content, options = {}) {
 function autoSplitChapters(content, options = {}) {
   const {
     chapterLength = 3000,  // 每章大约长度
-    minChapterLength = 500 // 最小章节长度
+    minChapterLength = 200 // 最小章节长度
   } = options
   
   const chapters = []
