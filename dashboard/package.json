@@ -9,6 +9,7 @@
     "build:root": "vite build --mode production.root",
     "build:apps": "vite build --mode production.apps",
     "build:apps-yt": "vite build --mode production.apps-yt",
+    "build:apps-yt-zip": "vite build --mode production.apps-yt && node scripts/build-zip.js apps-yt",
     "build:binary": "node build-binary.js",
     "build:binary:win": "node build-binary.js",
     "build:binary:optimized": "node build-binary-optimized.js",
