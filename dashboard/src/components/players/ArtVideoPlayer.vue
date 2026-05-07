@@ -206,7 +206,7 @@ const currentPlayingUrl = ref('')
 const proxySettingsVersion = ref(0)
 
 // 弹幕相关状态
-const danmakuEnabled = ref(JSON.parse(localStorage.getItem('danmakuEnabled') || 'true'))
+const danmakuEnabled = ref(JSON.parse(localStorage.getItem('danmakuEnabled') || 'false'))
 const danmakuData = ref([])
 const danmakuLoading = ref(false)
 const currentDanmakuUrl = ref('') // 当前弹幕iframe的URL
@@ -952,7 +952,7 @@ const initArtPlayer = async (url) => {
         }
       ],
       // 插件配置
-      plugins: [
+      plugins: danmakuEnabled.value ? [
         artplayerPluginDanmuku({
           // 使用函数返回以支持后续异步替换
           danmuku: () => danmakuData.value,
@@ -964,7 +964,7 @@ const initArtPlayer = async (url) => {
           filter: (danmu) => (danmu?.text || '').trim().length > 0 && (danmu?.text || '').length <= 80,
           visible: danmakuEnabled.value,
         })
-      ]
+      ] : []
     })
 
     // 事件监听
@@ -1095,19 +1095,19 @@ const initArtPlayer = async (url) => {
     })
 
     // 监听弹幕插件的显示/隐藏事件，实现与 danmakuEnabled 的双向同步
-    art.on('artplayerPluginDanmuku:hide', () => {
-      console.log('弹幕已隐藏，更新 danmakuEnabled 状态')
-      danmakuEnabled.value = false
-      // 持久化到 localStorage
-      localStorage.setItem('danmakuEnabled', 'false')
-    })
+    if (danmakuEnabled.value) {
+      art.on('artplayerPluginDanmuku:hide', () => {
+        console.log('弹幕已隐藏，更新 danmakuEnabled 状态')
+        danmakuEnabled.value = false
+        localStorage.setItem('danmakuEnabled', 'false')
+      })
 
-    art.on('artplayerPluginDanmuku:show', () => {
-      console.log('弹幕已显示，更新 danmakuEnabled 状态')
-      danmakuEnabled.value = true
-      // 持久化到 localStorage
-      localStorage.setItem('danmakuEnabled', 'true')
-    })
+      art.on('artplayerPluginDanmuku:show', () => {
+        console.log('弹幕已显示，更新 danmakuEnabled 状态')
+        danmakuEnabled.value = true
+        localStorage.setItem('danmakuEnabled', 'true')
+      })
+    }
 
     art.on('destroy', () => {
       console.log('ArtPlayer 已销毁')

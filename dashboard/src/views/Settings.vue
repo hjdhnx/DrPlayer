@@ -597,6 +597,19 @@
             </div>
           </div>
 
+          <div class="setting-item" @click="handleSettingClick('danmaku')">
+            <div class="setting-info">
+              <icon-live-broadcast class="setting-icon"/>
+              <div class="setting-text">
+                <div class="setting-title">弹幕组件</div>
+                <div class="setting-desc">启用播放器弹幕功能</div>
+              </div>
+            </div>
+            <div class="setting-value">
+              <a-switch v-model="danmakuEnabled"/>
+            </div>
+          </div>
+
           <div class="setting-item" @click="handleSettingClick('ad-filter')">
             <div class="setting-info">
               <icon-safe class="setting-icon"/>
@@ -1050,6 +1063,9 @@ const playerTypes = [
 
 // 设置项状态
 const settings = reactive(getDefaultAppSettings())
+
+// 弹幕组件开关（独立 localStorage key）
+const danmakuEnabled = ref(JSON.parse(localStorage.getItem('danmakuEnabled') || 'false'))
 
 // 开发者调试设置
 const debugSettings = reactive({
@@ -1521,6 +1537,8 @@ const handleSettingClick = (settingKey) => {
     case 'player-type':
       playerSelectVisible.value = true
       break
+    case 'danmaku':
+      break
     case 'window-preview':
       Message.info('窗口预览设置')
       break
@@ -1655,6 +1673,11 @@ watch(() => settings.themeMode, (mode) => {
 
 // 监听设置项变化并自动保存
 watch(settings, saveSettings, {deep: true})
+
+// 监听弹幕开关变化
+watch(danmakuEnabled, (val) => {
+  localStorage.setItem('danmakuEnabled', JSON.stringify(val))
+})
 
 // 保存开发者调试设置
 const saveDebugSettings = () => {

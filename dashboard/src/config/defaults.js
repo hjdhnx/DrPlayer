@@ -101,4 +101,8 @@ export const initDefaultLocalStorage = () => {
   if (!localStorage.getItem('loopEnabled')) {
     localStorage.setItem('loopEnabled', JSON.stringify(getEnvBoolean('VITE_DEFAULT_LOOP_ENABLED', false)))
   }
+
+  if (!localStorage.getItem('danmakuEnabled')) {
+    localStorage.setItem('danmakuEnabled', JSON.stringify(getEnvBoolean('VITE_DEFAULT_DANMAKU_ENABLED', false)))
+  }
 }
