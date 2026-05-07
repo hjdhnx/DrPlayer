@@ -1579,12 +1579,41 @@ const scrollToCurrentEpisode = async () => {
   }
 }
 
+// 精简选集名称：去掉所有集数共有的前缀和后缀，只保留不同的部分
+const computeSimplifiedNames = (episodes) => {
+  const names = episodes.map((ep) => ep.name || `第${episodes.indexOf(ep) + 1}集`)
+  if (names.length === 0) return names
+  if (names.length === 1) return names
+
+  // 找共同前缀
+  let prefixEnd = 0
+  while (prefixEnd < names[0].length) {
+    const ch = names[0][prefixEnd]
+    if (!names.every((n) => n[prefixEnd] === ch)) break
+    prefixEnd++
+  }
+
+  // 找共同后缀
+  let suffixStart = names[0].length
+  while (suffixStart > prefixEnd) {
+    const ch = names[0][suffixStart - 1]
+    if (!names.every((n) => n.length >= suffixStart && n[n.length - (names[0].length - suffixStart) - 1] === ch)) break
+    suffixStart--
+  }
+
+  // 如果去掉前后缀后为空，说明名称全部相同，保留原名
+  if (prefixEnd >= suffixStart) return names
+
+  return names.map((n) => n.substring(prefixEnd, suffixStart))
+}
+
 // 创建选集layer的HTML内容
 const createEpisodeLayerHTML = () => {
   if (!props.episodes || props.episodes.length === 0) {
     return '<div class="episode-layer-background"></div>'
   }
 
+  const simplified = computeSimplifiedNames(props.episodes)
   const currentIdx = props.currentEpisodeIndex
   const episodeItems = props.episodes.map((episode, index) => {
     const isCurrentEpisode = index === currentIdx
@@ -1592,8 +1621,9 @@ const createEpisodeLayerHTML = () => {
       <button
         class="episode-layer-item ${isCurrentEpisode ? 'current' : ''}"
         data-episode-index="${index}"
+        title="${episode.name || `第${index + 1}集`}"
       >
-        ${episode.name || `第${index + 1}集`}
+        ${simplified[index]}
       </button>
     `
   }).join('')
@@ -1603,9 +1633,9 @@ const createEpisodeLayerHTML = () => {
       <div class="episode-layer-content">
         <div class="episode-layer-header">
           <h3>选集 <span class="episode-layer-count">${props.episodes.length}集</span></h3>
-          <button class="episode-layer-close">×</button>
+          <button class="episode-layer-close">&times;</button>
         </div>
-        <div class="episode-layer-list">
+        <div class="episode-layer-body">
           ${episodeItems}
         </div>
       </div>
@@ -1618,7 +1648,6 @@ const showEpisodeLayer = () => {
   if (!artPlayerInstance.value) return
 
   try {
-    // 更新layer内容和样式
     artPlayerInstance.value.layers.update({
       name: 'episodeLayer',
       html: createEpisodeLayerHTML(),
@@ -1628,34 +1657,17 @@ const showEpisodeLayer = () => {
         left: '0',
         width: '100%',
         height: '100%',
-        background: 'rgba(0, 0, 0, 0.8)',
         display: 'flex',
         zIndex: '100',
         padding: '0',
         boxSizing: 'border-box',
-        overflow: 'hidden',
-        alignItems: 'center',
-        justifyContent: 'center'
       }
     })
 
-    // 添加事件监听器并滚动到当前选集
     nextTick(() => {
       const episodeLayer = artPlayerInstance.value.layers.episodeLayer
       if (episodeLayer) {
         episodeLayer.addEventListener('click', handleEpisodeLayerClick)
-        const currentItem = episodeLayer.querySelector('.episode-layer-item.current')
-        if (currentItem) {
-          const list = episodeLayer.querySelector('.episode-layer-list')
-          if (list) {
-            const listRect = list.getBoundingClientRect()
-            const itemRect = currentItem.getBoundingClientRect()
-            const offset = itemRect.top - listRect.top + list.scrollTop - listRect.height * 0.3
-            if (offset > listRect.height) {
-              list.scrollTo({ top: offset, behavior: 'smooth' })
-            }
-          }
-        }
       }
     })
 
@@ -1689,13 +1701,11 @@ const hideEpisodeLayer = () => {
   if (!artPlayerInstance.value) return
 
   try {
-    // 移除事件监听器
     const episodeLayer = artPlayerInstance.value.layers.episodeLayer
     if (episodeLayer) {
       episodeLayer.removeEventListener('click', handleEpisodeLayerClick)
     }
 
-    // 隐藏layer
     artPlayerInstance.value.layers.update({
       name: 'episodeLayer',
       html: '',
@@ -1705,12 +1715,10 @@ const hideEpisodeLayer = () => {
         left: '0',
         width: '100%',
         height: '100%',
-        background: 'rgba(0, 0, 0, 0.8)',
         display: 'none',
         zIndex: '100',
         padding: '0',
         boxSizing: 'border-box',
-        overflow: 'hidden'
       }
     })
     console.log('隐藏选集layer')
@@ -2415,199 +2423,203 @@ onUnmounted(() => {
 
 /* 原有的选集弹窗样式已移除，现在使用ArtPlayer的layer功能 */
 
-/* 选集Layer样式 */
+/* ======== 选集 Layer ======== */
 :deep(.art-layer[data-name="episodeLayer"]) {
   display: flex !important;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.85) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 :deep(.episode-layer-background) {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 8px 8px 52px 8px;
   box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.75);
+  -webkit-tap-highlight-color: transparent;
 }
 
 :deep(.episode-layer-content) {
-  background: rgba(20, 20, 20, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-  max-width: 800px;
-  max-height: 70vh;
+  background: rgba(18, 18, 18, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   width: 100%;
+  max-width: 720px;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
-  animation: episodeLayerIn 0.25s ease-out;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-@keyframes episodeLayerIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  overflow: hidden;
 }
 
 :deep(.episode-layer-header) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
 :deep(.episode-layer-header h3) {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 :deep(.episode-layer-count) {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.45);
-  margin-left: 6px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: 4px;
 }
 
 :deep(.episode-layer-close) {
-  background: rgba(255, 255, 255, 0.08);
+  background: none;
   border: none;
-  font-size: 16px;
+  font-size: 20px;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s ease;
-  font-weight: 300;
   line-height: 1;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :deep(.episode-layer-close:hover) {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-:deep(.episode-layer-list) {
-  padding: 10px 12px 14px;
+/* 滚动区域：用 grid 而非 flex-wrap，保证滚动完整性 */
+:deep(.episode-layer-body) {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-wrap: wrap;
+  padding: 10px 12px 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
   gap: 6px;
-  align-content: flex-start;
+  align-content: start;
 }
 
-:deep(.episode-layer-list::-webkit-scrollbar) {
-  width: 4px;
+:deep(.episode-layer-body::-webkit-scrollbar) {
+  width: 3px;
 }
 
-:deep(.episode-layer-list::-webkit-scrollbar-track) {
-  background: transparent;
-}
-
-:deep(.episode-layer-list::-webkit-scrollbar-thumb) {
-  background: rgba(255, 255, 255, 0.15);
+:deep(.episode-layer-body::-webkit-scrollbar-thumb) {
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 2px;
 }
 
 :deep(.episode-layer-item) {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 13px;
   font-weight: 500;
-  padding: 6px 12px;
+  padding: 7px 4px;
+  text-align: center;
   white-space: nowrap;
-  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
   font-family: inherit;
+  line-height: 1.3;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 :deep(.episode-layer-item:hover) {
   border-color: rgba(64, 150, 255, 0.5);
-  background: rgba(64, 150, 255, 0.12);
-  color: #ffffff;
+  background: rgba(64, 150, 255, 0.1);
+  color: #fff;
 }
 
 :deep(.episode-layer-item.current) {
   border-color: rgba(64, 150, 255, 0.7);
-  background: rgba(64, 150, 255, 0.25);
-  color: #ffffff;
+  background: rgba(64, 150, 255, 0.2);
+  color: #fff;
   font-weight: 600;
 }
 
-/* 移动端适配 */
-@media (max-width: 768px) {
+/* ---- 移动端竖屏 ---- */
+@media (max-width: 768px) and (orientation: portrait) {
   :deep(.episode-layer-background) {
-    padding: 0;
     align-items: flex-end;
+    padding: 0 0 48px 0;
   }
 
   :deep(.episode-layer-content) {
+    width: 100%;
     max-width: 100%;
-    max-height: 70vh;
-    border-radius: 14px 14px 0 0;
-    animation: episodeLayerSlideUp 0.25s ease-out;
+    max-height: 100%;
+    border-radius: 12px 12px 0 0;
   }
 
-  @keyframes episodeLayerSlideUp {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  :deep(.episode-layer-header) {
-    flex-shrink: 0;
-    padding: 12px 14px;
-  }
-
-  :deep(.episode-layer-list) {
-    padding: 8px 10px 14px;
+  :deep(.episode-layer-body) {
+    padding: 8px 10px 20px;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
     gap: 6px;
-    -webkit-overflow-scrolling: touch;
   }
 
   :deep(.episode-layer-item) {
-    font-size: 13px;
-    padding: 8px 14px;
-    border-radius: 8px;
+    font-size: 11px;
+    padding: 0 4px;
+    min-height: 36px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
   }
 }
 
-@media (max-width: 480px) {
+/* ---- 移动端横屏 ---- */
+@media (max-width: 900px) and (orientation: landscape) {
+  :deep(.episode-layer-background) {
+    padding: 4px 4px 44px 4px;
+  }
+
+  :deep(.episode-layer-content) {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+  }
+
+  :deep(.episode-layer-header) {
+    padding: 6px 10px;
+  }
+
+  :deep(.episode-layer-header h3) {
+    font-size: 13px;
+  }
+
+  :deep(.episode-layer-body) {
+    padding: 6px 8px 10px;
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 4px;
+  }
+
   :deep(.episode-layer-item) {
-    padding: 7px 12px;
-    font-size: 12px;
+    font-size: 11px;
+    padding: 0 4px;
+    min-height: 28px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
   }
 }
 
