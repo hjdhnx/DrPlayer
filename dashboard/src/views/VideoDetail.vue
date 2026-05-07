@@ -262,9 +262,9 @@
           <div class="description-content" :class="{ expanded: descriptionExpanded }">
             {{ videoDetail.vod_content }}
           </div>
-          <a-button 
-            v-if="videoDetail.vod_content.length > 200" 
-            type="text" 
+          <a-button
+            v-if="videoDetail.vod_content.length > 80"
+            type="text"
             @click="toggleDescription"
             class="expand-btn"
           >
@@ -3250,6 +3250,13 @@ onUnmounted(() => {
     max-height: 84px;
     font-size: 13px;
     line-height: 1.55;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .description-content.expanded {
+    max-height: 50vh;
+    overflow-y: auto;
   }
 
   .episodes-header {

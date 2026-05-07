@@ -1585,15 +1585,15 @@ const createEpisodeLayerHTML = () => {
     return '<div class="episode-layer-background"></div>'
   }
 
+  const currentIdx = props.currentEpisodeIndex
   const episodeItems = props.episodes.map((episode, index) => {
-    const isCurrentEpisode = index === props.currentEpisodeIndex
+    const isCurrentEpisode = index === currentIdx
     return `
-      <button 
-        class="episode-layer-item ${isCurrentEpisode ? 'current' : ''}" 
+      <button
+        class="episode-layer-item ${isCurrentEpisode ? 'current' : ''}"
         data-episode-index="${index}"
       >
-        <span class="episode-layer-number">${index + 1}</span>
-        <span class="episode-layer-name">${episode.name || `第${index + 1}集`}</span>
+        ${episode.name || `第${index + 1}集`}
       </button>
     `
   }).join('')
@@ -1602,7 +1602,7 @@ const createEpisodeLayerHTML = () => {
     <div class="episode-layer-background">
       <div class="episode-layer-content">
         <div class="episode-layer-header">
-          <h3>选择集数</h3>
+          <h3>选集 <span class="episode-layer-count">${props.episodes.length}集</span></h3>
           <button class="episode-layer-close">×</button>
         </div>
         <div class="episode-layer-list">
@@ -1639,12 +1639,23 @@ const showEpisodeLayer = () => {
       }
     })
 
-    // 添加事件监听器
+    // 添加事件监听器并滚动到当前选集
     nextTick(() => {
       const episodeLayer = artPlayerInstance.value.layers.episodeLayer
       if (episodeLayer) {
-        // 使用事件委托处理点击事件
         episodeLayer.addEventListener('click', handleEpisodeLayerClick)
+        const currentItem = episodeLayer.querySelector('.episode-layer-item.current')
+        if (currentItem) {
+          const list = episodeLayer.querySelector('.episode-layer-list')
+          if (list) {
+            const listRect = list.getBoundingClientRect()
+            const itemRect = currentItem.getBoundingClientRect()
+            const offset = itemRect.top - listRect.top + list.scrollTop - listRect.height * 0.3
+            if (offset > listRect.height) {
+              list.scrollTo({ top: offset, behavior: 'smooth' })
+            }
+          }
+        }
       }
     })
 
@@ -2404,7 +2415,7 @@ onUnmounted(() => {
 
 /* 原有的选集弹窗样式已移除，现在使用ArtPlayer的layer功能 */
 
-/* 选集Layer样式 - 现代化设计 */
+/* 选集Layer样式 */
 :deep(.art-layer[data-name="episodeLayer"]) {
   display: flex !important;
   align-items: center;
@@ -2423,36 +2434,33 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
 }
 
 :deep(.episode-layer-content) {
   background: rgba(20, 20, 20, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow:
-    0 32px 64px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  max-width: 900px;
-  max-height: 60vh;
-  width: 95%;
-  overflow: hidden;
-  animation: episodeLayerShow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 12px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  max-width: 800px;
+  max-height: 70vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: episodeLayerIn 0.25s ease-out;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-@keyframes episodeLayerShow {
+@keyframes episodeLayerIn {
   from {
     opacity: 0;
-    transform: scale(0.8) translateY(-40px);
-    filter: blur(4px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
@@ -2460,240 +2468,146 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
 }
 
 :deep(.episode-layer-header h3) {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+:deep(.episode-layer-count) {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+  margin-left: 6px;
 }
 
 :deep(.episode-layer-close) {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  font-size: 18px;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.8);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 300;
-}
-
-:deep(.episode-layer-close:hover) {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  transform: scale(1.05);
-}
-
-:deep(.episode-layer-close:active) {
-  transform: scale(0.95);
-}
-
-:deep(.episode-layer-list) {
-  padding: 16px 20px 20px;
-  max-height: 45vh;
-  overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-/* 自定义滚动条 */
-:deep(.episode-layer-list::-webkit-scrollbar) {
-  width: 6px;
-}
-
-:deep(.episode-layer-list::-webkit-scrollbar-track) {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-:deep(.episode-layer-list::-webkit-scrollbar-thumb) {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  transition: background 0.3s ease;
-}
-
-:deep(.episode-layer-list::-webkit-scrollbar-thumb:hover) {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-:deep(.episode-layer-item) {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: left;
-  min-height: 56px;
-  position: relative;
-  overflow: hidden;
-}
-
-:deep(.episode-layer-item::before) {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-:deep(.episode-layer-item:hover) {
-  border-color: rgba(64, 150, 255, 0.4);
-  background: rgba(64, 150, 255, 0.08);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 8px 32px rgba(64, 150, 255, 0.15),
-    0 0 0 1px rgba(64, 150, 255, 0.2);
-}
-
-:deep(.episode-layer-item:hover::before) {
-  opacity: 1;
-}
-
-:deep(.episode-layer-item.current) {
-  border-color: rgba(64, 150, 255, 0.6);
-  background: linear-gradient(135deg, rgba(64, 150, 255, 0.2) 0%, rgba(100, 180, 255, 0.15) 100%);
-  color: #ffffff;
-  box-shadow:
-    0 8px 32px rgba(64, 150, 255, 0.25),
-    0 0 0 1px rgba(64, 150, 255, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transform: scale(1.02);
-}
-
-:deep(.episode-layer-item.current::before) {
-  opacity: 1;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
-}
-
-:deep(.episode-layer-item.current:hover) {
-  background: linear-gradient(135deg, rgba(64, 150, 255, 0.25) 0%, rgba(100, 180, 255, 0.2) 100%);
-  transform: translateY(-2px) scale(1.04);
-  box-shadow:
-    0 12px 40px rgba(64, 150, 255, 0.3),
-    0 0 0 1px rgba(64, 150, 255, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-:deep(.episode-layer-number) {
+  border: none;
   font-size: 16px;
-  font-weight: 700;
-  margin-right: 12px;
-  min-width: 28px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.3s ease;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-weight: 300;
+  line-height: 1;
 }
 
-.episode-layer-item.current .episode-layer-number {
-  background: rgba(64, 150, 255, 0.3);
-  border-color: rgba(64, 150, 255, 0.4);
+:deep(.episode-layer-close:hover) {
+  background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(64, 150, 255, 0.2);
 }
 
-:deep(.episode-layer-name) {
-  font-size: 14px;
-  font-weight: 500;
+:deep(.episode-layer-list) {
+  padding: 10px 12px 14px;
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
 }
 
-:deep(.episode-layer-item.current .episode-layer-name) {
+:deep(.episode-layer-list::-webkit-scrollbar) {
+  width: 4px;
+}
+
+:deep(.episode-layer-list::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
+:deep(.episode-layer-list::-webkit-scrollbar-thumb) {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+:deep(.episode-layer-item) {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  white-space: nowrap;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+:deep(.episode-layer-item:hover) {
+  border-color: rgba(64, 150, 255, 0.5);
+  background: rgba(64, 150, 255, 0.12);
+  color: #ffffff;
+}
+
+:deep(.episode-layer-item.current) {
+  border-color: rgba(64, 150, 255, 0.7);
+  background: rgba(64, 150, 255, 0.25);
   color: #ffffff;
   font-weight: 600;
 }
 
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  :deep(.episode-layer-list) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
+/* 移动端适配 */
 @media (max-width: 768px) {
+  :deep(.episode-layer-background) {
+    padding: 0;
+    align-items: flex-end;
+  }
+
   :deep(.episode-layer-content) {
-    max-width: 95%;
-    margin: 0 12px;
+    max-width: 100%;
     max-height: 70vh;
+    border-radius: 14px 14px 0 0;
+    animation: episodeLayerSlideUp 0.25s ease-out;
   }
 
-  :deep(.episode-layer-list) {
-    grid-template-columns: 1fr;
-    padding: 16px 20px 20px;
-    gap: 12px;
-    max-height: 50vh;
+  @keyframes episodeLayerSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  :deep(.episode-layer-item) {
-    min-height: 60px;
+  :deep(.episode-layer-header) {
+    flex-shrink: 0;
     padding: 12px 14px;
   }
 
-  :deep(.episode-layer-number) {
-    min-width: 26px;
-    height: 26px;
-    font-size: 15px;
-    margin-right: 10px;
+  :deep(.episode-layer-list) {
+    padding: 8px 10px 14px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
   }
 
-  :deep(.episode-layer-name) {
+  :deep(.episode-layer-item) {
     font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 8px;
   }
 }
 
 @media (max-width: 480px) {
-  :deep(.episode-layer-background) {
-    padding: 12px;
-  }
-
-  :deep(.episode-layer-content) {
-    max-height: 75vh;
-  }
-
-  :deep(.episode-layer-header) {
-    padding: 14px 16px 10px;
-  }
-
-  :deep(.episode-layer-header h3) {
-    font-size: 18px;
-  }
-
-  :deep(.episode-layer-list) {
-    max-height: 55vh;
-    padding: 12px 16px 16px;
+  :deep(.episode-layer-item) {
+    padding: 7px 12px;
+    font-size: 12px;
   }
 }
 
