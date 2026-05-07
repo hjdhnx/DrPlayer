@@ -29,7 +29,7 @@ export default defineConfig(({ command, mode }) => {
     // 构建配置
     build: {
         // 输出目录
-        outDir: 'dist',
+        outDir: env.VITE_OUT_DIR || 'dist',
         // 静态资源目录
         assetsDir: 'assets',
         // 生成相对路径的资源引用

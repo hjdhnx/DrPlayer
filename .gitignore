@@ -130,3 +130,5 @@ dist
 .pnp.*
 /dashboard/apps/drplayer/
 /.playwright-mcp/
+/dashboard/apps/
+/dashboard/apps-yt/

@@ -992,6 +992,7 @@ import ScrollToBottom from '@/components/ScrollToBottom.vue'
 import configService from '@/api/services/config'
 import siteService from '@/api/services/site'
 import {factoryResetWithConfirmation} from '@/services/resetService'
+import { getDefaultAddressSettings, getDefaultAppSettings } from '@/config/defaults'
 import { applyTheme, normalizeThemeMode, themeOptions } from '@/utils/theme'
 import {
   getCSPConfig,
@@ -1009,22 +1010,7 @@ const proxyPlayHistory = ref(null)
 const proxySniffHistory = ref(null)
 
 // 地址设置相关
-const addressSettings = reactive({
-  vodConfig: '',
-  liveConfig: '',
-  proxyAccess: '',
-  proxyAccessEnabled: false,
-  // proxyPlay: 'http://localhost:57572/proxy?form=base64&url=${url}&headers=${headers}&type=${type}#嗷呜',
-  // proxyPlay: 'http://localhost:57574/?form=base64&url=${url}&headers=${headers}&type=${type}#GO',
-  // proxyPlay: 'http://localhost:5757/file-proxy/proxy?form=base64&auth=drpys&url=${url}&headers=${headers}&type=${type}#DS',
-  // proxyPlay: 'http://localhost:5757/m3u8-proxy/proxy?form=base64&auth=drpys&url=${url}&headers=${headers}&type=${type}#MDS',
-  proxyPlay: 'http://localhost:5757/unified-proxy/proxy?form=base64&auth=drpys&url=${url}&headers=${headers}&type=${type}#DS',
-  proxyPlayEnabled: false,
-  proxySniff: 'http://localhost:57573/sniffer',
-  proxySniffEnabled: false,
-  snifferTimeout: 10,
-  apiTimeout: 30
-})
+const addressSettings = reactive(getDefaultAddressSettings())
 
 const addressSaving = reactive({
   vodConfig: false,
@@ -1063,19 +1049,7 @@ const playerTypes = [
 ]
 
 // 设置项状态
-const settings = reactive({
-  datasourceDisplay: true,
-  windowPreview: true,
-  playerType: 'ijk', // 默认播放器类型
-  adFilter: true,
-  ijkCache: false,
-  autoLive: false,
-  secureDns: false,
-  cspBypass: true, // CSP绕过开关
-  referrerPolicy: 'no-referrer', // 默认referrer策略
-  searchAggregation: false, // 聚搜功能开关，默认关闭
-  themeMode: 'light' // 应用主题模式
-})
+const settings = reactive(getDefaultAppSettings())
 
 // 开发者调试设置
 const debugSettings = reactive({
@@ -1318,13 +1292,9 @@ const resetLiveConfig = async () => {
 const resetProxyPlay = async () => {
   addressSaving.proxyPlayReset = true
   try {
-    // 重置为默认值
-    // addressSettings.proxyPlay = 'http://localhost:57572/proxy?form=base64&url=${url}&headers=${headers}&type=${type}#嗷呜'
-    // addressSettings.proxyPlay = 'http://localhost:57574/?form=base64&url=${url}&headers=${headers}&type=${type}#GO'
-    // addressSettings.proxyPlay = 'http://localhost:5757/file-proxy/proxy?form=base64&auth=drpys&url=${url}&headers=${headers}&type=${type}#DS'
-    // addressSettings.proxyPlay = 'http://localhost:5757/m3u8-proxy/proxy?form=base64&auth=drpys&url=${url}&headers=${headers}&type=${type}#MDS'
-    addressSettings.proxyPlay = 'http://localhost:5757/unified-proxy/proxy?form=base64&auth=drpys&url=${url}&headers=${headers}&type=${type}#DS'
-    addressSettings.proxyPlayEnabled = false
+    const defaults = getDefaultAddressSettings()
+    addressSettings.proxyPlay = defaults.proxyPlay
+    addressSettings.proxyPlayEnabled = defaults.proxyPlayEnabled
 
     // 保存到本地存储
     const savedAddresses = JSON.parse(localStorage.getItem('addressSettings') || '{}')
@@ -1366,9 +1336,9 @@ const resetProxyPlay = async () => {
 const resetProxySniff = async () => {
   addressSaving.proxySniffReset = true
   try {
-    // 重置为默认值
-    addressSettings.proxySniff = 'http://localhost:57573/sniffer'
-    addressSettings.proxySniffEnabled = false
+    const defaults = getDefaultAddressSettings()
+    addressSettings.proxySniff = defaults.proxySniff
+    addressSettings.proxySniffEnabled = defaults.proxySniffEnabled
 
     // 保存到本地存储
     const savedAddresses = JSON.parse(localStorage.getItem('addressSettings') || '{}')
@@ -1601,15 +1571,15 @@ const loadConfig = async () => {
         Object.assign(addressSettings, parsed)
         // 确保代理嗅探接口有默认值
         if (!addressSettings.proxySniff) {
-          addressSettings.proxySniff = 'http://localhost:57573/sniffer'
+          addressSettings.proxySniff = getDefaultAddressSettings().proxySniff
         }
         // 确保嗅探超时有默认值
         if (!addressSettings.snifferTimeout) {
-          addressSettings.snifferTimeout = 10
+          addressSettings.snifferTimeout = getDefaultAddressSettings().snifferTimeout
         }
         // 确保访问超时有默认值
         if (!addressSettings.apiTimeout) {
-          addressSettings.apiTimeout = 30
+          addressSettings.apiTimeout = getDefaultAddressSettings().apiTimeout
         }
       } catch (error) {
         console.error('Failed to load address settings:', error)

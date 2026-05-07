@@ -6,37 +6,11 @@
 import { Message, Modal } from '@arco-design/web-vue'
 import { saveCSPConfig, setGlobalReferrerPolicy } from '@/utils/csp'
 import { applyTheme } from '@/utils/theme'
+import { getDefaultAddressSettings, getDefaultAppSettings } from '@/config/defaults'
 
-// 默认配置值
-const DEFAULT_CONFIGS = {
-  // 地址设置默认值
-  addressSettings: {
-    vodConfig: '',
-    liveConfig: '',
-    proxyAccess: '',
-    proxyAccessEnabled: false,
-    proxyPlay: 'http://localhost:57572/proxy?form=base64&url=${url}&headers=${headers}&type=${type}#嗷呜',
-    proxyPlayEnabled: false,
-    proxySniff: 'http://localhost:57573/sniffer',
-    proxySniffEnabled: false,
-    snifferTimeout: 10,
-    apiTimeout: 30
-  },
-  
-  // 应用设置默认值
-  appSettings: {
-    datasourceDisplay: true,
-    windowPreview: true,
-    playerType: 'ijk',
-    adFilter: true,
-    ijkCache: false,
-    autoLive: false,
-    secureDns: false,
-    cspBypass: true,
-    referrerPolicy: 'no-referrer',
-    searchAggregation: false, // 聚合搜索功能默认关闭
-    themeMode: 'light'
-  },
+const getDefaultConfigs = () => ({
+  addressSettings: getDefaultAddressSettings(),
+  appSettings: getDefaultAppSettings(),
   
   // CSP配置默认值
   cspConfig: {
@@ -67,7 +41,7 @@ const DEFAULT_CONFIGS = {
     url: 'http://localhost:5757/apps/websocket',
     resetting: false
   }
-}
+})
 
 // 需要完全清空的数据键
 const CLEAR_DATA_KEYS = [
@@ -164,8 +138,10 @@ export const performFactoryReset = async () => {
       localStorage.removeItem(key)
     })
     
+    const defaultConfigs = getDefaultConfigs()
+
     // 2. 重置配置为默认值
-    Object.entries(DEFAULT_CONFIGS).forEach(([key, defaultValue]) => {
+    Object.entries(defaultConfigs).forEach(([key, defaultValue]) => {
       if (defaultValue !== null && defaultValue !== undefined) {
         localStorage.setItem(key, JSON.stringify(defaultValue))
       }
@@ -173,9 +149,9 @@ export const performFactoryReset = async () => {
     
     // 3. 重置CSP配置
     try {
-      saveCSPConfig(DEFAULT_CONFIGS.cspConfig)
+      saveCSPConfig(defaultConfigs.cspConfig)
       setGlobalReferrerPolicy('no-referrer')
-      applyTheme(DEFAULT_CONFIGS.appSettings.themeMode)
+      applyTheme(defaultConfigs.appSettings.themeMode)
     } catch (error) {
       console.warn('CSP配置重置失败:', error)
     }
@@ -225,5 +201,5 @@ export default {
   showResetConfirmation,
   performFactoryReset,
   factoryResetWithConfirmation,
-  DEFAULT_CONFIGS
+  getDefaultConfigs
 }

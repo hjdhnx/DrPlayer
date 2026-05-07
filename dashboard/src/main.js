@@ -12,6 +12,7 @@ import 'viewerjs/dist/viewer.css'
 import VueViewer from 'v-viewer'
 import ECharts from 'vue-echarts'
 import ActionComponents from '@/components/actions'
+import { initDefaultLocalStorage } from '@/config/defaults'
 import { use } from 'echarts/core'
 import {
   CanvasRenderer
@@ -39,6 +40,7 @@ use([
   TitleComponent
 ])
 
+initDefaultLocalStorage()
 initTheme()
 
 const app = createApp(App)
