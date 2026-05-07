@@ -90,29 +90,30 @@
             class="image-wrapper"
             :style="imageWrapperStyles"
           >
-            <!-- 图片加载状态 -->
+            <!-- 图片加载中覆盖层 -->
             <div v-if="!image.loaded && !image.error" class="image-loading">
               <a-spin :size="24" />
               <div class="loading-text">加载中...</div>
             </div>
 
-            <!-- 图片加载错误 -->
-            <div v-else-if="image.error" class="image-error">
+            <!-- 图片加载错误覆盖层 -->
+            <div v-if="image.error" class="image-error">
               <icon-image />
               <div class="error-text">图片加载失败</div>
               <a-button size="small" @click="retryImage(index)">重试</a-button>
             </div>
 
-            <!-- 图片内容 -->
+            <!-- 始终渲染 img，浏览器自然加载 -->
             <img
-              v-else
               :src="image.url"
               :alt="`第${index + 1}页`"
               class="comic-image"
+              :class="{ hidden: !image.loaded || image.error }"
               :style="imageStyles"
               @load="handleImageLoad(index)"
               @error="handleImageError(index)"
               @click="handleImageClick(index)"
+              loading="lazy"
             />
 
             <!-- 图片序号 -->
@@ -945,7 +946,13 @@ onUnmounted(() => {
   border-radius: 8px;
   box-shadow: 0 2px 8px var(--color-border-3);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+}
+
+.comic-image.hidden {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
 }
 
 .comic-image:hover {
