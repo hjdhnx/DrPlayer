@@ -71,7 +71,11 @@
             <a-option value="12">12列</a-option>
             <a-option value="9">9列</a-option>
             <a-option value="6">6列</a-option>
+            <a-option value="5">5列</a-option>
+            <a-option value="4">4列</a-option>
             <a-option value="3">3列</a-option>
+            <a-option value="2">2列</a-option>
+            <a-option value="1">1列</a-option>
           </a-select>
         </div>
       </div>
